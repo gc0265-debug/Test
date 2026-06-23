@@ -1,9 +1,8 @@
 const db = require('../db/database');
 
 const TABLE_MAP = {
-  project: 'projects',
-  area: 'areas',
-  resource: 'resources',
+  cantiere: 'cantieri',
+  lavorazione: 'lavorazioni',
 };
 
 function archiveItem(type, id) {
@@ -13,11 +12,14 @@ function archiveItem(type, id) {
   const row = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id);
   if (!row) throw Object.assign(new Error(`${type} not found`), { status: 404 });
 
+  const title = row.title || `${type} #${id}`;
+  const description = row.description || row.notes || null;
+
   const transaction = db.transaction(() => {
     db.prepare(`
       INSERT INTO archives (original_type, original_id, title, description, data, tags)
       VALUES (?, ?, ?, ?, ?, ?)
-    `).run(type, row.id, row.title, row.description || null, JSON.stringify(row), row.tags);
+    `).run(type, row.id, title, description, JSON.stringify(row), row.tags);
 
     db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
   });
@@ -29,8 +31,10 @@ function restoreItem(archiveId) {
   const archive = db.prepare('SELECT * FROM archives WHERE id = ?').get(archiveId);
   if (!archive) throw Object.assign(new Error('Archive not found'), { status: 404 });
 
-  const original = JSON.parse(archive.data);
   const table = TABLE_MAP[archive.original_type];
+  if (!table) throw Object.assign(new Error('Cannot restore this type'), { status: 400 });
+
+  const original = JSON.parse(archive.data);
   const cols = Object.keys(original).filter(k => k !== 'id');
   const placeholders = cols.map(() => '?').join(', ');
   const values = cols.map(k => original[k]);

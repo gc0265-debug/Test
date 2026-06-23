@@ -1,7 +1,9 @@
 :root {
-  --color-project: #3b82f6;
-  --color-area: #22c55e;
-  --color-resource: #a855f7;
+  --color-cantiere: #f97316;
+  --color-lavorazione: #3b82f6;
+  --color-giornale: #06b6d4;
+  --color-maestranza: #22c55e;
+  --color-documento: #a855f7;
   --color-archive: #94a3b8;
   --color-bg: #0f172a;
   --color-surface: #1e293b;
@@ -45,13 +47,22 @@ body {
 }
 
 .sidebar__brand {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: 4px;
-  padding: 24px 20px 20px;
-  background: linear-gradient(135deg, var(--color-project), var(--color-resource));
+  letter-spacing: 2px;
+  padding: 24px 20px 6px;
+  background: linear-gradient(135deg, var(--color-cantiere), var(--color-lavorazione));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.sidebar__brand-sub {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  padding: 0 20px 20px;
+  text-transform: uppercase;
 }
 
 .sidebar__nav { list-style: none; padding: 8px 0; }
@@ -67,8 +78,17 @@ body {
 }
 
 .sidebar__nav a:hover { background: var(--color-surface-2); color: var(--color-text); }
-.sidebar__nav a.active { color: var(--color-text); background: var(--color-surface-2); border-left: 3px solid var(--color-project); }
+.sidebar__nav a.active { color: var(--color-text); background: var(--color-surface-2); border-left: 3px solid var(--color-cantiere); }
 .nav-icon { font-size: 16px; }
+
+.sidebar__section {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  padding: 16px 20px 4px;
+}
 
 /* Page */
 .page { max-width: 1100px; }
@@ -90,7 +110,7 @@ body {
 }
 .btn:hover { opacity: 0.85; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--color-project); border-color: var(--color-project); }
+.btn-primary { background: var(--color-cantiere); border-color: var(--color-cantiere); color: #fff; }
 .btn-success { background: var(--color-success); border-color: var(--color-success); color: #fff; }
 .btn-danger { background: var(--color-danger); border-color: var(--color-danger); color: #fff; }
 .btn-sm { padding: 5px 10px; font-size: 12px; }
@@ -105,12 +125,12 @@ body {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--color-project);
+  background: var(--color-cantiere);
   color: #fff;
   font-size: 28px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+  box-shadow: 0 4px 20px rgba(249,115,22,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,7 +156,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   width: 100%;
-  max-width: 540px;
+  max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -174,9 +194,10 @@ body {
   width: 100%;
 }
 
-.input:focus { outline: none; border-color: var(--color-project); }
+.input:focus { outline: none; border-color: var(--color-cantiere); }
 textarea.input { resize: vertical; min-height: 80px; }
 .form-actions { display: flex; gap: 10px; justify-content: flex-end; padding-top: 8px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 /* QuickCapture */
 .quick-form { display: flex; flex-direction: column; gap: 12px; }
@@ -194,9 +215,9 @@ textarea.input { resize: vertical; min-height: 80px; }
   transition: all 0.15s;
 }
 
-.pill--project.pill--active { border-color: var(--color-project); color: var(--color-project); background: rgba(59,130,246,0.1); }
-.pill--area.pill--active    { border-color: var(--color-area);    color: var(--color-area);    background: rgba(34,197,94,0.1); }
-.pill--resource.pill--active { border-color: var(--color-resource); color: var(--color-resource); background: rgba(168,85,247,0.1); }
+.pill--cantiere.pill--active     { border-color: var(--color-cantiere);    color: var(--color-cantiere);    background: rgba(249,115,22,0.1); }
+.pill--lavorazione.pill--active  { border-color: var(--color-lavorazione); color: var(--color-lavorazione); background: rgba(59,130,246,0.1); }
+.pill--documento.pill--active    { border-color: var(--color-documento);   color: var(--color-documento);   background: rgba(168,85,247,0.1); }
 
 /* TagInput */
 .tag-input {
@@ -249,7 +270,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 .filter-bar input:focus,
-.filter-bar select:focus { outline: none; border-color: var(--color-project); }
+.filter-bar select:focus { outline: none; border-color: var(--color-cantiere); }
 
 /* Cards */
 .cards-grid {
@@ -269,17 +290,20 @@ textarea.input { resize: vertical; min-height: 80px; }
   border-left: 3px solid var(--color-border);
 }
 
-.item-card--project  { border-left-color: var(--color-project); }
-.item-card--area     { border-left-color: var(--color-area); }
-.item-card--resource { border-left-color: var(--color-resource); }
-.item-card--archive  { border-left-color: var(--color-archive); }
+.item-card--cantiere    { border-left-color: var(--color-cantiere); }
+.item-card--lavorazione { border-left-color: var(--color-lavorazione); }
+.item-card--giornale    { border-left-color: var(--color-giornale); }
+.item-card--maestranza  { border-left-color: var(--color-maestranza); }
+.item-card--documento   { border-left-color: var(--color-documento); }
+.item-card--archive     { border-left-color: var(--color-archive); }
 
 .item-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .item-card__header h3 { font-size: 15px; font-weight: 600; cursor: pointer; }
 .item-card__header h3:hover { text-decoration: underline; }
 .item-card__desc { font-size: 13px; color: var(--color-text-muted); line-height: 1.5; }
 .item-card__meta { font-size: 12px; color: var(--color-text-muted); }
-.item-card__url { font-size: 12px; color: var(--color-project); word-break: break-all; }
+.item-card__meta-row { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--color-text-muted); }
+.item-card__url { font-size: 12px; color: var(--color-lavorazione); word-break: break-all; }
 .item-card__tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .item-card__actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 
@@ -293,17 +317,35 @@ textarea.input { resize: vertical; min-height: 80px; }
   white-space: nowrap;
 }
 
-.badge-active    { background: rgba(34,197,94,0.15);  color: var(--color-success); }
-.badge-on-hold   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+/* Lavorazioni status */
+.badge-da-fare    { background: rgba(148,163,184,0.15); color: var(--color-text-muted); }
+.badge-in-corso   { background: rgba(59,130,246,0.15);  color: var(--color-lavorazione); }
+.badge-completata { background: rgba(34,197,94,0.15);   color: var(--color-success); }
+.badge-bloccata   { background: rgba(239,68,68,0.15);   color: var(--color-danger); }
+
+/* Cantieri status */
+.badge-active    { background: rgba(34,197,94,0.15);   color: var(--color-success); }
+.badge-suspended { background: rgba(251,191,36,0.15);  color: #fbbf24; }
 .badge-completed { background: rgba(148,163,184,0.15); color: var(--color-archive); }
-.badge--project  { background: rgba(59,130,246,0.15);  color: var(--color-project); }
-.badge--area     { background: rgba(34,197,94,0.15);   color: var(--color-area); }
-.badge--resource { background: rgba(168,85,247,0.15);  color: var(--color-resource); }
+
+/* Maestranze status */
+.badge-attivo   { background: rgba(34,197,94,0.15);   color: var(--color-success); }
+.badge-inattivo { background: rgba(148,163,184,0.15); color: var(--color-text-muted); }
+
+/* Priority */
+.badge-alta   { background: rgba(239,68,68,0.15);   color: var(--color-danger); }
+.badge-media  { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+.badge-bassa  { background: rgba(148,163,184,0.15); color: var(--color-text-muted); }
+
+/* Type badge */
+.badge--cantiere    { background: rgba(249,115,22,0.15);  color: var(--color-cantiere); }
+.badge--lavorazione { background: rgba(59,130,246,0.15);  color: var(--color-lavorazione); }
+.badge--documento   { background: rgba(168,85,247,0.15);  color: var(--color-documento); }
 
 /* Dashboard */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -320,10 +362,12 @@ textarea.input { resize: vertical; min-height: 80px; }
   transition: transform 0.15s;
 }
 .stats-card:hover { transform: translateY(-2px); }
-.stats-card--project  { border-top-color: var(--color-project); }
-.stats-card--area     { border-top-color: var(--color-area); }
-.stats-card--resource { border-top-color: var(--color-resource); }
-.stats-card--archive  { border-top-color: var(--color-archive); }
+.stats-card--cantiere    { border-top-color: var(--color-cantiere); }
+.stats-card--lavorazione { border-top-color: var(--color-lavorazione); }
+.stats-card--giornale    { border-top-color: var(--color-giornale); }
+.stats-card--maestranza  { border-top-color: var(--color-maestranza); }
+.stats-card--documento   { border-top-color: var(--color-documento); }
+.stats-card--archive     { border-top-color: var(--color-archive); }
 
 .stats-card__count { font-size: 36px; font-weight: 800; }
 .stats-card__label { font-size: 13px; color: var(--color-text-muted); }
@@ -340,7 +384,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 
 .category-widget__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .category-widget__header h3 { font-size: 15px; font-weight: 600; }
-.link-all { font-size: 12px; color: var(--color-project); text-decoration: none; }
+.link-all { font-size: 12px; color: var(--color-cantiere); text-decoration: none; }
 .link-all:hover { text-decoration: underline; }
 
 .widget-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
@@ -366,5 +410,8 @@ textarea.input { resize: vertical; min-height: 80px; }
   color: var(--color-text-muted);
   text-align: center;
 }
+
+/* Weather icons */
+.weather-icon { font-size: 20px; }
 
 a { color: inherit; }
