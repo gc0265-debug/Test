@@ -2,6 +2,7 @@ require('./db/migrations');
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -19,5 +20,12 @@ app.get('/api/health', (req, res) => res.json({ ok: true, timestamp: Date.now() 
 
 app.use(errorHandler);
 
+// Serve frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+}
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Board Field Project server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Board Field Project running on port ${PORT}`));
