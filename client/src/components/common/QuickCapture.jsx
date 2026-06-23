@@ -4,14 +4,14 @@ import { Modal } from './Modal';
 import { TagInput } from './TagInput';
 
 const CATEGORIES = [
-  { value: 'project', label: 'Project', endpoint: '/projects' },
-  { value: 'area', label: 'Area', endpoint: '/areas' },
-  { value: 'resource', label: 'Resource', endpoint: '/resources' },
+  { value: 'cantiere', label: 'Cantiere', endpoint: '/cantieri' },
+  { value: 'lavorazione', label: 'Lavorazione', endpoint: '/lavorazioni' },
+  { value: 'documento', label: 'Documento', endpoint: '/documenti' },
 ];
 
 export function QuickCapture({ onSaved }) {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState('project');
+  const [category, setCategory] = useState('lavorazione');
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState([]);
   const [saving, setSaving] = useState(false);

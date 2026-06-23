@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { api } from '../api/client';
-import { FilterBar } from '../components/common/FilterBar';
-import { ItemCard } from '../components/common/ItemCard';
 import { EmptyState } from '../components/common/EmptyState';
+
+const TYPE_LABELS = {
+  cantiere: 'Cantiere',
+  lavorazione: 'Lavorazione',
+};
 
 export function Archives() {
   const [filters, setFilters] = useState({ original_type: '', search: '', tag: '' });
@@ -27,7 +30,7 @@ export function Archives() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Archives</h1>
+        <h1 className="page-title">Archivio</h1>
       </div>
       <div className="filter-bar">
         <input
@@ -41,9 +44,8 @@ export function Archives() {
           onChange={e => setFilters(f => ({ ...f, original_type: e.target.value }))}
         >
           <option value="">Tutti i tipi</option>
-          <option value="project">Project</option>
-          <option value="area">Area</option>
-          <option value="resource">Resource</option>
+          <option value="cantiere">Cantieri</option>
+          <option value="lavorazione">Lavorazioni</option>
         </select>
         <input
           type="text"
@@ -57,13 +59,22 @@ export function Archives() {
           ? <EmptyState message="Nessun elemento archiviato." />
           : <div className="cards-grid">
               {items.map(item => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  type="archive"
-                  onRestore={() => handleRestore(item.id)}
-                  onDelete={() => handleDelete(item.id)}
-                />
+                <div key={item.id} className="item-card item-card--archive">
+                  <div className="item-card__header">
+                    <h3>{item.title}</h3>
+                    <span className={`badge badge--${item.original_type}`}>
+                      {TYPE_LABELS[item.original_type] || item.original_type}
+                    </span>
+                  </div>
+                  {item.description && <p className="item-card__desc">{item.description}</p>}
+                  <p className="item-card__meta">
+                    Archiviato: {new Date(item.archived_at * 1000).toLocaleDateString('it-IT')}
+                  </p>
+                  <div className="item-card__actions">
+                    <button className="btn btn-sm btn-primary" onClick={() => handleRestore(item.id)}>Ripristina</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(item.id)}>Elimina</button>
+                  </div>
+                </div>
               ))}
             </div>
       )}

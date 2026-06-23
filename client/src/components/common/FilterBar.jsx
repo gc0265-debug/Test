@@ -12,8 +12,12 @@ export function FilterBar({ filters, onChange, statusOptions }) {
           value={filters.status || ''}
           onChange={e => onChange({ ...filters, status: e.target.value })}
         >
-          <option value="">Tutti gli status</option>
-          {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
+          <option value="">Tutti gli stati</option>
+          {statusOptions.map(s => {
+            const value = typeof s === 'string' ? s : s.value;
+            const label = typeof s === 'string' ? s : s.label;
+            return <option key={value} value={value}>{label}</option>;
+          })}
         </select>
       )}
       <input
