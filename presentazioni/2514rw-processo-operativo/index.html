@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dal Rilievo al Montaggio — 2514RW</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#FFFFFF;
+  --text:#1C1C1E;
+  --accent:#0057FF;
+  --accent-dark:#003CC7;
+  --accent-light:#EEF3FF;
+  --muted:#6B7280;
+  --surface:#F4F6F9;
+  --border:#E5E7EB;
+  --danger:#DC2626;
+  --warn:#D97706;
+  --font-sans:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* Fixed UI */
+#progress{
+  position:fixed;top:0;left:0;
+  width:0%;height:3px;
+  background:var(--accent);
+  z-index:1000;
+  transition:width 0.08s linear;
+}
+#slide-counter{
+  position:fixed;bottom:1.75rem;right:1.75rem;
+  font-family:var(--font-mono);font-size:0.78rem;
+  color:var(--muted);
+  background:rgba(255,255,255,0.92);
+  padding:0.35rem 0.75rem;
+  border-radius:2rem;
+  border:1px solid var(--border);
+  z-index:1000;
+  backdrop-filter:blur(4px);
+}
+
+/* Slides */
+.slide{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:8vh 6vw;
+}
+.slide--alt{background:var(--surface)}
+.slide+.slide{border-top:1px solid var(--border)}
+
+.container{
+  width:100%;
+  max-width:1080px;
+  margin:0 auto;
+}
+
+/* Typography */
+.kicker{
+  font-family:var(--font-mono);
+  font-size:0.78rem;
+  font-weight:600;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:1.25rem;
+}
+h1{
+  font-size:clamp(2.8rem,5vw,4.8rem);
+  font-weight:900;
+  line-height:1.05;
+  letter-spacing:-0.03em;
+  margin-bottom:1.5rem;
+}
+h2{
+  font-size:clamp(2rem,3.5vw,3rem);
+  font-weight:800;
+  line-height:1.1;
+  letter-spacing:-0.025em;
+  margin-bottom:1rem;
+}
+h3{font-size:1rem;font-weight:700;margin-bottom:0.4rem;color:var(--text)}
+p.lead{
+  font-size:1.15rem;
+  color:var(--muted);
+  line-height:1.7;
+  max-width:58ch;
+  margin-bottom:0;
+}
+.accent{color:var(--accent)}
+
+/* Two-column hero layout */
+.two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5rem;
+  align-items:center;
+}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;gap:2.5rem}}
+
+/* Phase chain */
+.chain{
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+  flex-wrap:wrap;
+  margin-top:2.5rem;
+}
+.chip{
+  font-family:var(--font-mono);
+  font-size:0.72rem;
+  font-weight:600;
+  padding:0.3rem 0.7rem;
+  border-radius:0.25rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text);
+  white-space:nowrap;
+}
+.chip--on{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+.arr{color:var(--border);font-size:0.9rem;flex-shrink:0}
+
+/* Callout box */
+.callout{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:0.875rem;
+  padding:1.75rem 2rem;
+}
+.callout p{
+  font-size:1rem;
+  color:var(--text);
+  line-height:1.7;
+  max-width:none;
+}
+.callout p strong{color:var(--danger)}
+
+/* Cards 3-col */
+.cards3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.25rem;
+  margin-top:2rem;
+}
+@media(max-width:760px){.cards3{grid-template-columns:1fr}}
+.card{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:0.75rem;
+  padding:1.5rem;
+  border-left:4px solid var(--accent);
+}
+.card__n{
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:0.1em;
+  margin-bottom:0.6rem;
+}
+.card p{font-size:0.9rem;color:var(--muted);max-width:none;line-height:1.6}
+
+/* Cost multiplier */
+.cost-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  margin-top:2rem;
+  border:1px solid var(--border);
+  border-radius:0.75rem;
+  overflow:hidden;
+}
+@media(max-width:600px){.cost-row{grid-template-columns:1fr}}
+.cost-cell{
+  padding:1.5rem 1.25rem;
+  text-align:center;
+  background:var(--bg);
+}
+.cost-cell+.cost-cell{border-left:1px solid var(--border)}
+@media(max-width:600px){.cost-cell+.cost-cell{border-left:none;border-top:1px solid var(--border)}}
+.cost-cell__val{
+  font-family:var(--font-mono);
+  font-size:2.2rem;
+  font-weight:800;
+  line-height:1;
+  margin-bottom:0.35rem;
+}
+.cost-cell__where{font-size:0.9rem;font-weight:600;color:var(--text)}
+.cost-cell__label{
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:var(--muted);
+  margin-top:0.15rem;
+}
+.c-blue{color:var(--accent)}
+.c-warn{color:var(--warn)}
+.c-red{color:var(--danger)}
+
+/* Stat blocks */
+.stats3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.25rem;
+  margin-top:2rem;
+}
+@media(max-width:760px){.stats3{grid-template-columns:1fr}}
+.stat{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:0.75rem;
+  padding:1.5rem;
+}
+.stat__val{
+  font-family:var(--font-mono);
+  font-size:3.2rem;
+  font-weight:800;
+  line-height:1;
+  margin-bottom:0.5rem;
+  color:var(--danger);
+}
+.stat__val--blue{color:var(--accent)}
+.stat__title{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:0.3rem}
+.stat__desc{font-size:0.85rem;color:var(--muted);line-height:1.5}
+
+/* Info banner */
+.banner{
+  margin-top:1.5rem;
+  padding:1rem 1.25rem;
+  background:var(--accent-light);
+  border-left:4px solid var(--accent);
+  border-radius:0.375rem;
+}
+.banner p{font-size:0.95rem;color:var(--text);max-width:none;line-height:1.6}
+
+/* Phase flow grid */
+.flow6{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.1rem;
+  margin-top:2rem;
+}
+@media(max-width:900px){.flow6{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.flow6{grid-template-columns:1fr}}
+.fcard{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:0.75rem;
+  padding:1.25rem;
+}
+.fcard__badge{
+  font-family:var(--font-mono);
+  font-size:0.68rem;
+  font-weight:700;
+  color:#fff;
+  background:var(--accent);
+  padding:0.18rem 0.55rem;
+  border-radius:0.2rem;
+  display:inline-block;
+  margin-bottom:0.6rem;
+}
+.fcard__title{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:0}
+.fcard__gate{
+  margin-top:0.75rem;
+  padding-top:0.75rem;
+  border-top:1px solid var(--border);
+  font-size:0.82rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.fcard__gate-lbl{
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:var(--accent);
+  display:block;
+  margin-bottom:0.25rem;
+}
+
+/* KPI table */
+.kpi-wrap{margin-top:2rem;overflow-x:auto}
+.kpi{
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.95rem;
+}
+.kpi th{
+  text-align:left;
+  padding:0.75rem 1rem;
+  background:var(--surface);
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  text-transform:uppercase;
+  letter-spacing:0.09em;
+  color:var(--muted);
+  font-weight:700;
+  border-bottom:2px solid var(--border);
+  white-space:nowrap;
+}
+.kpi td{
+  padding:0.9rem 1rem;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+  line-height:1.5;
+}
+.kpi tr:last-child td{border-bottom:none}
+.kpi tr:hover td{background:#FAFBFF}
+.kpi td:first-child{
+  font-family:var(--font-mono);
+  font-size:0.8rem;
+  font-weight:700;
+  color:var(--accent);
+  white-space:nowrap;
+}
+.kpi td:nth-child(2){color:var(--text)}
+.kpi td:last-child{color:var(--danger);font-size:0.88rem}
+
+/* Brands row */
+.brands{
+  display:flex;
+  align-items:center;
+  gap:1.5rem;
+  margin-top:1.75rem;
+  flex-wrap:wrap;
+}
+.brand-item{
+  display:flex;
+  align-items:center;
+  gap:0.45rem;
+  font-size:0.88rem;
+  font-weight:600;
+  color:var(--muted);
+}
+.brand-lbl{
+  font-family:var(--font-mono);
+  font-size:0.72rem;
+  color:var(--muted);
+  letter-spacing:0.04em;
+}
+
+/* Errors grid */
+.err6{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:0.875rem;
+  margin-top:1.75rem;
+  margin-bottom:2.5rem;
+}
+@media(max-width:700px){.err6{grid-template-columns:1fr}}
+.err-item{
+  display:flex;
+  gap:0.875rem;
+  align-items:flex-start;
+  padding:1.1rem 1.25rem;
+  background:#FEF2F2;
+  border:1px solid #FECACA;
+  border-radius:0.625rem;
+}
+.err-dot{
+  flex-shrink:0;
+  width:1.35rem;
+  height:1.35rem;
+  background:var(--danger);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:0.15rem;
+}
+.err-item p{
+  font-size:0.9rem;
+  color:var(--text);
+  line-height:1.55;
+  max-width:none;
+}
+.err-item strong{color:var(--danger)}
+
+/* Closing */
+.closing{
+  text-align:center;
+  padding-top:2rem;
+  border-top:2px solid var(--accent);
+}
+.closing h2{
+  font-size:clamp(1.8rem,3vw,2.6rem);
+  margin-bottom:0.75rem;
+}
+.closing p.lead{
+  margin:0 auto;
+  max-width:46ch;
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="slide-counter">1 / 6</div>
+
+<!-- ░░ SLIDE 1 — HERO ░░ -->
+<section class="slide" id="s1">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <div class="kicker">Commessa 2514RW · Hotel RSW · Rev.00 — 02/07/2026</div>
+        <h1>Dal Rilievo<br>al <span class="accent">Montaggio</span></h1>
+        <p class="lead">Guida operativa di processo per arredi su misura — lancio del nuovo flusso interno.</p>
+        <div class="chain">
+          <span class="chip chip--on">F0 Nodi</span>
+          <span class="arr">→</span>
+          <span class="chip">F1 Rilievo</span>
+          <span class="arr">→</span>
+          <span class="chip">F2 Esecutivi</span>
+          <span class="arr">→</span>
+          <span class="chip">F3 Produzione</span>
+          <span class="arr">→</span>
+          <span class="chip">F4 Logistica</span>
+          <span class="arr">→</span>
+          <span class="chip">F5 Montaggio</span>
+        </div>
+      </div>
+      <div>
+        <div class="callout">
+          <div class="kicker" style="margin-bottom:1rem">La regola fondamentale</div>
+          <p style="font-size:1.05rem;margin-bottom:1rem">
+            Non si passa al gate successivo<br>con il precedente ancora <strong>aperto</strong>.
+          </p>
+          <hr style="border:none;border-top:1px solid var(--border);margin-bottom:1rem">
+          <p style="font-size:0.9rem;color:var(--muted)">La catena è a senso unico. Ogni scorciatoia si paga in cantiere, moltiplicata.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ SLIDE 2 — PRINCIPIO GUIDA ░░ -->
+<section class="slide slide--alt" id="s2">
+  <div class="container">
+    <div class="kicker">Il principio guida</div>
+    <h2>Tre condizioni.<br>Tutte e <span class="accent">tre insieme</span>.</h2>
+    <p class="lead">Un arredo su misura arriva "pronto da installare" solo se sono vere contemporaneamente.</p>
+
+    <div class="cards3">
+      <div class="card">
+        <div class="card__n">01 — Misure</div>
+        <h3>Stato di fatto reale</h3>
+        <p>Le misure sono prese sullo stato di fatto reale del cantiere, non sul disegno di progetto.</p>
+      </div>
+      <div class="card">
+        <div class="card__n">02 — Progetto</div>
+        <h3>Esecutivo congelato</h3>
+        <p>Il progetto esecutivo è approvato e congelato. "Approvato con note" non è approvato.</p>
+      </div>
+      <div class="card">
+        <div class="card__n">03 — Tempo</div>
+        <h3>Tempo tecnico completo</h3>
+        <p>La produzione ha avuto il tempo tecnico necessario, non compresso da ritardi a monte.</p>
+      </div>
+    </div>
+
+    <div class="cost-row">
+      <div class="cost-cell">
+        <div class="cost-cell__val c-blue">1×</div>
+        <div class="cost-cell__where">Su disegno</div>
+        <div class="cost-cell__label">Costo modifica</div>
+      </div>
+      <div class="cost-cell">
+        <div class="cost-cell__val c-warn">5–10×</div>
+        <div class="cost-cell__where">In produzione</div>
+        <div class="cost-cell__label">Costo modifica</div>
+      </div>
+      <div class="cost-cell">
+        <div class="cost-cell__val c-red">20–30×</div>
+        <div class="cost-cell__where">In cantiere</div>
+        <div class="cost-cell__label">Costo modifica</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ SLIDE 3 — SITUAZIONE ATTUALE ░░ -->
+<section class="slide" id="s3">
+  <div class="container">
+    <div class="kicker">Situazione attuale — 2514RW</div>
+    <h2>Dove siamo <span class="accent">oggi</span>.</h2>
+    <p class="lead">Gran parte della commessa è ferma in Fase 0. Finché questi blocchi restano aperti, rilievo e produzione girano a vuoto.</p>
+
+    <div class="stats3">
+      <div class="stat">
+        <div class="stat__val">207</div>
+        <div class="stat__title">Nodi aperti · FOH</div>
+        <div class="stat__desc">Registro attivo. Priorità ai nodi che bloccano il rilievo a monte della catena.</div>
+      </div>
+      <div class="stat">
+        <div class="stat__val">37</div>
+        <div class="stat__title">Item bloccati · Presidential Suite</div>
+        <div class="stat__desc">Fermi in approvazione ID/SAC. Sbloccare la Suite sblocca la replica su tutte le camere dello stesso tipo.</div>
+      </div>
+      <div class="stat">
+        <div class="stat__val stat__val--blue">L4</div>
+        <div class="stat__title">Corridoi — ambito parziale</div>
+        <div class="stat__desc">Definito solo su piano L4. Senza ambito formalizzato in WBS, le date a valle non sono impegnative.</div>
+      </div>
+    </div>
+
+    <div class="banner">
+      <p><strong>Azione immediata:</strong> sollecitare SAC/ID/DL per <em>pacchetti</em>, non nodo per nodo — con data di prima richiesta e impatto dichiarato sul programma. I solleciti frammentati si perdono; il pacchetto con impatto dichiarato no.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ SLIDE 4 — IL FLUSSO ░░ -->
+<section class="slide slide--alt" id="s4">
+  <div class="container">
+    <div class="kicker">Il flusso operativo</div>
+    <h2>Sei fasi. Un <span class="accent">gate</span> per ciascuna.</h2>
+    <p class="lead">Non si avanza se il gate precedente non è chiuso. La sequenza non è negoziabile.</p>
+
+    <div class="flow6">
+      <div class="fcard">
+        <span class="fcard__badge">F0</span>
+        <div class="fcard__title">Sblocco nodi</div>
+        <div class="fcard__gate">
+          <span class="fcard__gate-lbl">Gate di uscita</span>
+          Nodi rilievo chiusi · ambito WBS formalizzato · date terzi attendibili
+        </div>
+      </div>
+      <div class="fcard">
+        <span class="fcard__badge">F1</span>
+        <div class="fcard__title">Rilievi fili fissi</div>
+        <div class="fcard__gate">
+          <span class="fcard__gate-lbl">Gate di uscita</span>
+          Rilievo verbalizzato · stato di fatto restituito · scostamenti notificati a DL
+        </div>
+      </div>
+      <div class="fcard">
+        <span class="fcard__badge">F2</span>
+        <div class="fcard__title">Progettazione</div>
+        <div class="fcard__gate">
+          <span class="fcard__gate-lbl">Gate di uscita</span>
+          Esecutivi approvati e congelati · DIBA completa · materiali campionati
+        </div>
+      </div>
+      <div class="fcard">
+        <span class="fcard__badge">F3</span>
+        <div class="fcard__title">Produzione</div>
+        <div class="fcard__gate">
+          <span class="fcard__gate-lbl">Gate di uscita</span>
+          Pacchetto collaudato · imballato · marcato WBS · aree cantiere confermate
+        </div>
+      </div>
+      <div class="fcard">
+        <span class="fcard__badge">F4</span>
+        <div class="fcard__title">Logistica</div>
+        <div class="fcard__gate">
+          <span class="fcard__gate-lbl">Gate di uscita</span>
+          Slot GC prenotati con anticipo · verbale di ricezione · stoccaggio protetto confermato
+        </div>
+      </div>
+      <div class="fcard">
+        <span class="fcard__badge">F5</span>
+        <div class="fcard__title">Montaggio</div>
+        <div class="fcard__gate">
+          <span class="fcard__gate-lbl">Gate di uscita</span>
+          Onboarding documentale completo · briefing squadra · snag list standard a collaudo
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ SLIDE 5 — KPI ░░ -->
+<section class="slide" id="s5">
+  <div class="container">
+    <div class="kicker">Metriche di controllo</div>
+    <h2>Ogni fase ha un <span class="accent">indicatore</span>.</h2>
+    <p class="lead">Se l'indicatore si accende, la catena si sta ingolfando. Questi KPI alimentano il cruscotto mensile.</p>
+
+    <div class="kpi-wrap">
+      <table class="kpi">
+        <thead>
+          <tr>
+            <th>Fase</th>
+            <th>Indicatore</th>
+            <th>⚠ Segnale di allarme</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>F0 — Nodi</td>
+            <td>Tempo medio sblocco per destinatario · % nodi aperti</td>
+            <td>Nodi cliente aperti &gt; 30 gg</td>
+          </tr>
+          <tr>
+            <td>F1 — Rilievi</td>
+            <td>% aree rilevate su aree pronte · rilievi da rifare</td>
+            <td>Qualsiasi rilievo su superfici non finite</td>
+          </tr>
+          <tr>
+            <td>F2 — Progettazione</td>
+            <td>Tempo medio approvazione per submission</td>
+            <td>Approvazioni oltre la data dichiarata in submission</td>
+          </tr>
+          <tr>
+            <td>F3 — Produzione</td>
+            <td>% pacchetti collaudati entro data pianificata</td>
+            <td>Lancio produzione senza esecutivo congelato</td>
+          </tr>
+          <tr>
+            <td>F4 — Logistica</td>
+            <td>Slot rispettati / prenotati · danni da trasporto</td>
+            <td>Consegne senza slot o senza verbale</td>
+          </tr>
+          <tr>
+            <td>F5 — Montaggio</td>
+            <td>% squadre verdi al primo ingresso · NC entro SLA</td>
+            <td>Ingressi con documenti gialli/rossi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="brands">
+      <span class="brand-lbl">Strumenti di gestione:</span>
+
+      <!-- Excel -->
+      <span class="brand-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="4" fill="#217346"/>
+          <path d="M9 8L11.5 12L9 16H11L12.5 13.6L14 16H16L13.5 12L16 8H14L12.5 10.4L11 8H9Z" fill="white"/>
+        </svg>
+        Excel
+      </span>
+
+      <!-- Word -->
+      <span class="brand-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="4" fill="#2B579A"/>
+          <path d="M6.5 8.5L8.3 15.5L10.2 10.8L12 15.5L13.9 8.5H12.4L11.1 12.8L10.2 10.2L9.6 8.5H6.5Z" fill="white"/>
+          <path d="M13.9 8.5L15 12.5L15.8 8.5H13.9Z" fill="white"/>
+        </svg>
+        Word
+      </span>
+
+      <!-- insite.co.uk -->
+      <span class="brand-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="4" fill="#1C1C1E"/>
+          <text x="12" y="15.5" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" font-weight="800" fill="white">IN</text>
+        </svg>
+        insite.co.uk
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ SLIDE 6 — ERRORI + CHIUSURA ░░ -->
+<section class="slide slide--alt" id="s6">
+  <div class="container">
+    <div class="kicker">Gli errori che costano di più</div>
+    <h2>Sei scorciatoie.<br>Sei <span class="accent">moltiplicatori</span>.</h2>
+
+    <div class="err6">
+      <div class="err-item">
+        <div class="err-dot">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="10" y1="2" x2="2" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p><strong>Rilevare su superfici non finite</strong> per non perdere tempo — è il modo più sicuro per perderne il doppio.</p>
+      </div>
+      <div class="err-item">
+        <div class="err-dot">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="10" y1="2" x2="2" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p><strong>Avviare la produzione</strong> su "approvato con note" o senza camera campione approvata.</p>
+      </div>
+      <div class="err-item">
+        <div class="err-dot">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="10" y1="2" x2="2" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p><strong>Assorbire scostamenti in silenzio</strong> senza variante formale — il baseline si difende a ogni fase, non a fine cantiere.</p>
+      </div>
+      <div class="err-item">
+        <div class="err-dot">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="10" y1="2" x2="2" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p><strong>Consegnare al ritmo della produzione</strong> anziché del montaggio — il cantiere non è un magazzino.</p>
+      </div>
+      <div class="err-item">
+        <div class="err-dot">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="10" y1="2" x2="2" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p><strong>Far entrare squadre con documentazione incompleta</strong>, contando di sanare dopo l'ingresso.</p>
+      </div>
+      <div class="err-item">
+        <div class="err-dot">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="10" y1="2" x2="2" y2="10" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p><strong>Sollecitare nodo per nodo</strong> invece che per pacchetti — con impatto dichiarato sul programma.</p>
+      </div>
+    </div>
+
+    <div class="closing">
+      <h2>Il processo è la <span class="accent">protezione</span>.</h2>
+      <p class="lead">Applicarlo è una scelta — a ogni gate, a ogni fase, su ogni commessa.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var bar = document.getElementById('progress');
+  var counter = document.getElementById('slide-counter');
+  var slides = document.querySelectorAll('.slide');
+  var total = slides.length;
+
+  function update(){
+    var st = window.scrollY;
+    var dh = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (dh > 0 ? (st / dh) * 100 : 0) + '%';
+
+    var cur = 1;
+    slides.forEach(function(s, i){
+      var t = s.getBoundingClientRect().top;
+      if(t <= window.innerHeight * 0.5) cur = i + 1;
+    });
+    counter.textContent = cur + ' / ' + total;
+  }
+
+  window.addEventListener('scroll', update, {passive:true});
+  update();
+})();
+</script>
+</body>
+</html>
