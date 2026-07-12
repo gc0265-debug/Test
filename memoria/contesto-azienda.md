@@ -31,6 +31,23 @@
 ### Q1 — Chi sei e cosa fai? ✅
 Field Project SAS eroga servizi di direzione di cantiere nel settore contract di lusso (arredamenti su misura per hospitality e spazi commerciali). Giovanni Cazzola opera come Direttore di Cantiere: coordina le maestranze, verifica i programmi di montaggio, segnala criticità, interfaccia con la committenza tecnica. Non gestisce contratti né subappalti.
 
+---
+
+## FASE O — Obiettivo
+
+### INPUT — Cosa cattura il sistema (rituale chiusura giornata ~15 min)
+1. **Presenze personale** — multi-fornitore (più squadre, più aziende)
+2. **Spese di cantiere**
+3. **Liste di controllo fotografiche** — progress montaggi giornaliero
+4. **Liste di verifica qualità + fuori tolleranza** (non conformità)
+5. **Form e registri** — da compilare e inviare al GC (siamo spesso in subappalto al GC)
+6. **Tempi di montaggio** — per tipologia di arredo/soluzione
+7. **Database KPI storici** — alimentato dai tempi raccolti, usato per skill estimate future
+
+**Output atteso**: tutto registrato correttamente in ≤15 min, recuperabile anche dopo mesi
+
+---
+
 ### Q2 — A chi ti rivolgi? ✅
 **Cliente diretto (chi ingaggia)**: Un produttore di arredi su misura (cliente principale unico)
 
