@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { StatsCard } from '../components/dashboard/StatsCard';
-import { CategoryWidget } from '../components/dashboard/CategoryWidget';
 
 export function Dashboard() {
   const { data, loading } = useApi('/dashboard');
@@ -10,32 +9,63 @@ export function Dashboard() {
   if (loading) return <div className="page-loading">Caricamento...</div>;
   if (!data) return null;
 
-  const { counts, recentLavorazioni, recentLogs } = data;
+  const { counts, recentChiusure, ncAperte } = data;
 
   return (
     <div className="page">
-      <h1 className="page-title">Dashboard</h1>
-      <div className="stats-grid">
-        <StatsCard label="Cantieri attivi"     count={counts.cantieri}       type="cantiere"    onClick={() => navigate('/cantieri')} />
-        <StatsCard label="Lavorazioni in corso" count={counts.lavorazioni}    type="lavorazione" onClick={() => navigate('/lavorazioni')} />
-        <StatsCard label="Log di oggi"          count={counts.giornale_oggi}  type="giornale"    onClick={() => navigate('/giornale')} />
-        <StatsCard label="Maestranze attive"    count={counts.maestranze}     type="maestranza"  onClick={() => navigate('/maestranze')} />
-        <StatsCard label="Documenti"            count={counts.documenti}      type="documento"   onClick={() => navigate('/documenti')} />
-        <StatsCard label="Archivio"             count={counts.archives}       type="archive"     onClick={() => navigate('/archivio')} />
+      <div className="page-header">
+        <h1 className="page-title">Dashboard</h1>
+        <button className="btn btn-primary" onClick={() => navigate('/chiusura')}>
+          Chiudi giornata →
+        </button>
       </div>
+
+      <div className="stats-grid">
+        <StatsCard label="Cantieri attivi"      count={counts.cantieri}        type="cantiere"    onClick={() => navigate('/cantieri')} />
+        <StatsCard label="WP attivi"            count={counts.wp_attivi}       type="lavorazione" onClick={() => navigate('/wp')} />
+        <StatsCard label="Lavorazioni in corso" count={counts.lavorazioni}     type="lavorazione" onClick={() => navigate('/lavorazioni')} />
+        <StatsCard label="Presenze oggi"        count={counts.presenze_oggi}   type="maestranza"  onClick={() => navigate('/giornale')} />
+        <StatsCard label="NC aperte"            count={counts.nc_aperte}       type="documento"   onClick={() => navigate('/giornale')} />
+        <StatsCard label="KPI tempi (campioni)" count={counts.tempi_campioni}  type="archive"     onClick={() => navigate('/giornale')} />
+      </div>
+
       <div className="widgets-grid">
-        <CategoryWidget
-          title="Lavorazioni in corso"
-          items={recentLavorazioni}
-          linkTo="/lavorazioni"
-          emptyText="Nessuna lavorazione in corso. Premi + per aggiungerne una!"
-        />
-        <CategoryWidget
-          title="Ultimi log di cantiere"
-          items={recentLogs}
-          linkTo="/giornale"
-          emptyText="Nessun log registrato oggi."
-        />
+        <div className="category-widget">
+          <div className="category-widget__header">
+            <h3>Ultime chiusure</h3>
+            <a href="/giornale" className="link-all">Vedi tutte →</a>
+          </div>
+          {recentChiusure.length === 0
+            ? <p className="empty-text">Nessuna chiusura registrata.</p>
+            : <ul className="widget-list">
+                {recentChiusure.map(g => (
+                  <li key={g.id} className="widget-list__item">
+                    <span>{g.cantiere_name} — {g.date}</span>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>
+                      {g.n_presenze}p {g.n_nc > 0 ? `· ${g.n_nc} NC` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+          }
+        </div>
+
+        <div className="category-widget">
+          <div className="category-widget__header">
+            <h3>NC aperte</h3>
+          </div>
+          {ncAperte.length === 0
+            ? <p className="empty-text">Nessuna NC aperta.</p>
+            : <ul className="widget-list">
+                {ncAperte.map(nc => (
+                  <li key={nc.id} className="widget-list__item">
+                    <span style={{ flex: 1, marginRight: 8 }}>{nc.descrizione}</span>
+                    <span style={{ color: 'var(--color-nc)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>{nc.stato}</span>
+                  </li>
+                ))}
+              </ul>
+          }
+        </div>
       </div>
     </div>
   );

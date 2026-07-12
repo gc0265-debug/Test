@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useCallback, useState } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import { Dashboard } from './pages/Dashboard';
+import { ChiusuraGiornata } from './pages/ChiusuraGiornata';
 import { Cantieri } from './pages/Cantieri';
+import { WP } from './pages/WP';
 import { Lavorazioni } from './pages/Lavorazioni';
 import { Giornale } from './pages/Giornale';
 import { Maestranze } from './pages/Maestranze';
@@ -18,7 +20,9 @@ export default function App() {
       <Routes>
         <Route element={<AppShell onQuickSave={handleQuickSave} />}>
           <Route path="/" element={<Dashboard key={refreshKey} />} />
+          <Route path="/chiusura" element={<ChiusuraGiornata key={`ch-${refreshKey}`} />} />
           <Route path="/cantieri" element={<Cantieri key={`c-${refreshKey}`} />} />
+          <Route path="/wp" element={<WP key={`w-${refreshKey}`} />} />
           <Route path="/lavorazioni" element={<Lavorazioni key={`l-${refreshKey}`} />} />
           <Route path="/giornale" element={<Giornale key={`g-${refreshKey}`} />} />
           <Route path="/maestranze" element={<Maestranze key={`m-${refreshKey}`} />} />

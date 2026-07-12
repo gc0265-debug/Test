@@ -2,10 +2,12 @@ import { NavLink } from 'react-router-dom';
 
 const NAV_MAIN = [
   { to: '/', label: 'Dashboard', icon: '◉' },
+  { to: '/chiusura', label: 'Chiusura Giornata', icon: '✓' },
 ];
 
 const NAV_CANTIERE = [
   { to: '/cantieri', label: 'Cantieri', icon: '⌂' },
+  { to: '/wp', label: 'Work Package', icon: '◫' },
   { to: '/lavorazioni', label: 'Lavorazioni', icon: '⚙' },
   { to: '/giornale', label: 'Giornale', icon: '≡' },
 ];
