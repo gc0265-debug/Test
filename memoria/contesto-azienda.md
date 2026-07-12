@@ -50,6 +50,13 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 **Destinatari output del sistema**: Giovanni + PM del team interno ed esterno
 **Registro**: Formale professionale — niente informalità, niente gergo tecnico non necessario
 
-### Q4 — Cosa vendiamo / il valore? (da completare)
+### Q4 — Cosa vendiamo / il valore? ✅
+**Proposta di valore core**:
+- Empatia sul campo con tutti gli stakeholder → ponte tra committente finale e Gili Creations Srl
+- Presidio professionale della fase esecutiva dall'inizio al collaudo
+- Monitoraggio costante sul campo
+- Tracciamento eventi rilevanti per **Tempi, Costi, Qualità** (TCQ)
+
+**In una frase**: Giovanni Cazzola garantisce che il cantiere arrivi al collaudo senza sorprese — con controllo TCQ continuo e una relazione solida con ogni stakeholder.
 
 ### Q5 — Regole da non violare? (da completare)
