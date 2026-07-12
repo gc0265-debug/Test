@@ -48,6 +48,13 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 
 **Output atteso**: tutto registrato correttamente in ≤15 min, recuperabile anche dopo mesi
 
+### OUTPUT — Cosa produce il sistema
+
+| Output | Destinatario | Formato | Frequenza | Stato processo |
+|--------|-------------|---------|-----------|----------------|
+| Report presenze | Capo Preposti GC | Form PDF via app GC | Ogni mattina | Processo esistente (lo invia il Preposto Gili) — BFP alimenta i dati |
+| Giornale di cantiere | Preposto Gili + (futuro) PM Gili + Resp. Ufficio Tecnico Gili | Da definire | Fine giornata | Processo non consolidato — opportunità di standardizzare |
+
 ---
 
 ### Q2 — A chi ti rivolgi? ✅
