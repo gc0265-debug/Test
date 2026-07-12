@@ -33,6 +33,10 @@
 - **Implicazione**: interfaccia mobile-first, responsive su tutti e tre
 - BFP già su Railway → accessibile da browser, nessuna app da installare
 
+### Dati e backup
+- I dati devono essere **esportabili e backuppati** su sistemi esterni (non solo Railway)
+- Destinazione backup e retention post-commessa: da definire
+
 ### Connessioni esterne
 | Sistema | Integrazione | Note |
 |---------|-------------|------|
