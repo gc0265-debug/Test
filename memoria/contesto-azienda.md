@@ -33,6 +33,14 @@
 - **Implicazione**: interfaccia mobile-first, responsive su tutti e tre
 - BFP già su Railway → accessibile da browser, nessuna app da installare
 
+### Connessioni esterne
+| Sistema | Integrazione | Note |
+|---------|-------------|------|
+| Email | ✅ Sì — obbligatoria | Invio report da BFP |
+| WhatsApp | ✅ Sì — obbligatoria | Invio report da BFP |
+| Badge cantiere | ❌ No | Dati non accessibili digitalmente — inserimento manuale |
+| App NC | 🔮 Condizionale | Solo se l'app espone API — da verificare |
+
 ### Utenti
 | Utente | Ruolo | Accesso |
 |--------|-------|---------|
