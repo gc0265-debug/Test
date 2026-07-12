@@ -10,8 +10,8 @@
 | Fase | Stato | Note |
 |------|-------|------|
 | 0 — Contesto azienda | ✅ Completata | Vedi memoria/contesto-azienda.md |
-| O — Obiettivo | ⏳ In attesa | |
-| R — Reti | 🔒 Bloccata | Dipende da Fase O |
+| O — Obiettivo | ✅ Completata | Vedi memoria/contesto-azienda.md — sezione FASE O |
+| R — Reti | ⏳ In attesa | |
 | B — Blocchi | 🔒 Bloccata | Dipende da Fase R |
 | I — Ispeziona | 🔒 Bloccata | Dipende da Fase B |
 | T — Trigger | 🔒 Bloccata | Dipende da Fase I |
@@ -19,11 +19,13 @@
 ---
 
 ## Schema Dati
-_Da definire in Fase O — NESSUNA costruzione prima di qui_
 
 ```
-INPUT:  { da definire }
-OUTPUT: { da definire }
+Commessa → WP → Lavorazione
+                  ├── Giornale (presenze, zone, attività, materiali, spese)
+                  ├── Riferimento NC (link/nota → app esterna, modulo interno futuro)
+                  ├── Tempi montaggio (→ KPI storici per skill estimate)
+                  └── Documenti / foto
 ```
 
 ---
