@@ -59,4 +59,15 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 
 **In una frase**: Giovanni Cazzola garantisce che il cantiere arrivi al collaudo senza sorprese — con controllo TCQ continuo e una relazione solida con ogni stakeholder.
 
-### Q5 — Regole da non violare? (da completare)
+### Q5 — Regole da non violare? ✅ (elenco aperto — da integrare)
+Il Direttore di Cantiere NON deve mai:
+1. Assumere il ruolo di Preposto ai sensi del D.Lgs. 81/2008
+2. Agire per interesse personale
+3. Nascondere evidenze al cliente
+4. Gestire o impartire ordini al personale di montaggio ingaggiato dall'azienda cliente
+5. Effettuare acquisti per conto dell'azienda cliente
+6. Redigere SAL (Stato Avanzamento Lavori) a fine mese
+7. Pianificare attività interne all'azienda cliente (ufficio tecnico e logistico) — può analizzare sul campo le caratteristiche in ottica problem solving, ma non pianifica
+8. Stabilire le condizioni contrattuali dei fornitori (competenza dell'ufficio acquisti)
+
+_Lista aperta — ulteriori vincoli da aggiungere_
