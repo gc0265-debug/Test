@@ -47,6 +47,15 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 8. **Verifica ricezione materiali** — controllo arrivi materiali al cantiere
 9. **Supporto al Preposto** — supporto al Preposto della cliente (Gili Creations Srl) nelle sue funzioni e obblighi di legge (D.Lgs. 81/2008) ⚠️ _NB: Giovanni NON è il Preposto — lo supporta_
 
+### Gestione non conformità
+- Foto + inserimento in lista via **app dedicata** (processo già esistente)
+- BFP deve integrarsi con questo flusso, non ignorarlo
+
+### Struttura commessa attuale
+- Durata: ~1 anno di esecuzione
+- Organizzata in **WP (Work Package)**: 4 attivi + 1 in arrivo
+- Implicazione schema dati: **Commessa → WP → Lavorazioni**
+
 **Fonte dati presenze**: badge cantiere degli operatori (registra entrata/uscita automaticamente) — fonte oggettiva da incrociare con dichiarazione manuale
 
 **Output atteso**: tutto registrato correttamente in ≤15 min, recuperabile anche dopo mesi
