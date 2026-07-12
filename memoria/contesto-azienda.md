@@ -46,7 +46,9 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 - Capi squadra
 - Installatori
 
-### Q3 — Con che tono? (da completare)
+### Q3 — Con che tono? ✅
+**Destinatari output del sistema**: Giovanni + PM del team interno ed esterno
+**Registro**: Formale professionale — niente informalità, niente gergo tecnico non necessario
 
 ### Q4 — Cosa vendiamo / il valore? (da completare)
 
