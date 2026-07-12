@@ -26,6 +26,21 @@
 
 ---
 
+## FASE R — Reti
+
+### Dispositivi
+- Smartphone, tablet, MacBook Air 13"
+- **Implicazione**: interfaccia mobile-first, responsive su tutti e tre
+- BFP già su Railway → accessibile da browser, nessuna app da installare
+
+### Utenti
+| Utente | Ruolo | Accesso |
+|--------|-------|---------|
+| Giovanni Cazzola | Direttore di Cantiere | Pieno |
+| Preposto Gili | Preposto cliente | Da definire (Fase B) |
+
+---
+
 ## FASE 0 — Risposte in corso
 
 ### Q1 — Chi sei e cosa fai? ✅
