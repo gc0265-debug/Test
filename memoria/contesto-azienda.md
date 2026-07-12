@@ -43,6 +43,8 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 5. **Form e registri** — da compilare e inviare al GC (siamo spesso in subappalto al GC)
 6. **Tempi di montaggio** — per tipologia di arredo/soluzione
 7. **Database KPI storici** — alimentato dai tempi raccolti, usato per skill estimate future
+8. **Verifica ricezione materiali** — controllo arrivi materiali al cantiere
+9. **Supporto al Preposto** — supporto al Preposto della cliente (Gili Creations Srl) nelle sue funzioni e obblighi di legge (D.Lgs. 81/2008) ⚠️ _NB: Giovanni NON è il Preposto — lo supporta_
 
 **Output atteso**: tutto registrato correttamente in ≤15 min, recuperabile anche dopo mesi
 
