@@ -48,8 +48,9 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 9. **Supporto al Preposto** — supporto al Preposto della cliente (Gili Creations Srl) nelle sue funzioni e obblighi di legge (D.Lgs. 81/2008) ⚠️ _NB: Giovanni NON è il Preposto — lo supporta_
 
 ### Gestione non conformità
-- Foto + inserimento in lista via **app dedicata** (processo già esistente)
-- BFP deve integrarsi con questo flusso, non ignorarlo
+- Foto + inserimento in lista via **app dedicata** (processo consolidato, non si tocca ora)
+- **Fase attuale**: BFP registra solo un riferimento (numero/link/nota) alla NC aperta nell'app esterna
+- **Fase futura**: architettura predisposta per assorbire il modulo NC internamente (sostituzione pianificata)
 
 ### Struttura commessa attuale
 - Durata: ~1 anno di esecuzione
