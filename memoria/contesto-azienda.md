@@ -44,7 +44,10 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 6. **Tempi di montaggio** — per tipologia di arredo/soluzione
 7. **Database KPI storici** — alimentato dai tempi raccolti, usato per skill estimate future
 8. **Verifica ricezione materiali** — controllo arrivi materiali al cantiere
+8. **Verifica ricezione materiali** — controllo arrivi materiali al cantiere
 9. **Supporto al Preposto** — supporto al Preposto della cliente (Gili Creations Srl) nelle sue funzioni e obblighi di legge (D.Lgs. 81/2008) ⚠️ _NB: Giovanni NON è il Preposto — lo supporta_
+
+**Fonte dati presenze**: badge cantiere degli operatori (registra entrata/uscita automaticamente) — fonte oggettiva da incrociare con dichiarazione manuale
 
 **Output atteso**: tutto registrato correttamente in ≤15 min, recuperabile anche dopo mesi
 
@@ -53,6 +56,7 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 | Output | Destinatario | Formato | Frequenza | Stato processo |
 |--------|-------------|---------|-----------|----------------|
 | Report presenze | Capo Preposti GC | Form PDF via app GC | Ogni mattina | Processo esistente (lo invia il Preposto Gili) — BFP alimenta i dati |
+| Form zona/attività | GC | Form creato da Giovanni (custom) | Giornaliero | Campi: chi è presente, zona di lavoro, attività svolta |
 | Giornale di cantiere | Preposto Gili + (futuro) PM Gili + Resp. Ufficio Tecnico Gili | Da definire | Fine giornata | Processo non consolidato — opportunità di standardizzare |
 
 ---
