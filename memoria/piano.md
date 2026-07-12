@@ -3,7 +3,7 @@
 ## Stato attuale
 - [x] FASE 0 — Contesto azienda
 - [x] FASE O — Obiettivo (Discovery)
-- [ ] FASE R — Reti (Connettività)
+- [x] FASE R — Reti (Connettività)
 - [ ] FASE B — Blocchi (Costruzione)
 - [ ] FASE I — Ispeziona (Raffinamento)
 - [ ] FASE T — Trigger (Avvio)

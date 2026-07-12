@@ -11,7 +11,7 @@
 |------|-------|------|
 | 0 — Contesto azienda | ✅ Completata | Vedi memoria/contesto-azienda.md |
 | O — Obiettivo | ✅ Completata | Vedi memoria/contesto-azienda.md — sezione FASE O |
-| R — Reti | ⏳ In attesa | |
+| R — Reti | ✅ Completata | Vedi memoria/contesto-azienda.md — sezione FASE R |
 | B — Blocchi | 🔒 Bloccata | Dipende da Fase R |
 | I — Ispeziona | 🔒 Bloccata | Dipende da Fase B |
 | T — Trigger | 🔒 Bloccata | Dipende da Fase I |

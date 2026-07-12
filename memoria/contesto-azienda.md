@@ -34,8 +34,9 @@
 - BFP già su Railway → accessibile da browser, nessuna app da installare
 
 ### Dati e backup
-- I dati devono essere **esportabili e backuppati** su sistemi esterni (non solo Railway)
-- Destinazione backup e retention post-commessa: da definire
+- I dati devono essere **esportabili e backuppati** su **kDrive Infomaniak**
+- Retention: **indefinita** — i dati di commesse archiviate rimangono per sempre
+- Infomaniak kDrive ha API propria → da valutare integrazione automatica in Fase B
 
 ### Connessioni esterne
 | Sistema | Integrazione | Note |
