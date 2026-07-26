@@ -543,3 +543,22 @@ a { color: inherit; }
   .step-dot { min-width: 44px; padding: 6px 8px; }
   .riepilogo-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* Giornale chiusura KPI row */
+.chiusura-kpi-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.chiusura-kpi {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--color-surface-2);
+}
+.chiusura-kpi--presenze { color: var(--color-presenze); }
+.chiusura-kpi--spese    { color: var(--color-spese); }
+.chiusura-kpi--materiali{ color: var(--color-materiali); }
+.chiusura-kpi--nc       { color: var(--color-nc); background: rgba(239,68,68,0.12); }

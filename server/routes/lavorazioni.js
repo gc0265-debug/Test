@@ -32,16 +32,17 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { title, description, cantiere_id, status, priority, deadline, impresa, tags } = req.body;
+  const { title, description, cantiere_id, wp_id, status, priority, deadline, impresa, tags } = req.body;
   if (!title) return res.status(400).json({ error: 'title is required' });
 
   const result = db.prepare(`
-    INSERT INTO lavorazioni (title, description, cantiere_id, status, priority, deadline, impresa, tags)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO lavorazioni (title, description, cantiere_id, wp_id, status, priority, deadline, impresa, tags)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     title,
     description || null,
     cantiere_id || null,
+    wp_id || null,
     status || 'da-fare',
     priority || 'media',
     deadline || null,
@@ -62,7 +63,7 @@ router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM lavorazioni WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Not found' });
 
-  const { title, description, cantiere_id, status, priority, deadline, impresa, tags } = req.body;
+  const { title, description, cantiere_id, wp_id, status, priority, deadline, impresa, tags } = req.body;
 
   if (status === 'completata') {
     archiveItem('lavorazione', Number(req.params.id));
@@ -71,12 +72,13 @@ router.put('/:id', (req, res) => {
 
   db.prepare(`
     UPDATE lavorazioni
-    SET title=?, description=?, cantiere_id=?, status=?, priority=?, deadline=?, impresa=?, tags=?, updated_at=unixepoch()
+    SET title=?, description=?, cantiere_id=?, wp_id=?, status=?, priority=?, deadline=?, impresa=?, tags=?, updated_at=unixepoch()
     WHERE id=?
   `).run(
     title ?? existing.title,
     description !== undefined ? description : existing.description,
     cantiere_id !== undefined ? cantiere_id : existing.cantiere_id,
+    wp_id !== undefined ? wp_id : existing.wp_id,
     status ?? existing.status,
     priority ?? existing.priority,
     deadline !== undefined ? deadline : existing.deadline,

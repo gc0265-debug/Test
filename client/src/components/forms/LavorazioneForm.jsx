@@ -4,10 +4,12 @@ import { api } from '../../api/client';
 
 export function LavorazioneForm({ initial, onSave, onCancel }) {
   const [cantieri, setCantieri] = useState([]);
+  const [wps, setWps] = useState([]);
   const [form, setForm] = useState({
     title: '',
     description: '',
     cantiere_id: '',
+    wp_id: '',
     status: 'da-fare',
     priority: 'media',
     deadline: '',
@@ -21,13 +23,25 @@ export function LavorazioneForm({ initial, onSave, onCancel }) {
     api.get('/cantieri').then(r => setCantieri(r?.data || [])).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (form.cantiere_id) {
+      api.get(`/wp?cantiere_id=${form.cantiere_id}`).then(r => setWps(r?.data || [])).catch(() => setWps([]));
+    } else {
+      setWps([]);
+    }
+  }, [form.cantiere_id]);
+
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    await onSave({ ...form, cantiere_id: form.cantiere_id || null });
+    await onSave({
+      ...form,
+      cantiere_id: form.cantiere_id || null,
+      wp_id: form.wp_id || null,
+    });
   }
 
   return (
@@ -44,6 +58,14 @@ export function LavorazioneForm({ initial, onSave, onCancel }) {
           {cantieri.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
         </select>
       </label>
+      {form.cantiere_id && (
+        <label>Work Package
+          <select className="input" value={form.wp_id || ''} onChange={set('wp_id')}>
+            <option value="">— Nessun WP —</option>
+            {wps.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
+          </select>
+        </label>
+      )}
       <label>Impresa esecutrice
         <input className="input" value={form.impresa} onChange={set('impresa')} placeholder="Nome impresa" />
       </label>

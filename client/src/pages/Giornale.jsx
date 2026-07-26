@@ -1,9 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { api } from '../api/client';
 import { EmptyState } from '../components/common/EmptyState';
-import { Modal } from '../components/common/Modal';
-import { GiornaleForm } from '../components/forms/GiornaleForm';
 
 const WEATHER_ICON = {
   sereno: '☀️',
@@ -14,107 +13,102 @@ const WEATHER_ICON = {
 };
 
 export function Giornale() {
-  const [filters, setFilters] = useState({ search: '', tag: '' });
-  const [editing, setEditing] = useState(null);
-  const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({ search: '', cantiere_id: '' });
 
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v))).toString();
   const { data, loading, refetch } = useApi(`/giornale?${query}`, [query]);
+  const { data: cantieriData } = useApi('/cantieri');
 
   const items = data?.data || [];
-
-  async function handleSave(form) {
-    if (editing) {
-      await api.put(`/giornale/${editing.id}`, form);
-    } else {
-      await api.post('/giornale', form);
-    }
-    setEditing(null);
-    setCreating(false);
-    refetch();
-  }
+  const cantieri = cantieriData?.data || [];
 
   async function handleDelete(id) {
-    if (!confirm('Eliminare questo log di cantiere?')) return;
+    if (!confirm('Eliminare questa chiusura giornata? Verranno eliminati anche presenze, spese e materiali collegati.')) return;
     await api.delete(`/giornale/${id}`);
     refetch();
   }
-
-  function close() { setEditing(null); setCreating(false); }
 
   return (
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Giornale di Cantiere</h1>
-        <button className="btn btn-primary" onClick={() => setCreating(true)}>+ Nuovo log</button>
+        <button className="btn btn-primary" onClick={() => navigate('/chiusura')}>+ Chiudi giornata</button>
       </div>
       <div className="filter-bar">
         <input
           type="search"
-          placeholder="Cerca..."
+          placeholder="Cerca attività, note..."
           value={filters.search}
           onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
         />
-        <input
-          type="text"
-          placeholder="Filtra per tag..."
-          value={filters.tag}
-          onChange={e => setFilters(f => ({ ...f, tag: e.target.value }))}
-        />
+        <select
+          value={filters.cantiere_id}
+          onChange={e => setFilters(f => ({ ...f, cantiere_id: e.target.value }))}
+        >
+          <option value="">Tutti i cantieri</option>
+          {cantieri.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+        </select>
       </div>
       {loading ? <div className="page-loading">Caricamento...</div> : (
         items.length === 0
-          ? <EmptyState message="Nessun log registrato." onAdd={() => setCreating(true)} addLabel="Nuovo log" />
+          ? <EmptyState message="Nessuna chiusura registrata." onAdd={() => navigate('/chiusura')} addLabel="Chiudi giornata" />
           : <div className="cards-grid">
               {items.map(item => (
                 <GiornaleCard
                   key={item.id}
                   item={item}
-                  onEdit={() => setEditing(item)}
                   onDelete={() => handleDelete(item.id)}
                 />
               ))}
             </div>
       )}
-      {(creating || editing) && (
-        <Modal title={editing ? 'Modifica log' : 'Nuovo log di cantiere'} onClose={close}>
-          <GiornaleForm initial={editing} onSave={handleSave} onCancel={close} />
-        </Modal>
-      )}
     </div>
   );
 }
 
-function GiornaleCard({ item, onEdit, onDelete }) {
+function GiornaleCard({ item, onDelete }) {
   const tags = typeof item.tags === 'string' ? JSON.parse(item.tags) : (item.tags || []);
+  const hasNcAperte = item.n_nc > 0;
+
   return (
     <div className="item-card item-card--giornale">
       <div className="item-card__header">
-        <h3 onClick={onEdit}>{item.date}</h3>
-        <span className="weather-icon" title={item.weather}>{WEATHER_ICON[item.weather] || '☀️'}</span>
+        <div>
+          <h3>{item.date} <span style={{ fontSize: '1rem' }}>{WEATHER_ICON[item.weather] || '☀️'}</span></h3>
+          {item.cantiere_name && <p className="item-card__meta" style={{ margin: 0 }}>{item.cantiere_name}</p>}
+        </div>
       </div>
-      {item.cantiere_name && <p className="item-card__meta">Cantiere: {item.cantiere_name}</p>}
-      <p className="item-card__meta">Operai presenti: <strong>{item.workers_count}</strong></p>
+
+      <div className="chiusura-kpi-row">
+        <span className="chiusura-kpi chiusura-kpi--presenze" title="Presenze">
+          👷 {item.n_presenze}
+        </span>
+        <span className="chiusura-kpi chiusura-kpi--spese" title="Spese">
+          💶 {item.n_spese > 0 ? `€ ${Number(item.totale_spese).toFixed(0)}` : '—'}
+        </span>
+        <span className="chiusura-kpi chiusura-kpi--materiali" title="Materiali ricevuti">
+          📦 {item.n_materiali}
+        </span>
+        {hasNcAperte && (
+          <span className="chiusura-kpi chiusura-kpi--nc" title="Non Conformità">
+            ⚠️ {item.n_nc} NC
+          </span>
+        )}
+      </div>
+
       {item.activities && (
-        <div>
-          <p className="item-card__meta" style={{ marginBottom: 4 }}>Lavorazioni svolte:</p>
-          <p className="item-card__desc">{item.activities}</p>
-        </div>
+        <p className="item-card__desc">{item.activities}</p>
       )}
-      {item.issues && (
-        <div>
-          <p className="item-card__meta" style={{ marginBottom: 4, color: '#ef4444' }}>Problematiche:</p>
-          <p className="item-card__desc">{item.issues}</p>
-        </div>
+      {item.notes && (
+        <p className="item-card__desc" style={{ color: 'var(--color-muted)', fontSize: '0.8rem' }}>{item.notes}</p>
       )}
-      {item.notes && <p className="item-card__desc">{item.notes}</p>}
       {tags.length > 0 && (
         <div className="item-card__tags">
           {tags.map(t => <span key={t} className="tag">{t}</span>)}
         </div>
       )}
       <div className="item-card__actions">
-        <button className="btn btn-sm" onClick={onEdit}>Modifica</button>
         <button className="btn btn-sm btn-danger" onClick={onDelete}>Elimina</button>
       </div>
     </div>
