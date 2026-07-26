@@ -13,6 +13,7 @@ const NAV_CANTIERE = [
 ];
 
 const NAV_RISORSE = [
+  { to: '/kpi', label: 'KPI Tempi', icon: '◐' },
   { to: '/maestranze', label: 'Maestranze', icon: '◈' },
   { to: '/documenti', label: 'Documenti', icon: '▤' },
   { to: '/archivio', label: 'Archivio', icon: '▣' },

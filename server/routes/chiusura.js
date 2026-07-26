@@ -1,7 +1,17 @@
 const express = require('express');
 const db = require('../db/database');
+const { reportPresenze, reportGiornale } = require('../services/reportService');
 
 const router = express.Router();
+
+// Il flag di conformità arriva dal wizard come booleano, ma può arrivare come 0/1
+// o come stringa da altri client. Va interpretato in modo esplicito: registrare
+// per errore come conforme un materiale rifiutato falserebbe la verifica di ricezione.
+function flagConforme(v) {
+  if (v === undefined || v === null || v === '') return 1;
+  if (typeof v === 'string') return ['0', 'false', 'no'].includes(v.toLowerCase()) ? 0 : 1;
+  return v ? 1 : 0;
+}
 
 // POST /api/chiusura — salva l'intero rituale di chiusura giornata in una transazione
 router.post('/', (req, res) => {
@@ -56,7 +66,7 @@ router.post('/', (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     for (const m of (materiali || [])) {
-      insertMateriale.run(giornaleId, m.descrizione, m.quantita || null, m.unita || null, m.fornitore || null, m.conforme !== false ? 1 : 0, m.note || null);
+      insertMateriale.run(giornaleId, m.descrizione, m.quantita || null, m.unita || null, m.fornitore || null, flagConforme(m.conforme), m.note || null);
     }
 
     // 5. NC riferimenti — rimpiazza
@@ -104,6 +114,21 @@ router.get('/:giornale_id', (req, res) => {
     nc_riferimenti: db.prepare('SELECT * FROM nc_riferimenti WHERE giornale_id = ? ORDER BY created_at').all(giornale_id),
     tempi_montaggio: db.prepare('SELECT * FROM tempi_montaggio WHERE giornale_id = ? ORDER BY created_at').all(giornale_id),
   });
+});
+
+// GET /api/chiusura/:giornale_id/report?tipo=presenze|giornale — testo pronto da inviare
+router.get('/:giornale_id/report', (req, res) => {
+  const tipo = req.query.tipo || 'giornale';
+  if (!['presenze', 'giornale'].includes(tipo)) {
+    return res.status(400).json({ error: "tipo deve essere 'presenze' o 'giornale'" });
+  }
+
+  const testo = tipo === 'presenze'
+    ? reportPresenze(req.params.giornale_id)
+    : reportGiornale(req.params.giornale_id);
+
+  if (testo === null) return res.status(404).json({ error: 'Not found' });
+  res.json({ tipo, testo });
 });
 
 module.exports = router;

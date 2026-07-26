@@ -562,3 +562,182 @@ a { color: inherit; }
 .chiusura-kpi--spese    { color: var(--color-spese); }
 .chiusura-kpi--materiali{ color: var(--color-materiali); }
 .chiusura-kpi--nc       { color: var(--color-nc); background: rgba(239,68,68,0.12); }
+
+/* ============================================================
+   Dettaglio chiusura giornata
+   ============================================================ */
+
+.page-subtitle {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+  max-width: 70ch;
+  line-height: 1.5;
+}
+
+.back-link {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.back-link:hover { color: var(--color-primary); }
+
+.card-link { color: inherit; text-decoration: none; }
+.card-link:hover { color: var(--color-primary); }
+
+.detail-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.detail-kpi {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.detail-kpi__value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.detail-kpi__label { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+.detail-kpi__sub   { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; opacity: 0.8; }
+
+.detail-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.detail-section__title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.detail-text { font-size: 14px; line-height: 1.6; color: var(--color-text); white-space: pre-wrap; }
+.detail-empty { font-size: 13px; color: var(--color-text-muted); font-style: italic; }
+
+.table-scroll { overflow-x: auto; }
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 520px;
+}
+.detail-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.detail-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+.detail-table tr:last-child td { border-bottom: 0; }
+.detail-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.detail-table th.num { text-align: right; }
+.detail-table__total td { font-weight: 700; border-top: 2px solid var(--color-border); border-bottom: 0; }
+
+.detail-list { display: flex; flex-direction: column; gap: 10px; }
+
+.detail-row {
+  background: var(--color-surface-2);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.detail-row--alert { box-shadow: inset 3px 0 0 var(--color-nc); }
+
+.detail-row__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+.detail-row__meta { font-size: 12px; color: var(--color-text-muted); }
+.detail-row__note { font-size: 12px; color: var(--color-text-muted); line-height: 1.5; }
+.detail-row__link { font-size: 12px; color: var(--color-primary); text-decoration: none; }
+.detail-row__link:hover { text-decoration: underline; }
+
+.pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.pill--ok    { background: rgba(34,197,94,0.15);  color: var(--color-success); }
+.pill--alert { background: rgba(239,68,68,0.15);  color: var(--color-danger); }
+.pill--weak  { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+.input--inline { width: auto; min-width: 140px; padding: 4px 8px; font-size: 12px; }
+
+/* ============================================================
+   Barra report (WhatsApp / email / copia)
+   ============================================================ */
+
+.report-bar { margin-bottom: 24px; }
+.report-bar__buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.report-panel {
+  margin-top: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.report-panel__text {
+  width: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  resize: vertical;
+}
+.report-panel__text:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+.report-panel__hint { font-size: 11px; color: var(--color-text-muted); margin-top: 6px; }
+.report-panel__actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.report-panel__actions .btn { text-decoration: none; }
+
+/* ============================================================
+   KPI tempi
+   ============================================================ */
+
+.kpi-table { min-width: 680px; }
+.kpi-note {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  max-width: 75ch;
+}
+
+@media (max-width: 600px) {
+  .detail-kpis { grid-template-columns: 1fr 1fr; }
+  .report-bar__buttons .btn { flex: 1; }
+}

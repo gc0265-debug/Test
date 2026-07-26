@@ -15,6 +15,7 @@ app.use('/api/wp', require('./routes/wp'));
 app.use('/api/lavorazioni', require('./routes/lavorazioni'));
 app.use('/api/giornale', require('./routes/giornale'));
 app.use('/api/chiusura', require('./routes/chiusura'));
+app.use('/api/nc', require('./routes/nc'));
 app.use('/api/maestranze', require('./routes/maestranze'));
 app.use('/api/documenti', require('./routes/documenti'));
 app.use('/api/archives', require('./routes/archives'));

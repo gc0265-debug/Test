@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { api } from '../api/client';
 import { EmptyState } from '../components/common/EmptyState';
@@ -75,7 +75,11 @@ function GiornaleCard({ item, onDelete }) {
     <div className="item-card item-card--giornale">
       <div className="item-card__header">
         <div>
-          <h3>{item.date} <span style={{ fontSize: '1rem' }}>{WEATHER_ICON[item.weather] || '☀️'}</span></h3>
+          <h3>
+            <Link to={`/giornale/${item.id}`} className="card-link">
+              {item.date} <span style={{ fontSize: '1rem' }}>{WEATHER_ICON[item.weather] || '☀️'}</span>
+            </Link>
+          </h3>
           {item.cantiere_name && <p className="item-card__meta" style={{ margin: 0 }}>{item.cantiere_name}</p>}
         </div>
       </div>
@@ -109,6 +113,7 @@ function GiornaleCard({ item, onDelete }) {
         </div>
       )}
       <div className="item-card__actions">
+        <Link className="btn btn-sm" to={`/giornale/${item.id}`}>Apri giornata →</Link>
         <button className="btn btn-sm btn-danger" onClick={onDelete}>Elimina</button>
       </div>
     </div>

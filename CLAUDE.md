@@ -12,9 +12,9 @@
 | 0 — Contesto azienda | ✅ Completata | Vedi memoria/contesto-azienda.md |
 | O — Obiettivo | ✅ Completata | Vedi memoria/contesto-azienda.md — sezione FASE O |
 | R — Reti | ✅ Completata | Vedi memoria/contesto-azienda.md — sezione FASE R |
-| B — Blocchi | 🔒 Bloccata | Dipende da Fase R |
-| I — Ispeziona | 🔒 Bloccata | Dipende da Fase B |
-| T — Trigger | 🔒 Bloccata | Dipende da Fase I |
+| B — Blocchi | ✅ Completata | Schema v3, API, wizard di chiusura a 7 passi |
+| I — Ispeziona | ✅ Completata | Vedi memoria/ispezione-fase-I.md |
+| T — Trigger | 🔓 Sbloccata | Da avviare — vedi "Rimandato a Fase T" |
 
 ---
 
@@ -52,6 +52,17 @@ _Lista aperta — integrare in FASE T_
 
 ## Trigger Attivi
 _Da definire in Fase T_
+
+---
+
+## Rimandato a Fase T
+Deliberatamente fuori dal perimetro di Fase I, che riguardava il sistema già costruito:
+
+1. **Backup su kDrive Infomaniak** — esportazione automatica, da valutare con le API Infomaniak
+2. **Multi-utente** — Giovanni (accesso pieno) e preposto Gili (accesso limitato); serve autenticazione
+3. **Deploy su Railway** — URL pubblico raggiungibile dal cantiere
+4. **Notifiche e promemoria** — es. sollecito di chiusura giornata a fine turno
+5. **Modulo NC interno** — sostituzione futura dell'app esterna, oggi solo referenziata
 
 ---
 
