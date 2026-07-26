@@ -3,6 +3,7 @@ require('./db/migrations');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -21,13 +22,17 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/kpi', require('./routes/kpi'));
 app.get('/api/health', (req, res) => res.json({ ok: true, timestamp: Date.now() }));
 
-app.use(errorHandler);
-
-if (process.env.NODE_ENV === 'production') {
-  const clientDist = path.join(__dirname, '..', 'client', 'dist');
+// Frontend statico + fallback SPA.
+// Servito ogni volta che la build esiste, non solo con NODE_ENV=production:
+// evita che il server risponda "Cannot GET /chiusura" quando la variabile
+// d'ambiente non è impostata (Railway, avvii manuali, script di test).
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+if (fs.existsSync(path.join(clientDist, 'index.html'))) {
   app.use(express.static(clientDist));
   app.get('*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
 }
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Board Field Project running on port ${PORT}`));
