@@ -21,6 +21,9 @@ app.use('/api/documenti', require('./routes/documenti'));
 app.use('/api/archives', require('./routes/archives'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/kpi', require('./routes/kpi'));
+app.use('/api/avvisi', require('./routes/avvisi'));
+app.use('/api/impostazioni', require('./routes/impostazioni'));
+app.use('/api/export', require('./routes/export'));
 app.get('/api/health', (req, res) => res.json({ ok: true, timestamp: Date.now() }));
 
 // Frontend statico + fallback SPA.

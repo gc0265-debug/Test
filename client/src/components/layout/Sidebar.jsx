@@ -17,6 +17,7 @@ const NAV_RISORSE = [
   { to: '/maestranze', label: 'Maestranze', icon: '◈' },
   { to: '/documenti', label: 'Documenti', icon: '▤' },
   { to: '/archivio', label: 'Archivio', icon: '▣' },
+  { to: '/impostazioni', label: 'Impostazioni', icon: '⚒' },
 ];
 
 function NavGroup({ items }) {

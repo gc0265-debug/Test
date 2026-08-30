@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { reportPresenze, reportGiornale } = require('../services/reportService');
+const { oggi } = require('../services/tempo');
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.post('/', (req, res) => {
   const { cantiere_id, date, weather, activities, notes, tags, presenze, spese, materiali, nc_riferimenti, tempi_montaggio } = req.body;
   if (!cantiere_id) return res.status(400).json({ error: 'cantiere_id è obbligatorio' });
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = oggi();
 
   const saveAll = db.transaction(() => {
     // 1. Crea o aggiorna il record giornale

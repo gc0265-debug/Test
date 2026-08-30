@@ -14,7 +14,7 @@
 | R — Reti | ✅ Completata | Vedi memoria/contesto-azienda.md — sezione FASE R |
 | B — Blocchi | ✅ Completata | Schema v3, API, wizard di chiusura a 7 passi |
 | I — Ispeziona | ✅ Completata | Vedi memoria/ispezione-fase-I.md |
-| T — Trigger | 🔓 Sbloccata | Da avviare — vedi "Rimandato a Fase T" |
+| T — Trigger | ✅ Completata | Vedi memoria/trigger-fase-T.md |
 
 ---
 
@@ -51,20 +51,40 @@ _Lista aperta — integrare in FASE T_
 ---
 
 ## Trigger Attivi
-_Da definire in Fase T_
 
----
+| Trigger | Condizione | Effetto |
+|---|---|---|
+| Chiusura non registrata | Cantiere attivo senza giornale per la data odierna, oltre l'ora impostata | Avviso in dashboard con collegamento al wizard |
 
-## Rimandato a Fase T
-Deliberatamente fuori dal perimetro di Fase I, che riguardava il sistema già costruito:
-
-1. **Backup su kDrive Infomaniak** — esportazione automatica, da valutare con le API Infomaniak
-2. **Multi-utente** — Giovanni (accesso pieno) e preposto Gili (accesso limitato); serve autenticazione
-3. **Deploy su Railway** — URL pubblico raggiungibile dal cantiere
-4. **Notifiche e promemoria** — es. sollecito di chiusura giornata a fine turno
-5. **Modulo NC interno** — sostituzione futura dell'app esterna, oggi solo referenziata
+Configurabile da **Impostazioni**: attivo/spento, ora di soglia, salto del weekend.
+Il controllo avviene alla lettura della dashboard — non esistono notifiche push.
 
 ---
 
 ## Manutenzione a Lungo Termine
-_Da definire in Fase T_
+
+- **Backup**: scaricare il JSON completo da Impostazioni e caricarlo su kDrive.
+  Cadenza consigliata: settimanale, insieme all'ultima chiusura.
+- **Deploy**: vedi `DEPLOY.md`. Il volume persistente e `DATABASE_PATH` vanno
+  configurati **prima** di caricare dati veri.
+- **Fuso orario**: `TZ_APP` deve valere `Europe/Rome`. Da Impostazioni si verifica
+  che il server stia leggendo l'ora giusta.
+
+---
+
+## Rimandato oltre la Fase T
+
+Deciso insieme, non dimenticato:
+
+1. **Caricamento automatico su kDrive** — oggi il backup si scarica a mano. Serve
+   verificare il metodo di accesso Infomaniak (API o WebDAV) prima di scrivere codice.
+2. **Multi-utente** — il preposto Gili non entra ancora. Prima va consolidato il
+   rituale su un solo utente, poi si definisce il confine dei permessi.
+3. **Autenticazione** — l'applicazione è aperta a chi conosce l'indirizzo.
+   Necessaria prima di condividere il dominio.
+4. **Ripristino da backup** — il file JSON protegge i dati ma la reimportazione
+   non è implementata.
+5. **Modulo NC interno** — sostituzione dell'app esterna, oggi solo referenziata.
+6. **Altri trigger** — NC ferma da troppi giorni, materiale non conforme senza NC
+   collegata, riepilogo settimanale. Il meccanismo degli avvisi è già predisposto
+   per accoglierli: si aggiunge una funzione in `avvisiService.js`.

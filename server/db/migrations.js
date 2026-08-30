@@ -111,3 +111,18 @@ if (current < 3) {
 
   db.prepare('INSERT OR REPLACE INTO _schema_version VALUES (?)').run(3);
 }
+
+if (current < 4) {
+  // Impostazioni utente: soglie dei promemoria. Chiave/valore perché le opzioni
+  // sono poche e cambiano di rado — una colonna per opzione costerebbe una
+  // migrazione a ogni aggiunta.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS impostazioni (
+      chiave TEXT PRIMARY KEY,
+      valore TEXT NOT NULL,
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+  `);
+
+  db.prepare('INSERT OR REPLACE INTO _schema_version VALUES (?)').run(4);
+}

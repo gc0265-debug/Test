@@ -12,6 +12,7 @@ import { KPI } from './pages/KPI';
 import { Maestranze } from './pages/Maestranze';
 import { Documenti } from './pages/Documenti';
 import { Archives } from './pages/Archives';
+import { Impostazioni } from './pages/Impostazioni';
 
 export default function App() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/maestranze" element={<Maestranze key={`m-${refreshKey}`} />} />
           <Route path="/documenti" element={<Documenti key={`d-${refreshKey}`} />} />
           <Route path="/archivio" element={<Archives key={`ar-${refreshKey}`} />} />
+          <Route path="/impostazioni" element={<Impostazioni key={`i-${refreshKey}`} />} />
         </Route>
       </Routes>
     </BrowserRouter>

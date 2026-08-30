@@ -1,10 +1,11 @@
 const express = require('express');
 const db = require('../db/database');
+const { oggi } = require('../services/tempo');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = oggi();
 
   const counts = {
     cantieri: db.prepare("SELECT COUNT(*) as n FROM cantieri WHERE status = 'active'").get().n,

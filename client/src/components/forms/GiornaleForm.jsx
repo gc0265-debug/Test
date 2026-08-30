@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { TagInput } from '../common/TagInput';
 import { api } from '../../api/client';
 
-const today = new Date().toISOString().split('T')[0];
+// Data locale del dispositivo: toISOString() darebbe UTC e a tarda sera
+// proporrebbe la data del giorno prima.
+const today = new Date().toLocaleDateString('en-CA');
 
 export function GiornaleForm({ initial, onSave, onCancel }) {
   const [cantieri, setCantieri] = useState([]);

@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { StatsCard } from '../components/dashboard/StatsCard';
+import { AvvisiBanner } from '../components/common/AvvisiBanner';
 
 export function Dashboard() {
   const { data, loading } = useApi('/dashboard');
@@ -19,6 +20,8 @@ export function Dashboard() {
           Chiudi giornata →
         </button>
       </div>
+
+      <AvvisiBanner />
 
       <div className="stats-grid">
         <StatsCard label="Cantieri attivi"      count={counts.cantieri}        type="cantiere"    onClick={() => navigate('/cantieri')} />

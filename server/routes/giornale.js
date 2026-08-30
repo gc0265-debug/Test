@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db/database');
+const { oggi } = require('../services/tempo');
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ router.post('/', (req, res) => {
   const { cantiere_id, date, weather, activities, notes, tags } = req.body;
   if (!cantiere_id) return res.status(400).json({ error: 'cantiere_id is required' });
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = oggi();
   const result = db.prepare(`
     INSERT INTO giornale (cantiere_id, date, weather, activities, notes, tags)
     VALUES (?, ?, ?, ?, ?, ?)
