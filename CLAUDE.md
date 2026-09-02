@@ -16,6 +16,13 @@
 | I — Ispeziona | ✅ Completata | Vedi memoria/ispezione-fase-I.md |
 | T — Trigger | ✅ Completata | Vedi memoria/trigger-fase-T.md |
 
+Il ciclo O.R.B.I.T. è chiuso.
+
+**Prossimo passo reale: il deploy su Railway** — richiede l'account di Giovanni,
+procedura in `DEPLOY.md`. Il volume persistente va creato **prima** di caricare dati
+veri, altrimenti l'archivio si azzera a ogni pubblicazione.
+Quello che resta oltre il deploy è in "Rimandato oltre la Fase T", in fondo.
+
 ---
 
 ## Schema Dati
@@ -31,11 +38,42 @@ Commessa → WP → Lavorazione
 ---
 
 ## Regole di Comportamento
-_Da definire in Fase O_
+
+Come il sistema si comporta. Discendono dalle risposte di Fase O
+(vedi `memoria/contesto-azienda.md`, Q2–Q4 e perimetro di competenza).
+
+1. **Registro formale professionale.** Ogni testo prodotto — report, giornale,
+   avvisi — è scritto per Giovanni e per i PM del team interno ed esterno.
+   Niente informalità, niente gergo tecnico non necessario.
+
+2. **Il sistema registra fatti, non li interpreta.** Annota ciò che è accaduto:
+   chi era presente, cosa è arrivato, cosa è stato speso. Le valutazioni e le
+   conclusioni restano di Giovanni. Nessun output deve leggersi come un giudizio
+   o una decisione presa dal sistema.
+
+3. **Ogni evento va ricondotto a Tempi, Costi o Qualità.** È l'asse su cui
+   Giovanni presidia la commessa: una funzione che non serve a tracciare uno dei
+   tre non appartiene a BFP.
+
+4. **Il sistema resta dentro il perimetro contrattuale.** Non propone né facilita
+   azioni che ricadono nell'OUT of scope del Direttore di Cantiere. Nel dubbio si
+   chiede, non si assume.
+
+5. **Affidabilità prima della velocità.** Nessuna logica di business inventata.
+   Se un dato manca o una soglia non è stata decisa, si domanda — non si sceglie
+   un valore plausibile.
+
+6. **Recuperabilità a mesi di distanza.** È il criterio con cui si giudica se una
+   funzione serve davvero: non basta che un dato entri, deve poter essere ritrovato
+   quando servirà.
 
 ---
 
 ## Vincoli da Non Violare
+
+Cosa il sistema non deve mai fare. Distinti dalle Regole di Comportamento qui sopra:
+quelle dicono *come* si comporta, questi dicono *cosa non deve accadere mai*.
+
 Il sistema NON deve mai permettere o suggerire a Giovanni di:
 1. Assumere ruolo di Preposto (D.Lgs. 81/2008)
 2. Agire per interesse personale
@@ -46,7 +84,9 @@ Il sistema NON deve mai permettere o suggerire a Giovanni di:
 7. Pianificare attività interne all'azienda cliente (ufficio tecnico/logistico)
 8. Stabilire condizioni contrattuali dei fornitori
 
-_Lista aperta — integrare in FASE T_
+**Lista aperta per volontà di Giovanni**, non per una fase rimasta da completare:
+altri vincoli si aggiungono qui man mano che emergono sul campo. Ogni aggiunta va
+riportata anche in `memoria/contesto-azienda.md` (Q5), che è la fonte.
 
 ---
 

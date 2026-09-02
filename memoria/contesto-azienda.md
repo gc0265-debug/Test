@@ -50,11 +50,11 @@
 | Utente | Ruolo | Accesso |
 |--------|-------|---------|
 | Giovanni Cazzola | Direttore di Cantiere | Pieno |
-| Preposto Gili | Preposto cliente | Da definire (Fase B) |
+| Preposto Gili | Preposto cliente | Non ancora attivo — rimandato oltre la Fase T, richiede prima l'autenticazione |
 
 ---
 
-## FASE 0 — Risposte in corso
+## FASE 0 — Risposte
 
 ### Q1 — Chi sei e cosa fai? ✅
 Field Project SAS eroga servizi di direzione di cantiere nel settore contract di lusso (arredamenti su misura per hospitality e spazi commerciali). Giovanni Cazzola opera come Direttore di Cantiere: coordina le maestranze, verifica i programmi di montaggio, segnala criticità, interfaccia con la committenza tecnica. Non gestisce contratti né subappalti.
@@ -71,7 +71,6 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 5. **Form e registri** — da compilare e inviare al GC (siamo spesso in subappalto al GC)
 6. **Tempi di montaggio** — per tipologia di arredo/soluzione
 7. **Database KPI storici** — alimentato dai tempi raccolti, usato per skill estimate future
-8. **Verifica ricezione materiali** — controllo arrivi materiali al cantiere
 8. **Verifica ricezione materiali** — controllo arrivi materiali al cantiere
 9. **Supporto al Preposto** — supporto al Preposto della cliente (Gili Creations Srl) nelle sue funzioni e obblighi di legge (D.Lgs. 81/2008) ⚠️ _NB: Giovanni NON è il Preposto — lo supporta_
 
@@ -95,7 +94,7 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 |--------|-------------|---------|-----------|----------------|
 | Report presenze | Capo Preposti GC | Form PDF via app GC | Ogni mattina | Processo esistente (lo invia il Preposto Gili) — BFP alimenta i dati |
 | Form zona/attività | GC | Form creato da Giovanni (custom) | Giornaliero | Campi: chi è presente, zona di lavoro, attività svolta |
-| Giornale di cantiere | Preposto Gili + (futuro) PM Gili + Resp. Ufficio Tecnico Gili | Da definire | Fine giornata | Processo non consolidato — opportunità di standardizzare |
+| Giornale di cantiere | Preposto Gili + (futuro) PM Gili + Resp. Ufficio Tecnico Gili | Testo generato da BFP, inviabile via WhatsApp o email, modificabile prima dell'invio (Fase I) | Fine giornata | Il formato ora esiste; resta da consolidare il processo di invio dentro Gili |
 
 ---
 
@@ -127,7 +126,7 @@ Field Project SAS eroga servizi di direzione di cantiere nel settore contract di
 
 **In una frase**: Giovanni Cazzola garantisce che il cantiere arrivi al collaudo senza sorprese — con controllo TCQ continuo e una relazione solida con ogni stakeholder.
 
-### Q5 — Regole da non violare? ✅ (elenco aperto — da integrare)
+### Q5 — Regole da non violare? ✅ (elenco aperto)
 Il Direttore di Cantiere NON deve mai:
 1. Assumere il ruolo di Preposto ai sensi del D.Lgs. 81/2008
 2. Agire per interesse personale
@@ -138,4 +137,5 @@ Il Direttore di Cantiere NON deve mai:
 7. Pianificare attività interne all'azienda cliente (ufficio tecnico e logistico) — può analizzare sul campo le caratteristiche in ottica problem solving, ma non pianifica
 8. Stabilire le condizioni contrattuali dei fornitori (competenza dell'ufficio acquisti)
 
-_Lista aperta — ulteriori vincoli da aggiungere_
+_Lista aperta per volontà di Giovanni: altri vincoli si aggiungono qui man mano
+che emergono sul campo. Riportarli anche in `CLAUDE.md` — sezione Vincoli da Non Violare._
