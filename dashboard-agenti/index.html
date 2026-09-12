@@ -1,0 +1,815 @@
+<title>Sala Agenti Field Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    --ground:#E7EAE4; --panel:#F4F6F1; --surface:#FFFFFF; --surface-2:#FBFCF9;
+    --ink:#141B19; --ink-2:#33403A; --muted:#5C6A62; --line:#CBD2C9; --line-soft:#DDE2D9;
+    --accent:#14506B; --accent-soft:#E2EDF3; --brass:#8F7226;
+    --ok:#2E6B4E; --warn:#9A6B14; --crit:#8F352A;
+    --shadow:0 1px 2px rgba(20,32,28,.06), 0 8px 24px -18px rgba(20,32,28,.5);
+    --r:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#111618; --panel:#171E21; --surface:#1C2528; --surface-2:#202A2D;
+      --ink:#E9EEEA; --ink-2:#C6D0CA; --muted:#8FA099; --line:#2E3A3E; --line-soft:#273236;
+      --accent:#79B9D8; --accent-soft:#17323E; --brass:#C7A85C;
+      --ok:#6FBF94; --warn:#D6A84B; --crit:#E08272;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#111618; --panel:#171E21; --surface:#1C2528; --surface-2:#202A2D;
+    --ink:#E9EEEA; --ink-2:#C6D0CA; --muted:#8FA099; --line:#2E3A3E; --line-soft:#273236;
+    --accent:#79B9D8; --accent-soft:#17323E; --brass:#C7A85C;
+    --ok:#6FBF94; --warn:#D6A84B; --crit:#E08272;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px; line-height:1.55; margin:0;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:0}
+  h1,h2,h3,h4{font-family:Archivo, "IBM Plex Sans", system-ui, sans-serif; text-wrap:balance; margin:0}
+  .eyebrow{
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--brass); margin:0;
+  }
+  /* ---------- testata ---------- */
+  header.hd{border-bottom:1px solid var(--line); background:var(--panel)}
+  .hd-grid{display:flex; flex-wrap:wrap; gap:28px; align-items:flex-end; justify-content:space-between; padding-block:26px 22px}
+  .hd-main{max-width:52ch}
+  .hd-main h1{font-size:clamp(28px,4.4vw,40px); font-weight:700; letter-spacing:-.02em; line-height:1.05; margin-block:6px 8px}
+  .hd-main p.lede{color:var(--muted); margin:0; font-size:14.5px}
+  dl.metà{display:grid; grid-template-columns:auto auto; gap:4px 16px; margin:0; font-size:12.5px; align-content:end}
+  dl.metà dt{font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+  dl.metà dd{margin:0; color:var(--ink-2); font-weight:500}
+  /* ---------- barra strumenti ---------- */
+  .toolbar{position:sticky; top:0; z-index:20; background:color-mix(in srgb, var(--ground) 88%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line-soft)}
+  .toolbar .wrap{display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding-block:12px}
+  .search{flex:1 1 240px; min-width:0; display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:7px 11px}
+  .search svg{flex:none; opacity:.55}
+  .search input{flex:1; min-width:0; border:0; background:none; color:inherit; font:inherit; outline:none}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; letter-spacing:.04em;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-2);
+    border-radius:999px; padding:5px 11px; cursor:pointer;
+  }
+  .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--ground)}
+  .chip:focus-visible, .card:focus-visible, button:focus-visible, textarea:focus-visible, input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .count{font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--muted); margin:0; white-space:nowrap}
+  /* ---------- griglia ---------- */
+  main{padding-block:22px 56px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(288px,1fr)); gap:14px}
+  .card{
+    display:flex; flex-direction:column; gap:9px; text-align:left;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+    padding:15px 16px 13px; cursor:pointer; font:inherit; color:inherit;
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{border-color:var(--accent); transform:translateY(-1px); box-shadow:var(--shadow)}
+  .card .top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+  .card h3{font-size:16px; font-weight:600; letter-spacing:-.01em; line-height:1.25}
+  .badge{
+    font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--brass); border:1px solid color-mix(in srgb, var(--brass) 45%, transparent);
+    border-radius:4px; padding:2px 6px; white-space:nowrap; flex:none; margin-top:2px;
+  }
+  .slug{font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--muted); margin:-6px 0 0; overflow-wrap:anywhere}
+  .card p.desc{margin:0; font-size:13.5px; color:var(--ink-2)}
+  .tags{display:flex; flex-wrap:wrap; gap:5px; list-style:none; padding:0; margin:2px 0 0}
+  .tags li{font-size:11.5px; color:var(--muted); background:var(--surface-2); border:1px solid var(--line-soft); border-radius:5px; padding:2px 7px}
+  .card .open{margin-top:auto; padding-top:8px; font-size:12.5px; color:var(--accent); font-weight:500}
+  .empty{color:var(--muted); font-size:14px; padding:28px 2px}
+  /* ---------- pannello agente ---------- */
+  #scrim{position:fixed; inset:0; background:rgba(12,20,18,.42); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:40}
+  #scrim.on{opacity:1; pointer-events:auto}
+  #panel{
+    position:fixed; top:0; right:0; bottom:0; width:min(560px,100%); z-index:50;
+    background:var(--panel); border-left:1px solid var(--line);
+    display:flex; flex-direction:column; transform:translateX(101%); transition:transform .22s ease;
+  }
+  #panel.on{transform:none}
+  .p-head{padding:16px 18px 13px; border-bottom:1px solid var(--line); background:var(--surface)}
+  .p-head .top{display:flex; gap:12px; align-items:flex-start; justify-content:space-between}
+  .p-head h2{font-size:19px; font-weight:600; letter-spacing:-.01em}
+  .p-head .slug{margin-top:4px}
+  .p-head p.role{margin:8px 0 0; font-size:13px; color:var(--muted)}
+  .iconbtn{border:1px solid var(--line); background:var(--surface-2); color:var(--ink-2); border-radius:8px; width:30px; height:30px; cursor:pointer; font-size:15px; line-height:1; flex:none}
+  .iconbtn:hover{border-color:var(--accent); color:var(--accent)}
+  .p-body{flex:1; overflow-y:auto; padding:16px 18px; display:flex; flex-direction:column; gap:14px}
+  .msg{max-width:100%}
+  .msg.user{align-self:flex-end; background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius:10px 10px 2px 10px; padding:9px 12px; font-size:14px; white-space:pre-wrap; overflow-wrap:anywhere}
+  .msg.bot{background:var(--surface); border:1px solid var(--line-soft); border-left:2px solid var(--brass); border-radius:2px 10px 10px 10px; padding:11px 14px; font-size:14px}
+  .msg.bot p{margin:0 0 8px} .msg.bot p:last-child{margin-bottom:0}
+  .msg.bot ul,.msg.bot ol{margin:0 0 8px; padding-left:19px} .msg.bot li{margin-bottom:3px}
+  .msg.bot h4{font-size:13px; font-family:Archivo, sans-serif; margin:12px 0 6px; letter-spacing:.01em}
+  .msg.bot code{font-family:"IBM Plex Mono", monospace; font-size:12.5px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:4px; padding:0 4px}
+  .msg.bot .tablewrap{overflow-x:auto; margin:0 0 8px}
+  .msg.bot table{border-collapse:collapse; font-size:12.5px; min-width:100%}
+  .msg.bot th,.msg.bot td{border:1px solid var(--line-soft); padding:5px 8px; text-align:left; vertical-align:top}
+  .msg.bot th{background:var(--surface-2); font-weight:600}
+  .msg.err{border-left-color:var(--crit); color:var(--ink-2)}
+  .thinking{font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--muted)}
+  .thinking::after{content:""; animation:dots 1.4s steps(4,end) infinite}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important} }
+  .hint{font-size:12.5px; color:var(--muted); margin:0}
+  .asks{display:flex; flex-direction:column; gap:6px; align-items:flex-start}
+  .ask{font:inherit; font-size:12.5px; text-align:left; color:var(--accent); background:var(--surface); border:1px dashed color-mix(in srgb, var(--accent) 40%, transparent); border-radius:8px; padding:7px 10px; cursor:pointer}
+  .ask:hover{background:var(--accent-soft)}
+  .p-foot{border-top:1px solid var(--line); background:var(--surface); padding:11px 14px 13px; display:flex; flex-direction:column; gap:8px}
+  .p-foot textarea{width:100%; resize:none; min-height:62px; max-height:180px; font:inherit; font-size:14px; color:inherit; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:9px 11px; outline:none}
+  .p-foot .row{display:flex; gap:8px; align-items:center; justify-content:space-between}
+  .btn{font:inherit; font-size:13.5px; font-weight:600; border-radius:8px; padding:8px 15px; cursor:pointer; border:1px solid var(--accent); background:var(--accent); color:var(--ground)}
+  .btn[disabled]{opacity:.5; cursor:not-allowed}
+  .btn.ghost{background:none; color:var(--ink-2); border-color:var(--line); font-weight:500}
+  .btn.ghost:hover{border-color:var(--accent); color:var(--accent)}
+  .foot-note{font-family:"IBM Plex Mono", monospace; font-size:10.5px; letter-spacing:.04em; color:var(--muted)}
+  @media (max-width:620px){
+    .hd-grid{padding-block:20px 16px} dl.metà{grid-template-columns:auto 1fr}
+    .toolbar .wrap{gap:8px} .count{width:100%}
+  }
+</style>
+
+<header class="hd">
+  <div class="wrap hd-grid">
+    <div class="hd-main">
+      <p class="eyebrow">Field Project SAS &middot; Direzione di Cantiere</p>
+      <h1>Sala Agenti</h1>
+      <p class="lede">Ogni riquadro &egrave; un agente del tuo set operativo. Apri la scheda, fai la domanda, ricevi la risposta nel contesto della commessa: la conversazione resta salvata nella scheda.</p>
+    </div>
+    <dl class="metà">
+      <dt>Commessa</dt><dd>2514RW &mdash; Hotel Rosewood Roma</dd>
+      <dt>Cliente</dt><dd>GILI Creations Srl (ATI)</dd>
+      <dt>Ruolo</dt><dd>Direttore di Cantiere</dd>
+      <dt>Work Package</dt><dd>WP1 FOH &middot; WP2 CORRIDOI &middot; WP3 SUITE &middot; WP4 SCALA B</dd>
+    </dl>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <label class="search" for="q">
+      <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Cerca un agente: POS, variante, snag list, trasferte&hellip;" autocomplete="off">
+    </label>
+    <div class="chips" id="cats"></div>
+    <p class="count" id="count"></p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>Nessun agente corrisponde a questa ricerca.</p>
+  </div>
+</main>
+
+<div id="scrim"></div>
+<aside id="panel" role="dialog" aria-modal="true" aria-labelledby="p-title" aria-hidden="true">
+  <div class="p-head">
+    <div class="top">
+      <div>
+        <h2 id="p-title">Agente</h2>
+        <p class="slug" id="p-slug"></p>
+      </div>
+      <div style="display:flex; gap:6px">
+        <button class="iconbtn" id="p-clear" title="Svuota la conversazione" aria-label="Svuota la conversazione">&#8635;</button>
+        <button class="iconbtn" id="p-close" title="Chiudi" aria-label="Chiudi">&times;</button>
+      </div>
+    </div>
+    <p class="role" id="p-role"></p>
+  </div>
+  <div class="p-body" id="p-body" aria-live="polite"></div>
+  <div class="p-foot">
+    <textarea id="p-input" rows="2" placeholder="Scrivi la domanda per questo agente&hellip;"></textarea>
+    <div class="row">
+      <span class="foot-note" id="p-state">Invio per inviare &middot; Maiusc+Invio per andare a capo</span>
+      <div style="display:flex; gap:8px">
+        <button class="btn ghost" id="p-stop" hidden>Interrompi</button>
+        <button class="btn" id="p-send">Chiedi</button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<script>
+(function () {
+  "use strict";
+
+  var CATS = [
+    { id: "SIC", label: "Sicurezza" },
+    { id: "EXE", label: "Esecuzione" },
+    { id: "PRG", label: "Commessa e progettazione" },
+    { id: "CTR", label: "Controllo e report" },
+    { id: "AMM", label: "Amministrazione" },
+    { id: "STU", label: "Studio e strumenti" }
+  ];
+
+  var AGENTS = [
+    { id: "cantiere-sicurezza-onboarding", n: "Apertura cantiere in sicurezza", c: "SIC",
+      d: "Checklist documentale per l'apertura: POS, DUVRI, idoneità tecnico-professionale art. 90, tessere di riconoscimento, DURC per ogni squadra.",
+      t: ["POS / DUVRI", "art. 90", "DURC"],
+      r: "Presidi la checklist documentale di sicurezza D.Lgs. 81/2008 per l'apertura del cantiere: per ogni squadra o subappaltatore verifichi POS, DUVRI, idoneità tecnico-professionale ex art. 90, tessere di riconoscimento e DURC, assegni lo stato verde/giallo/rosso, elenchi i documenti mancanti o scaduti e prepari il report di apertura per DL e GC più le email di sollecito.",
+      a: ["Quali documenti mi mancano per far entrare una nuova squadra di posa la prossima settimana?", "Prepara la struttura del report di apertura cantiere per la DL.", "Scrivi una email di sollecito a un fornitore con POS scaduto e DURC non pervenuto."] },
+    { id: "sicurezza-continuativa-cantiere", n: "Sicurezza in corso d'opera", c: "SIC",
+      d: "Controllo a evento tra apertura e collaudo: nuova fase, nuovo subappalto, squadra variata. Storico comportamenti a rischio e soglia di escalation.",
+      t: ["controllo a evento", "DPI", "escalation 3/90gg"],
+      r: "Gestisci il controllo sicurezza in corso d'opera: a ogni evento (nuova fase lavorativa, nuovo subappalto, variazione della composizione di una squadra già onboardata) verifichi validità di POS e DUVRI, idoneità dei DPI alla fase e idoneità sanitaria; tracci i comportamenti a rischio con storico per squadra e applichi la soglia di escalation di 3 segnalazioni in 90 giorni verso DL e GC.",
+      a: ["Parte la fase di montaggio in quota su WP4 SCALA B: cosa devo verificare prima?", "Una squadra ha cambiato due operatori a metà cantiere: quali controlli riapro?", "Come formalizzo la terza segnalazione di comportamento a rischio verso la DL?"] },
+    { id: "verifica-pos-cse", n: "Verifica POS prima del CSE", c: "SIC",
+      d: "Controllo delle 6 aree critiche di un POS fornitore con esito GO / NO-GO e bozza di email con le integrazioni da richiedere.",
+      t: ["GO / NO-GO", "firme RSPP/MC", "attestati"],
+      r: "Verifichi il POS di un fornitore prima dell'invio al CSE controllando sei aree: attestati di sicurezza e loro validità, rischi generali, rischi specifici per mansione, firme obbligatorie (RSPP, datore di lavoro, medico competente), dati anagrafici degli operatori, dati formali aziendali e coerenza con il cantiere. Produci un esito interno GO/NO-GO e la bozza di email al fornitore con le integrazioni richieste.",
+      a: ["Cosa controllo per primo in un POS di una squadra di posa arredi?", "Il POS non ha la firma del medico competente: posso mandarlo al CSE?", "Scrivi la email al fornitore con le integrazioni richieste sul POS."] },
+    { id: "scadenzario-certificazioni-sicurezza", n: "Scadenzario certificazioni", c: "SIC",
+      d: "Registro nominale per operatore su più cantieri: formazione 16h rischio alto, idoneità sanitaria, primo soccorso, antincendio, abilitazioni PLE e carrelli.",
+      t: ["registro nominale", "PLE / carrelli", "preavviso scadenze"],
+      r: "Mantieni lo scadenzario proattivo e multi-cantiere delle certificazioni individuali di sicurezza degli operatori: formazione generale e specifica (16 ore rischio alto), idoneità sanitaria, primo soccorso, antincendio, abilitazioni attrezzature (PLE, carrelli elevatori, ponteggi). Segnali in anticipo le scadenze e chi non puo operare.",
+      a: ["Quali certificazioni scadono nei prossimi 60 giorni e chi fermano in cantiere?", "Come imposto il registro nominale per una squadra di 6 operatori?", "Un operatore ha l'abilitazione PLE scaduta: cosa faccio oggi?"] },
+
+    { id: "coordinamento-giornaliero-gc", n: "Diario e richieste GC", c: "EXE",
+      d: "Diario di cantiere quotidiano (squadre presenti, attività, eventi) e registro delle richieste del GC con scadenze e follow-up.",
+      t: ["diario giornaliero", "richieste GC", "follow-up"],
+      r: "Struttura il coordinamento operativo quotidiano con il GC: diario di cantiere (squadre presenti, attività svolte per WP, eventi) e registro delle richieste e azioni assegnate dal GC con responsabile, scadenza e follow-up. Alimenti con questi dati il report settimanale.",
+      a: ["Registra la giornata: 3 squadre su WP2 CORRIDOI, consegna in ritardo, sopralluogo della DL.", "Il GC mi ha chiesto un recupero su WP3 SUITE entro venerdì: come lo traccio?", "Prepara il punto di briefing di domani mattina sulle attività aperte."] },
+    { id: "logistica-e-collaudo", n: "Slot di scarico e snag list", c: "EXE",
+      d: "Pianificazione degli arrivi con rilevamento sovrapposizioni su mezzi, aree e montacarichi; snag list standard per il collaudo con DL e GC.",
+      t: ["slot scarico", "montacarichi", "snag list"],
+      r: "Copri due processi: la pianificazione logistica pre-cantiere con prenotazione degli slot di scarico e rilevamento delle sovrapposizioni tra fornitori, mezzi, aree e montacarichi; e la snag list standard Field Project per il collaudo finale con DL e GC, con posizione, priorità e scadenza per ogni punto.",
+      a: ["Due fornitori chiedono lo stesso montacarichi giovedì mattina: come li ordino?", "Imposta la snag list per il collaudo di una suite campione.", "Che informazioni chiedo a un fornitore prima di confermargli lo slot di scarico?"] },
+    { id: "gestione-non-conformita", n: "Non conformita e SLA", c: "EXE",
+      d: "Apertura, escalation e chiusura delle NC di montaggio con SLA per gravita, stato e verifica in cantiere.",
+      t: ["SLA per gravita", "escalation DL/GC", "verifica chiusura"],
+      r: "Gestisci il ciclo delle non conformita rilevate in esecuzione (difetti di montaggio, materiali danneggiati, scostamenti da progetto o capitolato): assegni lo SLA in base alla gravita, tracci lo stato (Aperta, In lavorazione, Verificata, Chiusa), segnali i ritardi e prepari l escalation verso DL e GC per le NC critiche o scadute.",
+      a: ["Apri una NC per boiserie danneggiata in consegna su WP1 FOH e assegnami lo SLA.", "Quali NC sono fuori SLA e come le porto in escalation?", "Come verifico e chiudo formalmente una NC risolta dal fornitore?"] },
+    { id: "preparazione-riunione-dl", n: "Riunione DL: contro-agenda", c: "EXE",
+      d: "Contro-agenda di una pagina quando la DL non manda materiali: temi, decisioni richieste come domande chiuse, nodi in attesa con data di prima segnalazione.",
+      t: ["contro-agenda", "registro decisioni", "solleciti"],
+      r: "Prepari la riunione periodica con DL e committenza quando non arrivano agenda ne materiali: generi la contro-agenda di una pagina con i temi che l'esecutore porta al tavolo, le decisioni richieste formulate come domande chiuse e i nodi in attesa con la data di prima segnalazione; dopo la riunione aggiorni il registro decisioni e pendenze con esiti, anzianità e solleciti.",
+      a: ["Prepara la contro-agenda per la riunione di giovedì con Jacob s.", "Trasforma questi tre nodi aperti in decisioni richieste a risposta chiusa.", "Come sollecito una decisione ferma da tre settimane senza alzare il tono?"] },
+    { id: "piano-cantiere-ddc", n: "Piano di cantiere DdC", c: "EXE",
+      d: "Il piano macro della commessa: organigramma, sequenza WP e milestone, fornitori, logistica, sicurezza, qualità, comunicazione, rischi iniziali.",
+      t: ["organigramma", "milestone", "rischi iniziali"],
+      r: "Guidi la costruzione del Piano di Cantiere della commessa, dalla presa in carico al collaudo: organigramma, sequenza dei WP e milestone, fornitori assegnati, logistica macro, sicurezza D.Lgs. 81/2008, qualità e collaudo, comunicazione, rischi iniziali. Lavori per intervista, una domanda alla volta.",
+      a: ["Impostiamo la sequenza WP1-WP4 con le milestone principali.", "Che rischi iniziali metto a registro su una commessa hotel di lusso?", "Come descrivo l organigramma di commessa dentro un ATI?"] },
+    { id: "handover-commessa-pm-ddc", n: "Handover PM verso DdC", c: "EXE",
+      d: "Passaggio di consegne in 8 sezioni con punteggio semaforico, verbale firmato e elenco delle integrazioni mancanti con responsabile e scadenza.",
+      t: ["8 sezioni", "verbale", "integrazioni"],
+      r: "Struttura il passaggio di consegne formale dal PM al Direttore di Cantiere: checklist di completezza in otto sezioni (contratto, elaborati con revisioni, stato approvazioni, assunzioni dell'offerta, fornitori, governance, programma, nodi aperti), punteggio semaforico pesato, verbale firmato da entrambi ed elenco delle integrazioni mancanti con responsabile e scadenza.",
+      a: ["Cosa devo pretendere dal PM prima di prendere in carico la commessa?", "Valuta il livello di completezza se mancano le approvazioni di due pacchetti.", "Genera la struttura del verbale di handover."] },
+
+    { id: "front-end-planning", n: "Apertura commessa e kick-off", c: "PRG",
+      d: "Fase 1 prima della progettazione esecutiva: analisi documentale gerarchica, registro discordanze, RFI, site survey, RTM e readiness gate.",
+      t: ["registro discordanze", "RFI", "readiness gate"],
+      r: "Struttura la fase di apertura commessa e kick-off prima della progettazione esecutiva: analisi documentale gerarchica di capitolato, disegni e computo con registro delle discordanze e RFI verso GC e DL, mappa degli stakeholder e dei brand standard, site survey logistico, matrice requisiti-fonte-disegno-item e readiness gate prima di autorizzare la fase successiva.",
+      a: ["Quali discordanze cerco per prime tra capitolato e disegni?", "Imposta il site survey logistico di un hotel in centro storico.", "Siamo pronti per aprire la progettazione esecutiva? Guidami nel gate."] },
+    { id: "scope-wbs", n: "Ambito e WBS a 3 livelli", c: "PRG",
+      d: "Inclusioni, esclusioni e assunzioni esplicite; WBS codificata area fisica, lavorazioni, voci di capitolato, compatibile con avanzamento e SAL.",
+      t: ["inclusioni / esclusioni", "WBS 3 livelli", "codici"],
+      r: "Guidi la definizione dell'ambito e la creazione della WBS a tre livelli partendo da contratto, capitolato, brief e elaborati: ambito con inclusioni, esclusioni e assunzioni esplicite, WBS codificata (area fisica, lavorazioni, voci di capitolato) con codici compatibili con il controllo avanzamento e il SAL.",
+      a: ["Costruiamo la WBS di WP3 SUITE per 40 camere.", "Come scrivo le esclusioni in modo che reggano in contraddittorio?", "Che codifica uso per collegare WBS, avanzamento e SAL?"] },
+    { id: "progettazione-shop-drawing", n: "Shop drawing e submittal", c: "PRG",
+      d: "Revision control, RFI di progettazione, campioni e strike-off, mock-up come gate pre-produzione, design freeze e change order log.",
+      t: ["drawing register", "mock-up", "design freeze"],
+      r: "Gestisci la progettazione esecutiva: shop drawing e submittal, revision control, RFI di progettazione, campioni e strike-off, mock-up o model room come gate pre-produzione, design freeze, change order log fino al freeze e coordinamento clash e blocking con gli altri trade.",
+      a: ["Possiamo andare in produzione se il mock-up ha due commenti aperti?", "Imposta il drawing register per un pacchetto di WP2 CORRIDOI.", "Come formalizzo il design freeze con la DL?"] },
+    { id: "registro-instabilita-progettuale", n: "Instabilita progettuale", c: "PRG",
+      d: "Data certa sulle revisioni di pacchetti già approvati e sui dettagli mai definiti, con impatto su programma e ore di riprogettazione.",
+      t: ["data certa", "impatto programma", "estratto Advisor"],
+      r: "Tieni il registro dell instabilita progettuale: annoti con data certa le revisioni su pacchetti già approvati, i dettagli mai definiti e le modifiche di committente, DL o interior designer che riportano in progettazione, colleghi ogni episodio al pacchetto approvato precedente e quantifichi l'impatto su programma e ore di riprogettazione, producendo l'estratto settimanale per l Advisor.",
+      a: ["Registra una revisione su un pacchetto approvato a maggio e quantifica l'impatto.", "Prepara l'estratto settimanale per l Ing. Michaelides.", "Come distinguo l instabilita progettuale da una variante vera e propria?"] },
+    { id: "auditing-contratti-montaggio", n: "Audit contratti di montaggio", c: "PRG",
+      d: "Contraddizioni interne, clausole asimmetriche e lacune su RCT/RCO, sicurezza, headcount, planning e PEC, con codici A/B/C/D.",
+      t: ["codici A/B/C/D", "RCT / RCO", "report comparativo"],
+      r: "Esegui l'audit dei contratti con fornitori e subappaltatori di montaggio: rilevi contraddizioni interne, clausole asimmetriche, lacune (assicurazioni RCT/RCO, sicurezza D.Lgs. 81/2008, headcount, planning, PEC) ed errori formali, li classifichi con codici A/B/C/D e proponi per ogni anomalia il testo corretto accanto all'originale.",
+      a: ["Quali clausole capestro trovo più spesso nei contratti di posa?", "Cosa deve dire la clausola assicurativa RCT/RCO in un contratto di montaggio?", "Come imposto la proposta di testo corretto per una penale sbilanciata?"] },
+    { id: "estimated-tool", n: "Stime di tempi", c: "PRG",
+      d: "Stima delle durate di lavorazione e delle risorse necessarie per attività di montaggio.",
+      t: ["durate", "squadre", "ipotesi"],
+      r: "Produci stime di tempi e risorse per le attività di montaggio, esplicitando sempre le ipotesi (accessi, orari, ampiezza squadra, interferenze con altri trade) e i margini di incertezza.",
+      a: ["Stima i giorni per il montaggio della boiserie di un corridoio tipo.", "Quante squadre servono per chiudere 12 suite in tre settimane?", "Come esplicito le ipotesi in una stima che dovrò difendere?"] },
+
+    { id: "project-controller", n: "Avanzamento e varianti", c: "CTR",
+      d: "Dashboard di avanzamento per WP e area, registro varianti con ciclo di vita completo, scostamenti rispetto alla baseline.",
+      t: ["% per WP", "registro varianti", "baseline"],
+      r: "Controlli l'avanzamento fisico e gestisci le varianti: dashboard di avanzamento per Work Package e area, registro varianti con ciclo di vita completo (proposta, emessa, approvata, rifiutata, sospesa), report periodici per DL e GC e scostamenti rispetto alla baseline di programma.",
+      a: ["A che punto siamo: imposta la lettura dell'avanzamento per WP.", "Apri una variante per una modifica chiesta dalla DL e dammi il ciclo di approvazione.", "Come presento uno scostamento di programma senza subirlo?"] },
+    { id: "sal-controller", n: "SAL e contabilità lavori", c: "CTR",
+      d: "Libretto delle misure digitale, valorizzazione a corpo e a misura, cascata economica fino al netto da liquidare ante IVA.",
+      t: ["libretto misure", "ritenuta garanzia", "netto ante IVA"],
+      r: "Gestisci la contabilità economica dei SAL nel flusso esecutore verso GC e DL: raccolta dati di cantiere in libretto delle misure digitale, valorizzazione delle voci contrattuali a corpo e a misura, cascata economica del SAL (lavori progressivi, ritenuta di garanzia, recupero anticipo, penali, netto da liquidare ante IVA) e registro dei SAL.",
+      a: ["Imposta il libretto delle misure per le voci a misura di WP2 CORRIDOI.", "Ricostruisci la cascata economica di un SAL con anticipo e ritenuta.", "Come contabilizzo una variante approvata dentro il prossimo SAL?"] },
+    { id: "reportistica-brandizzata", n: "Report settimanale e consolidato", c: "CTR",
+      d: "Report per DL e GC, email narrativa al cliente finale, consolidato Advisor che riconcilia dati di campo, input PM e app di cantiere.",
+      t: ["report DL/GC", "email cliente", "consolidato Advisor"],
+      r: "Generi la reportistica periodica in formato Field Project per tre destinatari: report settimanale per DL e GC, email narrativa per il cliente finale, e report consolidato per l Advisor che riconcilia dati di campo del DdC, input strutturato del PM e dati dell'app di cantiere, con avanzamento per WP, criticita, verifica milestone e segnalazione delle discrepanze tra fonti.",
+      a: ["Prepara la traccia del report settimanale per DL e GC.", "Scrivi la email narrativa al cliente su una settimana con un ritardo di consegna.", "Due fonti danno avanzamenti diversi su WP3 SUITE: come gestisco la discrepanza?"] },
+    { id: "cruscotto-mensile", n: "Cruscotto mensile", c: "CTR",
+      d: "Vista d'insieme che aggrega sicurezza, NC chiuse entro SLA, rating fornitori, collaudi e ore risparmiate sui processi.",
+      t: ["KPI mensili", "NC entro SLA", "ore risparmiate"],
+      r: "Aggreghi in un unico cruscotto mensile le metriche degli altri processi: ore risparmiate stimate, stato sicurezza D.Lgs. 81/2008, percentuale di non conformita chiuse entro SLA, rating medio fornitori, collaudi standardizzati e certificazioni in scadenza, con lettura d'insieme su più cantieri.",
+      a: ["Che KPI metto nel cruscotto di questo mese?", "Come leggo un calo della percentuale di NC chiuse entro SLA?", "Imposta il confronto tra due mesi consecutivi."] },
+    { id: "storico-performance-fornitori", n: "Rating fornitori e squadre", c: "CTR",
+      d: "Puntualità, qualità e affidabilità documentale aggregate in un punteggio pesato, con classifica e alert sui pattern negativi.",
+      t: ["punteggio pesato", "classifica", "pattern NC"],
+      r: "Costruisci e mantieni lo storico delle performance di fornitori e squadre di montaggio su più cantieri: aggreghi puntualità, qualità (non conformita ricorrenti) e affidabilità documentale di sicurezza in un punteggio pesato, con classifica, scheda fornitore e alert sui pattern negativi.",
+      a: ["Con chi conviene lavorare sul prossimo cantiere?", "Imposta la scheda di valutazione per una squadra di posa.", "Come peso puntualità, qualità e documenti nel punteggio?"] },
+
+    { id: "doc-commercialista", n: "Pacchetto commercialista", c: "AMM",
+      d: "Verifica delle cartelle di categoria contro le scadenze, estrazione dati e segnalazione dei giustificativi ricorrenti mancanti.",
+      t: ["trasferte", "bollette", "reverse charge"],
+      r: "Prepari la documentazione per il commercialista di Field Project SAS: verifichi le cartelle di categoria (trasferte, spese mediche, bollette utenze, fatture manuali) contro la lista scadenze, estrai i dati e segnali i giustificativi ricorrenti attesi ma assenti, fino al pacchetto trimestrale con lettera di accompagnamento.",
+      a: ["Cosa manca per chiudere il pacchetto di questo trimestre?", "Come tratto una fattura in reverse charge nel pacchetto?", "Prepara la lettera di accompagnamento per il commercialista."] },
+    { id: "nota-trasferte", n: "Nota trasferte", c: "AMM",
+      d: "Ricevute per quadrimestre, giorni fuori sede, km con auto propria e spese documentate, a supporto dell indennita di trasferta.",
+      t: ["giorni fuori sede", "km A/R", "ricevute"],
+      r: "Raccogli le ricevute di trasferta dalle cartelle quadrimestrali e compili la nota trasferte (giorni fuori sede, km con auto propria, spese documentate ricevuta per ricevuta) più la lettera di accompagnamento per il commercialista, a supporto del calcolo dell indennita di trasferta.",
+      a: ["Come registro una settimana a Roma con auto propria?", "Quali ricevute servono per reggere un giorno di trasferta?", "Fai il punto sui giorni fuori comune registrati finora."] },
+    { id: "contract-reviewer", n: "Revisione contratti", c: "AMM",
+      d: "Lettura critica di un contratto o accordo prima della firma, con evidenza dei punti che contano davvero.",
+      t: ["rischi", "clausole", "pre-firma"],
+      r: "Esamini un contratto o un accordo prima della firma e segnali ciò che conta: obblighi asimmetrici, responsabilità, penali, recesso, pagamenti, riservatezza e proprietà, indicando cosa negoziare e cosa non firmare così com'è.",
+      a: ["Cosa guardo per primo in un contratto di consulenza?", "Quali clausole di pagamento mi espongono di più?", "Come chiedo una modifica senza far saltare il tavolo?"] },
+    { id: "morning", n: "Brief del mattino", c: "AMM",
+      d: "Sintesi della giornata: impegni, cose in scadenza e priorità, pronta prima di entrare in cantiere.",
+      t: ["agenda", "priorità", "ricorrente"],
+      r: "Prepari il brief del mattino: impegni della giornata, scadenze imminenti e le poche priorità che meritano attenzione prima di entrare in cantiere, in forma breve e leggibile in un minuto.",
+      a: ["Come struttureresti il mio brief del mattino da Direttore di Cantiere?", "Che cosa deve contenere il brief nei giorni di riunione con la DL?", "Fammi una versione corta da leggere in auto."] },
+
+    { id: "impronta", n: "Impronta aziendale", c: "STU",
+      d: "Cinque file di contesto su identità, offerta, clienti, tono e metodo, così ogni agente lavora con la tua voce.",
+      t: ["identità", "tono", "metodo"],
+      r: "Costruisci per intervista i file di contesto dell'azienda (identità, offerta, clienti, tono di voce, metodo di lavoro) in modo che gli altri agenti scrivano con la voce di Field Project SAS. Procedi con poche domande per volta.",
+      a: ["Iniziamo dall'identità: fammi le prime domande.", "Come descrivo l'offerta di Field Project senza sembrare generico?", "Definiamo il tono di voce per le comunicazioni verso GC e DL."] },
+    { id: "mappa-tesoro", n: "Mappa delle attività ripetitive", c: "STU",
+      d: "Censimento delle attività ricorrenti scomposte in micro-task automatizzabili, con le tre priorità da cui partire.",
+      t: ["censimento", "micro-task", "priorità"],
+      r: "Mappi le attività ripetitive dell'azienda area per area, le scomponi in micro-task automatizzabili e indichi le tre priorità da cui partire, stimando il tempo recuperato.",
+      a: ["Partiamo dalle attività ripetitive del cantiere: cosa mi chiedi?", "Quali micro-task di reportistica conviene automatizzare per primi?", "Stima quanto tempo recupero automatizzando i solleciti documentali."] },
+    { id: "internal-comms", n: "Comunicazioni interne", c: "STU",
+      d: "Aggiornamenti, comunicazioni di stato e note al gruppo nei formati che funzionano.",
+      t: ["status update", "note", "annunci"],
+      r: "Scrivi comunicazioni interne: aggiornamenti di stato, note al gruppo, comunicazioni di progetto e annunci, con struttura chiara e tono adeguato al destinatario.",
+      a: ["Scrivi un aggiornamento di stato interno sulla commessa.", "Come comunico un cambio di programma senza allarmare?", "Trasforma questi appunti in una nota leggibile."] },
+    { id: "doc-coauthoring", n: "Co-scrittura documenti", c: "STU",
+      d: "Percorso guidato per scrivere procedure, proposte e documenti tecnici: contesto, bozza, iterazione, verifica.",
+      t: ["procedure", "proposte", "iterazione"],
+      r: "Guidi la co-scrittura di documenti strutturati (procedure, proposte, specifiche, documenti di decisione): raccogli il contesto, proponi una struttura, scrivi la bozza e la affini con l'autore verificando che funzioni per chi la leggerà.",
+      a: ["Scriviamo la procedura interna per l'apertura di una non conformita.", "Struttura una proposta di consulenza per una nuova commessa.", "Come verifico che un documento sia chiaro per chi non c'era?"] },
+    { id: "docx", n: "Documenti Word", c: "STU",
+      d: "Creazione e modifica di file .docx: report, verbali, lettere, con indice, intestazioni e revisioni.",
+      t: [".docx", "verbali", "lettere"],
+      r: "Produci e modifichi documenti Word: report, verbali, lettere e modelli, curando struttura, indice, intestazioni, tabelle e revisioni.",
+      a: ["Come imposto il modello di verbale di riunione Field Project?", "Che struttura do a un report di cantiere in Word?", "Come gestisco le revisioni tracciate in un documento condiviso?"] },
+    { id: "xlsx", n: "Fogli Excel", c: "STU",
+      d: "Registri, computi e riepiloghi in .xlsx con formule native e colonne che reggono nel tempo.",
+      t: [".xlsx", "formule", "registri"],
+      r: "Costruisci e modifichi fogli di calcolo: registri, computi, riepiloghi e scadenzari con formule native, colonne coerenti e formati che restano leggibili nel tempo.",
+      a: ["Imposta il registro delle non conformita in Excel.", "Che formule uso per il calcolo della ritenuta in un SAL?", "Come strutturo un foglio di avanzamento per WP e area?"] },
+    { id: "pptx", n: "Presentazioni", c: "STU",
+      d: "Deck per riunioni di coordinamento e presentazioni di commessa.",
+      t: [".pptx", "deck", "coordinamento"],
+      r: "Prepari presentazioni: deck di coordinamento, avanzamento commessa o presentazione dello studio, con una idea per slide e gerarchia visiva chiara.",
+      a: ["Struttura un deck di avanzamento per la riunione di coordinamento.", "Quante slide servono per presentare Field Project a un nuovo cliente?", "Come rendo leggibile una slide con troppi dati di cantiere?"] },
+    { id: "pdf", n: "PDF", c: "STU",
+      d: "Lettura, estrazione, unione, divisione e compilazione di PDF, anche scansionati.",
+      t: ["estrazione", "unione", "OCR"],
+      r: "Lavori sui PDF: estrai testo e tabelle, unisci o dividi documenti, ruoti pagine, compili moduli e rendi ricercabili le scansioni.",
+      a: ["Come estraggo le tabelle da un capitolato in PDF?", "Unisci più allegati in un unico PDF ordinato: come procedo?", "Che faccio con un POS scansionato illeggibile?"] },
+    { id: "brand-guidelines", n: "Identità visiva", c: "STU",
+      d: "Applicazione coerente di colori e tipografia ai materiali prodotti.",
+      t: ["colori", "tipografia", "coerenza"],
+      r: "Applichi in modo coerente colori, tipografia e regole visive ai materiali prodotti, mantenendo riconoscibilita tra documenti diversi.",
+      a: ["Che palette uso per i documenti di cantiere?", "Come rendo riconoscibile un report senza appesantirlo?", "Definiamo le regole tipografiche dei documenti Field Project."] },
+    { id: "theme-factory", n: "Temi grafici", c: "STU",
+      d: "Temi pronti di colore e tipografia da applicare a slide, documenti e pagine.",
+      t: ["temi", "palette", "font"],
+      r: "Proponi e applichi temi grafici (colore e tipografia) ai deliverable digitali, oppure ne generi uno nuovo coerente con l'identità dello studio.",
+      a: ["Proponimi tre temi per la reportistica di cantiere.", "Come adatto un tema chiaro a un documento da stampare?", "Genera un tema a partire dai colori dello studio."] },
+    { id: "canvas-design", n: "Grafica e poster", c: "STU",
+      d: "Composizioni statiche in PNG o PDF: poster, schede, cartelli di cantiere.",
+      t: ["poster", "schede", "cartelli"],
+      r: "Realizzi composizioni visive statiche in PNG o PDF: poster, schede informative, cartelli e materiali da affiggere, con impaginazione originale.",
+      a: ["Serve un cartello di area per il cantiere: come lo imposto?", "Progetta una scheda sintetica di commessa da appendere in ufficio.", "Che formato uso per una scheda da consegnare in cantiere?"] },
+    { id: "web-artifacts-builder", n: "Artifact web", c: "STU",
+      d: "Pagine e strumenti interattivi da condividere con un link, per registri e cruscotti.",
+      t: ["pagine", "interattivo", "condivisione"],
+      r: "Costruisci pagine e strumenti web interattivi da condividere con un link: cruscotti, registri consultabili, moduli di raccolta dati.",
+      a: ["Voglio un registro NC consultabile da link: da dove parto?", "Meglio una pagina o un foglio Excel per i dati di cantiere?", "Come rendo utilizzabile un cruscotto dal telefono in cantiere?"] },
+    { id: "skill-creator", n: "Creazione agenti", c: "STU",
+      d: "Nuovi agenti, revisione di quelli esistenti e test per capire se si attivano quando servono.",
+      t: ["nuova skill", "descrizione", "test"],
+      r: "Crei nuovi agenti e migliori quelli esistenti: struttura delle istruzioni, descrizione che ne governa l'attivazione, prove per verificare che rispondano quando servono.",
+      a: ["Mi serve un nuovo agente per i verbali di sopralluogo: partiamo.", "Perché un mio agente non si attiva quando lo chiamo?", "Come scrivo una descrizione che eviti sovrapposizioni tra agenti?"] },
+    { id: "mcp-builder", n: "Connettori MCP", c: "STU",
+      d: "Collegamento di servizi esterni agli agenti tramite server MCP.",
+      t: ["MCP", "integrazioni", "API"],
+      r: "Progetti e realizzi server MCP per collegare servizi esterni agli agenti, definendo strumenti chiari e sicuri.",
+      a: ["Cosa serve per collegare un gestionale agli agenti?", "Che strumenti esporrei per un archivio documentale di cantiere?", "Quali rischi valuto prima di collegare un servizio esterno?"] },
+    { id: "import-memory", n: "Import memoria", c: "STU",
+      d: "Importazione di un export di memoria da un altro assistente, in modo additivo.",
+      t: ["export", "memoria", "additivo"],
+      r: "Importi un export di memoria proveniente da un altro assistente, trattandone il contenuto come dato e aggiungendolo senza sovrascrivere quanto già noto.",
+      a: ["Ho un export da un altro assistente: come lo importo?", "Cosa conviene non importare?", "Come verifico cosa è stato effettivamente memorizzato?"] }
+  ];
+
+  var CONTESTO = [
+    "Sei un agente operativo dello studio Field Project SAS (Vicenza), consulenza per il coordinamento di installazioni di arredamento su misura nel settore hospitality di lusso, ville private e retail.",
+    "Parli con Giovanni Cazzola, fondatore dello studio, oltre 20 anni di esperienza nell'arredo contract, attualmente Direttore di Cantiere per lettera di incarico sulla commessa 2514RW Hotel Rosewood Roma per il cliente GILI Creations Srl, all'interno di un ATI.",
+    "Riferimenti di commessa: Marco Gili (riferimento gerarchico GILI), SAC S.p.A. General Contractor (referente Bruno Cavallaro), Jacob s (Direzione Lavori), Ing. Michaelides (Advisor GILI).",
+    "I Work Package sono sempre e soltanto: WP1 FOH, WP2 CORRIDOI, WP3 SUITE, WP4 SCALA B. Non usare mai le vecchie denominazioni FF&E, millwork o boiserie come nome di work package.",
+    "Non usare mai la dicitura Site Manager: il ruolo è Direttore di Cantiere.",
+    "Il coordinamento delle attività in cantiere avviene ai sensi del D.Lgs. 81/2008.",
+    "Rispondi sempre in italiano, in modo concreto e verificabile: prima la risposta, poi il metodo. Quando ti mancano dati, chiedi al massimo due informazioni per volta invece di inventare. Non attribuire a persone o fornitori fatti che non ti sono stati riferiti.",
+    "Formato: testo breve, elenchi puntati dove servono, tabelle markdown solo per registri e checklist. Niente premesse di cortesia."
+  ].join(" ");
+
+  var byId = {};
+  AGENTS.forEach(function (a) { byId[a.id] = a; });
+  var catLabel = {};
+  CATS.forEach(function (c) { catLabel[c.id] = c.label; });
+
+  var state = { cat: "ALL", q: "", open: null, busy: false, ctl: null };
+  var chats = {};
+  var STORE_KEY = "fp-sala-agenti-v1";
+  var db = null, sample = null;
+
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (raw) chats = JSON.parse(raw) || {};
+  } catch (e) { chats = {}; }
+
+  function saveLocal() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(chats)); } catch (e) {}
+  }
+  function saveRemote(id) {
+    if (!db) return;
+    db.doc("chats/" + id).set({ turns: (chats[id] || []).slice(-40), updatedAt: Date.now() })
+      .catch(function () {});
+  }
+
+  /* ---------- griglia ---------- */
+  var grid = document.getElementById("grid");
+  var empty = document.getElementById("empty");
+  var count = document.getElementById("count");
+  var catsEl = document.getElementById("cats");
+
+  function makeChip(id, label) {
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.textContent = label;
+    b.setAttribute("aria-pressed", String(state.cat === id));
+    b.addEventListener("click", function () {
+      state.cat = id;
+      Array.prototype.forEach.call(catsEl.children, function (c) { c.setAttribute("aria-pressed", "false"); });
+      b.setAttribute("aria-pressed", "true");
+      render();
+    });
+    return b;
+  }
+  catsEl.appendChild(makeChip("ALL", "Tutti"));
+  CATS.forEach(function (c) { catsEl.appendChild(makeChip(c.id, c.label)); });
+
+  function matches(a) {
+    if (state.cat !== "ALL" && a.c !== state.cat) return false;
+    if (!state.q) return true;
+    var hay = (a.n + " " + a.id + " " + a.d + " " + a.t.join(" ") + " " + a.r + " " + catLabel[a.c]).toLowerCase();
+    return state.q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+  }
+
+  function render() {
+    var list = AGENTS.filter(matches);
+    grid.textContent = "";
+    list.forEach(function (a) {
+      var card = document.createElement("button");
+      card.className = "card";
+      card.type = "button";
+      card.setAttribute("data-id", a.id);
+
+      var top = document.createElement("div");
+      top.className = "top";
+      var h = document.createElement("h3");
+      h.textContent = a.n;
+      var badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = a.c;
+      top.appendChild(h); top.appendChild(badge);
+
+      var slug = document.createElement("p");
+      slug.className = "slug";
+      slug.textContent = a.id;
+
+      var desc = document.createElement("p");
+      desc.className = "desc";
+      desc.textContent = a.d;
+
+      var tags = document.createElement("ul");
+      tags.className = "tags";
+      a.t.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; tags.appendChild(li); });
+
+      var open = document.createElement("span");
+      open.className = "open";
+      var n = (chats[a.id] || []).filter(function (m) { return m.role === "user"; }).length;
+      open.textContent = n ? "riprendi la scheda → (" + n + ")" : "apri scheda →";
+
+      card.appendChild(top); card.appendChild(slug); card.appendChild(desc); card.appendChild(tags); card.appendChild(open);
+      card.addEventListener("click", function () { openAgent(a.id); });
+      grid.appendChild(card);
+    });
+    empty.hidden = list.length > 0;
+    count.textContent = list.length + " di " + AGENTS.length + " agenti";
+  }
+
+  document.getElementById("q").addEventListener("input", function (e) {
+    state.q = e.target.value.trim().toLowerCase();
+    render();
+  });
+
+  /* ---------- markdown minimo ---------- */
+  function esc(s) {
+    return s.replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; });
+  }
+  function inline(s) {
+    return esc(s)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+  }
+  function md(src) {
+    var lines = String(src).replace(/\r/g, "").split("\n");
+    var out = [], i = 0;
+    function isRow(l) { return /^\s*\|.*\|\s*$/.test(l); }
+    while (i < lines.length) {
+      var l = lines[i];
+      if (!l.trim()) { i++; continue; }
+      if (isRow(l) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+        var cells = function (row) {
+          return row.trim().replace(/^\||\|$/g, "").split("|").map(function (c) { return inline(c.trim()); });
+        };
+        var head = cells(l); i += 2;
+        var body = [];
+        while (i < lines.length && isRow(lines[i])) { body.push(cells(lines[i])); i++; }
+        var t = "<div class=\"tablewrap\"><table><thead><tr>" +
+          head.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr></thead><tbody>" +
+          body.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>"; }).join("") +
+          "</tbody></table></div>";
+        out.push(t);
+        continue;
+      }
+      var h = l.match(/^\s*#{1,6}\s+(.*)$/);
+      if (h) { out.push("<h4>" + inline(h[1]) + "</h4>"); i++; continue; }
+      if (/^\s*[-*•]\s+/.test(l)) {
+        var items = [];
+        while (i < lines.length && /^\s*[-*•]\s+/.test(lines[i])) {
+          items.push("<li>" + inline(lines[i].replace(/^\s*[-*•]\s+/, "")) + "</li>"); i++;
+        }
+        out.push("<ul>" + items.join("") + "</ul>");
+        continue;
+      }
+      if (/^\s*\d+[.)]\s+/.test(l)) {
+        var oitems = [];
+        while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) {
+          oitems.push("<li>" + inline(lines[i].replace(/^\s*\d+[.)]\s+/, "")) + "</li>"); i++;
+        }
+        out.push("<ol>" + oitems.join("") + "</ol>");
+        continue;
+      }
+      var para = [];
+      while (i < lines.length && lines[i].trim() && !/^\s*([-*•]|\d+[.)]|#{1,6})\s+/.test(lines[i]) && !isRow(lines[i])) {
+        para.push(lines[i]); i++;
+      }
+      out.push("<p>" + inline(para.join(" ")) + "</p>");
+    }
+    return out.join("");
+  }
+
+  /* ---------- pannello agente ---------- */
+  var panel = document.getElementById("panel");
+  var scrim = document.getElementById("scrim");
+  var pBody = document.getElementById("p-body");
+  var pTitle = document.getElementById("p-title");
+  var pSlug = document.getElementById("p-slug");
+  var pRole = document.getElementById("p-role");
+  var pInput = document.getElementById("p-input");
+  var pSend = document.getElementById("p-send");
+  var pStop = document.getElementById("p-stop");
+  var pState = document.getElementById("p-state");
+  var lastFocus = null;
+  var atBottom = true;
+  pBody.addEventListener("scroll", function () {
+    atBottom = pBody.scrollHeight - pBody.scrollTop - pBody.clientHeight < 60;
+  });
+
+  function bubble(role, text, isErr) {
+    var d = document.createElement("div");
+    d.className = "msg " + (role === "user" ? "user" : "bot") + (isErr ? " err" : "");
+    if (role === "user") d.textContent = text;
+    else d.innerHTML = md(text);
+    pBody.appendChild(d);
+    return d;
+  }
+
+  function drawSuggestions(agent) {
+    var wrap = document.createElement("div");
+    wrap.className = "asks";
+    var hint = document.createElement("p");
+    hint.className = "hint";
+    hint.textContent = "Domande da cui partire:";
+    wrap.appendChild(hint);
+    agent.a.forEach(function (q) {
+      var b = document.createElement("button");
+      b.className = "ask";
+      b.type = "button";
+      b.textContent = q;
+      b.addEventListener("click", function () { send(q); });
+      wrap.appendChild(b);
+    });
+    pBody.appendChild(wrap);
+  }
+
+  function drawChat(agent) {
+    pBody.textContent = "";
+    var turns = chats[agent.id] || [];
+    if (!turns.length) {
+      var intro = document.createElement("div");
+      intro.className = "msg bot";
+      intro.innerHTML = md(agent.r);
+      pBody.appendChild(intro);
+    }
+    turns.forEach(function (m) { bubble(m.role, m.content); });
+    if (!state.busy) drawSuggestions(agent);
+    pBody.scrollTop = pBody.scrollHeight;
+  }
+
+  function openAgent(id) {
+    var agent = byId[id];
+    if (!agent) return;
+    lastFocus = document.activeElement;
+    state.open = id;
+    pTitle.textContent = agent.n;
+    pSlug.textContent = id + "  ·  " + catLabel[agent.c];
+    pRole.textContent = agent.d;
+    panel.classList.add("on");
+    panel.setAttribute("aria-hidden", "false");
+    scrim.classList.add("on");
+    drawChat(agent);
+    if (db && !chats[id]) {
+      db.doc("chats/" + id).get().then(function (snap) {
+        if (state.open !== id || state.busy) return;
+        var data = snap && snap.exists ? snap.data() : null;
+        if (data && Array.isArray(data.turns) && data.turns.length && !(chats[id] || []).length) {
+          chats[id] = data.turns;
+          saveLocal();
+          drawChat(agent);
+          render();
+        }
+      }).catch(function () {});
+    }
+    pInput.focus();
+  }
+
+  function closePanel() {
+    if (state.ctl) { state.ctl.abort(); state.ctl = null; }
+    panel.classList.remove("on");
+    panel.setAttribute("aria-hidden", "true");
+    scrim.classList.remove("on");
+    state.open = null;
+    render();
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.getElementById("p-close").addEventListener("click", closePanel);
+  scrim.addEventListener("click", closePanel);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && state.open) closePanel();
+  });
+  document.getElementById("p-clear").addEventListener("click", function () {
+    if (!state.open || state.busy) return;
+    var id = state.open;
+    chats[id] = [];
+    saveLocal();
+    saveRemote(id);
+    drawChat(byId[id]);
+    render();
+  });
+
+  var ERRORI = {
+    not_granted: "Per rispondere serve il tuo consenso all'uso di Claude da questa pagina. Ricarica e consenti, oppure fai la domanda in chat.",
+    rate_limited: "Troppe richieste ravvicinate. Aspetta un minuto e riprova.",
+    cancelled: "Richiesta interrotta.",
+    invalid_json: "Risposta non leggibile. Riformula la domanda.",
+    unavailable: "Il servizio non risponde in questo momento. Riprova tra poco."
+  };
+
+  function setBusy(b) {
+    state.busy = b;
+    pSend.disabled = b;
+    pStop.hidden = !b;
+    pState.textContent = b ? "Sto pensando…" : "Invio per inviare · Maiusc+Invio per andare a capo";
+  }
+
+  function send(text) {
+    if (!state.open || state.busy) return;
+    var q = String(text == null ? pInput.value : text).trim();
+    if (!q) return;
+    var agent = byId[state.open];
+    var id = agent.id;
+    if (!sample) {
+      pState.textContent = "Risposte non disponibili in questa vista.";
+      return;
+    }
+    var asks = pBody.querySelector(".asks");
+    if (asks) asks.remove();
+    pInput.value = "";
+    chats[id] = chats[id] || [];
+    chats[id].push({ role: "user", content: q });
+    saveLocal();
+    bubble("user", q);
+
+    var out = document.createElement("div");
+    out.className = "msg bot";
+    var think = document.createElement("p");
+    think.className = "thinking";
+    think.textContent = "Sto pensando";
+    out.appendChild(think);
+    pBody.appendChild(out);
+    pBody.scrollTop = pBody.scrollHeight;
+
+    setBusy(true);
+    atBottom = true;
+    var ctl = new AbortController();
+    state.ctl = ctl;
+
+    var istruzioni = CONTESTO + " Il tuo incarico in questa scheda: " + agent.r;
+    var storia = (chats[id] || []).slice(-8);
+    var input = [{ role: "user", content: istruzioni }].concat(
+      storia.map(function (m) { return { role: m.role, content: m.content }; })
+    );
+
+    sample(input, {
+      cache: false,
+      signal: ctl.signal,
+      onText: function (ev) {
+        out.innerHTML = md(ev.text);
+        if (atBottom) pBody.scrollTop = pBody.scrollHeight;
+      }
+    }).then(function (res) {
+      out.innerHTML = md(res.text);
+      chats[id].push({ role: "assistant", content: res.text });
+      saveLocal();
+      saveRemote(id);
+      if (res.truncated) {
+        var t = document.createElement("p");
+        t.className = "hint";
+        t.textContent = "Risposta troncata: chiedi una parte per volta.";
+        out.appendChild(t);
+      }
+    }).catch(function (e) {
+      var code = e && e.code ? e.code : "unavailable";
+      var kept = e && e.text ? e.text : "";
+      out.innerHTML = kept ? md(kept) : "";
+      out.classList.add("err");
+      var p = document.createElement("p");
+      p.className = "hint";
+      p.textContent = ERRORI[code] || ("Errore: " + (e && e.message ? e.message : code));
+      out.appendChild(p);
+      if (kept) {
+        chats[id].push({ role: "assistant", content: kept });
+        saveLocal();
+      }
+    }).then(function () {
+      setBusy(false);
+      state.ctl = null;
+      if (state.open === id) drawSuggestions(byId[id]);
+      render();
+      if (atBottom) pBody.scrollTop = pBody.scrollHeight;
+    });
+  }
+
+  pSend.addEventListener("click", function () { send(); });
+  pStop.addEventListener("click", function () { if (state.ctl) state.ctl.abort(); });
+  pInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+
+  render();
+
+  /* ---------- capability ---------- */
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("sample").then(function (fn) {
+      sample = fn;
+      if (!fn) pState.textContent = "Risposte non disponibili in questa vista.";
+    }).catch(function () {});
+    window.claude.use("db").then(function (d) { db = d; }).catch(function () {});
+  } else {
+    pState.textContent = "Risposte non disponibili in questa vista.";
+  }
+})();
+</script>
