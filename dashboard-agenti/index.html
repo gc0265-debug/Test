@@ -84,7 +84,20 @@
   .card p.desc{margin:0; font-size:13.5px; color:var(--ink-2)}
   .tags{display:flex; flex-wrap:wrap; gap:5px; list-style:none; padding:0; margin:2px 0 0}
   .tags li{font-size:11.5px; color:var(--muted); background:var(--surface-2); border:1px solid var(--line-soft); border-radius:5px; padding:2px 7px}
-  .card .open{margin-top:auto; padding-top:8px; font-size:12.5px; color:var(--accent); font-weight:500}
+  .card .actions{margin-top:auto; padding-top:10px; display:flex; align-items:center; gap:8px; justify-content:space-between; flex-wrap:wrap}
+  .card .open{font:inherit; font-size:12.5px; color:var(--accent); font-weight:500; background:none; border:0; padding:0; cursor:pointer; text-align:left}
+  .card .open:hover{text-decoration:underline}
+  .copy{
+    font-family:"IBM Plex Mono", monospace; font-size:11px; line-height:1.4; cursor:pointer;
+    color:var(--muted); background:var(--surface-2); border:1px solid var(--line-soft);
+    border-radius:6px; padding:4px 8px; display:inline-flex; align-items:center; gap:6px; max-width:100%;
+  }
+  .copy:hover{border-color:var(--brass); color:var(--brass)}
+  .copy svg{flex:none; opacity:.8}
+  .copy .cmd{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:22ch}
+  .copy.done{color:var(--ok); border-color:color-mix(in srgb, var(--ok) 50%, transparent)}
+  .p-head .copy{margin-top:10px; max-width:100%}
+  .p-head .copy .cmd{max-width:none; white-space:normal; overflow:visible; text-overflow:clip}
   .empty{color:var(--muted); font-size:14px; padding:28px 2px}
   /* ---------- pannello agente ---------- */
   #scrim{position:fixed; inset:0; background:rgba(12,20,18,.42); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:40}
@@ -142,7 +155,7 @@
     <div class="hd-main">
       <p class="eyebrow">Field Project SAS &middot; Direzione di Cantiere</p>
       <h1>Sala Agenti</h1>
-      <p class="lede">Ogni riquadro &egrave; un agente del tuo set operativo. Apri la scheda, fai la domanda, ricevi la risposta nel contesto della commessa: la conversazione resta salvata nella scheda.</p>
+      <p class="lede">Ogni riquadro &egrave; un agente del tuo set operativo. Apri la scheda, fai la domanda, ricevi la risposta nel contesto della commessa: la conversazione resta salvata nella scheda. Il pulsante con il comando lo copia negli appunti: incollalo in chat quando ti serve il file prodotto dall&rsquo;agente.</p>
     </div>
     <dl class="metà">
       <dt>Commessa</dt><dd>2514RW &mdash; Hotel Rosewood Roma</dd>
@@ -244,10 +257,10 @@
       t: ["slot scarico", "montacarichi", "snag list"],
       r: "Copri due processi: la pianificazione logistica pre-cantiere con prenotazione degli slot di scarico e rilevamento delle sovrapposizioni tra fornitori, mezzi, aree e montacarichi; e la snag list standard Field Project per il collaudo finale con DL e GC, con posizione, priorità e scadenza per ogni punto.",
       a: ["Due fornitori chiedono lo stesso montacarichi giovedì mattina: come li ordino?", "Imposta la snag list per il collaudo di una suite campione.", "Che informazioni chiedo a un fornitore prima di confermargli lo slot di scarico?"] },
-    { id: "gestione-non-conformita", n: "Non conformita e SLA", c: "EXE",
+    { id: "gestione-non-conformità", n: "Non conformità e SLA", c: "EXE",
       d: "Apertura, escalation e chiusura delle NC di montaggio con SLA per gravita, stato e verifica in cantiere.",
       t: ["SLA per gravita", "escalation DL/GC", "verifica chiusura"],
-      r: "Gestisci il ciclo delle non conformita rilevate in esecuzione (difetti di montaggio, materiali danneggiati, scostamenti da progetto o capitolato): assegni lo SLA in base alla gravita, tracci lo stato (Aperta, In lavorazione, Verificata, Chiusa), segnali i ritardi e prepari l escalation verso DL e GC per le NC critiche o scadute.",
+      r: "Gestisci il ciclo delle non conformità rilevate in esecuzione (difetti di montaggio, materiali danneggiati, scostamenti da progetto o capitolato): assegni lo SLA in base alla gravita, tracci lo stato (Aperta, In lavorazione, Verificata, Chiusa), segnali i ritardi e prepari l escalation verso DL e GC per le NC critiche o scadute.",
       a: ["Apri una NC per boiserie danneggiata in consegna su WP1 FOH e assegnami lo SLA.", "Quali NC sono fuori SLA e come le porto in escalation?", "Come verifico e chiudo formalmente una NC risolta dal fornitore?"] },
     { id: "preparazione-riunione-dl", n: "Riunione DL: contro-agenda", c: "EXE",
       d: "Contro-agenda di una pagina quando la DL non manda materiali: temi, decisioni richieste come domande chiuse, nodi in attesa con data di prima segnalazione.",
@@ -314,12 +327,12 @@
     { id: "cruscotto-mensile", n: "Cruscotto mensile", c: "CTR",
       d: "Vista d'insieme che aggrega sicurezza, NC chiuse entro SLA, rating fornitori, collaudi e ore risparmiate sui processi.",
       t: ["KPI mensili", "NC entro SLA", "ore risparmiate"],
-      r: "Aggreghi in un unico cruscotto mensile le metriche degli altri processi: ore risparmiate stimate, stato sicurezza D.Lgs. 81/2008, percentuale di non conformita chiuse entro SLA, rating medio fornitori, collaudi standardizzati e certificazioni in scadenza, con lettura d'insieme su più cantieri.",
+      r: "Aggreghi in un unico cruscotto mensile le metriche degli altri processi: ore risparmiate stimate, stato sicurezza D.Lgs. 81/2008, percentuale di non conformità chiuse entro SLA, rating medio fornitori, collaudi standardizzati e certificazioni in scadenza, con lettura d'insieme su più cantieri.",
       a: ["Che KPI metto nel cruscotto di questo mese?", "Come leggo un calo della percentuale di NC chiuse entro SLA?", "Imposta il confronto tra due mesi consecutivi."] },
     { id: "storico-performance-fornitori", n: "Rating fornitori e squadre", c: "CTR",
       d: "Puntualità, qualità e affidabilità documentale aggregate in un punteggio pesato, con classifica e alert sui pattern negativi.",
       t: ["punteggio pesato", "classifica", "pattern NC"],
-      r: "Costruisci e mantieni lo storico delle performance di fornitori e squadre di montaggio su più cantieri: aggreghi puntualità, qualità (non conformita ricorrenti) e affidabilità documentale di sicurezza in un punteggio pesato, con classifica, scheda fornitore e alert sui pattern negativi.",
+      r: "Costruisci e mantieni lo storico delle performance di fornitori e squadre di montaggio su più cantieri: aggreghi puntualità, qualità (non conformità ricorrenti) e affidabilità documentale di sicurezza in un punteggio pesato, con classifica, scheda fornitore e alert sui pattern negativi.",
       a: ["Con chi conviene lavorare sul prossimo cantiere?", "Imposta la scheda di valutazione per una squadra di posa.", "Come peso puntualità, qualità e documenti nel punteggio?"] },
 
     { id: "doc-commercialista", n: "Pacchetto commercialista", c: "AMM",
@@ -362,7 +375,7 @@
       d: "Percorso guidato per scrivere procedure, proposte e documenti tecnici: contesto, bozza, iterazione, verifica.",
       t: ["procedure", "proposte", "iterazione"],
       r: "Guidi la co-scrittura di documenti strutturati (procedure, proposte, specifiche, documenti di decisione): raccogli il contesto, proponi una struttura, scrivi la bozza e la affini con l'autore verificando che funzioni per chi la leggerà.",
-      a: ["Scriviamo la procedura interna per l'apertura di una non conformita.", "Struttura una proposta di consulenza per una nuova commessa.", "Come verifico che un documento sia chiaro per chi non c'era?"] },
+      a: ["Scriviamo la procedura interna per l'apertura di una non conformità.", "Struttura una proposta di consulenza per una nuova commessa.", "Come verifico che un documento sia chiaro per chi non c'era?"] },
     { id: "docx", n: "Documenti Word", c: "STU",
       d: "Creazione e modifica di file .docx: report, verbali, lettere, con indice, intestazioni e revisioni.",
       t: [".docx", "verbali", "lettere"],
@@ -372,7 +385,7 @@
       d: "Registri, computi e riepiloghi in .xlsx con formule native e colonne che reggono nel tempo.",
       t: [".xlsx", "formule", "registri"],
       r: "Costruisci e modifichi fogli di calcolo: registri, computi, riepiloghi e scadenzari con formule native, colonne coerenti e formati che restano leggibili nel tempo.",
-      a: ["Imposta il registro delle non conformita in Excel.", "Che formule uso per il calcolo della ritenuta in un SAL?", "Come strutturo un foglio di avanzamento per WP e area?"] },
+      a: ["Imposta il registro delle non conformità in Excel.", "Che formule uso per il calcolo della ritenuta in un SAL?", "Come strutturo un foglio di avanzamento per WP e area?"] },
     { id: "pptx", n: "Presentazioni", c: "STU",
       d: "Deck per riunioni di coordinamento e presentazioni di commessa.",
       t: [".pptx", "deck", "coordinamento"],
@@ -485,13 +498,62 @@
     return state.q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
   }
 
+  function comandoDi(a) { return "/anthropic-skills:" + a.id; }
+
+  function copyText(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt);
+    }
+    return new Promise(function (res, rej) {
+      var ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (ok) res(); else rej(new Error("copy"));
+    });
+  }
+
+  var ICONA_COPIA = '<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.2" y="1.8" width="9" height="9" rx="1.6"/><path d="M10.8 14.2H3.4a1.6 1.6 0 0 1-1.6-1.6V5.2"/></svg>';
+
+  function copyButton(a, esteso) {
+    var cmd = comandoDi(a);
+    var b = document.createElement("button");
+    b.className = "copy";
+    b.type = "button";
+    b.title = "Copia " + cmd + ": incollalo in chat quando vuoi il file prodotto dall'agente";
+    var ico = document.createElement("span");
+    ico.innerHTML = ICONA_COPIA;
+    ico.style.display = "inline-flex";
+    var lab = document.createElement("span");
+    lab.className = "cmd";
+    var testo = esteso ? cmd : "copia comando";
+    lab.textContent = testo;
+    b.appendChild(ico); b.appendChild(lab);
+    b.addEventListener("click", function (e) {
+      e.stopPropagation();
+      copyText(cmd).then(function () {
+        b.classList.add("done");
+        lab.textContent = "comando copiato";
+        setTimeout(function () { b.classList.remove("done"); lab.textContent = testo; }, 1800);
+      }).catch(function () {
+        lab.textContent = cmd + "  (copia a mano)";
+      });
+    });
+    return b;
+  }
+
   function render() {
     var list = AGENTS.filter(matches);
     grid.textContent = "";
     list.forEach(function (a) {
-      var card = document.createElement("button");
+      var card = document.createElement("article");
       card.className = "card";
-      card.type = "button";
       card.setAttribute("data-id", a.id);
 
       var top = document.createElement("div");
@@ -515,12 +577,18 @@
       tags.className = "tags";
       a.t.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; tags.appendChild(li); });
 
-      var open = document.createElement("span");
+      var actions = document.createElement("div");
+      actions.className = "actions";
+      var open = document.createElement("button");
       open.className = "open";
+      open.type = "button";
       var n = (chats[a.id] || []).filter(function (m) { return m.role === "user"; }).length;
       open.textContent = n ? "riprendi la scheda → (" + n + ")" : "apri scheda →";
+      open.addEventListener("click", function (e) { e.stopPropagation(); openAgent(a.id); });
+      actions.appendChild(open);
+      actions.appendChild(copyButton(a, false));
 
-      card.appendChild(top); card.appendChild(slug); card.appendChild(desc); card.appendChild(tags); card.appendChild(open);
+      card.appendChild(top); card.appendChild(slug); card.appendChild(desc); card.appendChild(tags); card.appendChild(actions);
       card.addEventListener("click", function () { openAgent(a.id); });
       grid.appendChild(card);
     });
@@ -657,6 +725,9 @@
     pTitle.textContent = agent.n;
     pSlug.textContent = id + "  ·  " + catLabel[agent.c];
     pRole.textContent = agent.d;
+    var oldCopy = panel.querySelector(".p-head .copy");
+    if (oldCopy) oldCopy.remove();
+    pRole.parentNode.appendChild(copyButton(agent, true));
     panel.classList.add("on");
     panel.setAttribute("aria-hidden", "false");
     scrim.classList.add("on");
