@@ -1,0 +1,735 @@
+<title>Guida Operativa Field Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap">
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --paper-2:#FAFAFA;
+    --ink:#1A1A1A;
+    --ink-2:#4D4D4D;
+    --ink-3:#8A8A8A;
+    --rule:#E3E3E3;
+    --rule-2:#EFEFEF;
+    --red:#C0332B;
+    --red-wash:#FBF2F1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#121212;
+      --paper-2:#191919;
+      --ink:#ECECEC;
+      --ink-2:#ABABAB;
+      --ink-3:#7A7A7A;
+      --rule:#2C2C2C;
+      --rule-2:#232323;
+      --red:#E4574C;
+      --red-wash:#241716;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#121212;
+    --paper-2:#191919;
+    --ink:#ECECEC;
+    --ink-2:#ABABAB;
+    --ink-3:#7A7A7A;
+    --rule:#2C2C2C;
+    --rule-2:#232323;
+    --red:#E4574C;
+    --red-wash:#241716;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Montserrat","Futura","Helvetica Neue",Arial,sans-serif;
+    font-weight:400;
+    font-size:15px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;}
+
+  /* ---------- intestazione ---------- */
+  .masthead{
+    border-bottom:1px solid var(--rule);
+  }
+  .masthead__in{
+    max-width:1180px;margin:0 auto;
+    padding-block:34px 30px;padding-left:24px;padding-right:24px;
+    position:relative;
+  }
+  .logo{
+    font-weight:700;font-size:13px;letter-spacing:.26em;text-transform:uppercase;
+    display:inline-flex;gap:.5em;align-items:baseline;
+  }
+  .logo .p{color:var(--red);}
+  .logo .s{font-size:10px;letter-spacing:.2em;color:var(--ink-2);}
+  .masthead h1{
+    margin:18px 0 0;
+    font-weight:700;font-size:clamp(26px,4.6vw,40px);
+    letter-spacing:.02em;text-transform:uppercase;line-height:1.14;
+    text-wrap:balance;max-width:16ch;
+  }
+  .masthead h1 span{color:var(--red);}
+  .masthead__sub{
+    margin:14px 0 0;color:var(--ink-2);max-width:60ch;font-size:15px;font-weight:400;
+  }
+  .masthead__meta{
+    margin-top:24px;padding-top:16px;border-top:1px solid var(--rule-2);
+    display:flex;flex-wrap:wrap;gap:8px 28px;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  }
+  .arc{
+    position:absolute;right:20px;top:26px;
+    width:104px;height:104px;pointer-events:none;opacity:.9;
+  }
+  @media (max-width:760px){.arc{display:none;}}
+
+  /* ---------- impianto ---------- */
+  .shell{
+    max-width:1180px;margin:0 auto;
+    padding-left:24px;padding-right:24px;padding-block:0 80px;
+    display:grid;grid-template-columns:210px minmax(0,1fr);gap:56px;
+    align-items:start;
+  }
+  @media (max-width:940px){
+    .shell{grid-template-columns:1fr;gap:0;}
+  }
+
+  /* ---------- indice ---------- */
+  .toc{
+    position:sticky;top:calc(env(safe-area-inset-top, 0px) + 24px);
+    padding-block:38px 0;
+  }
+  .toc__lab{
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);
+    padding-bottom:10px;border-bottom:1px solid var(--rule);margin-bottom:12px;
+  }
+  .toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;counter-reset:toc;}
+  .toc a{
+    display:flex;gap:9px;
+    color:var(--ink-2);text-decoration:none;
+    font-size:12.5px;line-height:1.35;padding:5px 0;
+    border-left:1px solid transparent;padding-left:0;
+    transition:color .12s;
+  }
+  .toc a .k{color:var(--ink-3);font-size:11px;min-width:14px;font-weight:600;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.on{color:var(--red);font-weight:600;}
+  .toc a.on .k{color:var(--red);}
+  .toc a:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+  @media (max-width:940px){
+    .toc{position:static;padding-block:26px 0;}
+    .toc ol{flex-direction:row;flex-wrap:wrap;gap:4px 16px;}
+    .toc a{padding:3px 0;}
+  }
+
+  /* ---------- testo ---------- */
+  main{padding-block:38px 0;min-width:0;}
+  section{padding-block:0 8px;scroll-margin-top:24px;}
+  section + section{margin-top:52px;padding-top:40px;border-top:1px solid var(--rule);}
+  .sec__k{
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);
+    font-weight:600;margin-bottom:8px;
+  }
+  h2{
+    margin:0 0 14px;font-weight:700;
+    font-size:clamp(19px,2.6vw,25px);letter-spacing:.01em;line-height:1.2;
+    text-wrap:balance;
+  }
+  h3{
+    margin:30px 0 8px;font-weight:600;font-size:15px;
+    letter-spacing:.1em;text-transform:uppercase;line-height:1.35;
+  }
+  h4{margin:22px 0 6px;font-weight:600;font-size:14.5px;letter-spacing:.01em;}
+  p{margin:0 0 14px;max-width:68ch;color:var(--ink-2);}
+  p strong,li strong{color:var(--ink);font-weight:600;}
+  .lead{color:var(--ink);font-size:16px;}
+  main ul{margin:0 0 16px;padding-left:0;list-style:none;max-width:68ch;}
+  main ul li{position:relative;padding-left:18px;margin-bottom:7px;color:var(--ink-2);}
+  main ul li::before{
+    content:"";position:absolute;left:0;top:.78em;width:8px;height:1px;background:var(--red);
+  }
+  main ol{margin:0 0 16px;padding-left:20px;max-width:68ch;color:var(--ink-2);}
+  main ol li{margin-bottom:7px;padding-left:4px;}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.86em;background:var(--paper-2);border:1px solid var(--rule-2);
+    padding:1px 5px;border-radius:2px;color:var(--ink);
+  }
+  a{color:var(--red);}
+
+  /* ---------- blocchi ---------- */
+  .frase{
+    border-left:2px solid var(--red);
+    padding:2px 0 2px 16px;margin:0 0 18px;max-width:68ch;
+  }
+  .frase__lab{
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+    margin-bottom:4px;
+  }
+  .frase p{margin:0;color:var(--ink);font-style:italic;}
+
+  .nota{
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    padding-block:14px;margin:22px 0;max-width:68ch;
+  }
+  .nota__lab{
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);
+    font-weight:600;margin-bottom:6px;
+  }
+  .nota p:last-child{margin-bottom:0;}
+
+  /* ---------- fasi ---------- */
+  .fase{
+    display:grid;grid-template-columns:64px minmax(0,1fr);gap:24px;
+    padding-block:26px;border-bottom:1px solid var(--rule-2);
+  }
+  .fase:last-of-type{border-bottom:0;}
+  .fase__n{
+    font-weight:700;font-size:26px;letter-spacing:.02em;color:var(--rule);
+    line-height:1;padding-top:3px;
+  }
+  .fase__n em{font-style:normal;color:var(--red);}
+  .fase__body{min-width:0;}
+  .fase h4{margin-top:0;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+  .fase__skill{
+    font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--ink-3);
+    margin:2px 0 10px;word-break:break-word;
+  }
+  .kv{display:grid;grid-template-columns:118px minmax(0,1fr);gap:4px 16px;margin:12px 0 0;}
+  .kv dt{
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+    padding-top:4px;
+  }
+  .kv dd{margin:0;color:var(--ink-2);font-size:14px;}
+  .gate{
+    margin-top:14px;padding:10px 14px;background:var(--red-wash);
+    font-size:13.5px;color:var(--ink);
+    border-left:2px solid var(--red);
+  }
+  .gate b{font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:11px;display:block;color:var(--red);margin-bottom:2px;}
+  @media (max-width:640px){
+    .fase{grid-template-columns:1fr;gap:6px;}
+    .fase__n{font-size:20px;}
+    .kv{grid-template-columns:1fr;gap:1px 0;}
+    .kv dt{padding-top:10px;}
+  }
+
+  /* ---------- tabelle ---------- */
+  .tw{overflow-x:auto;margin:16px 0 22px;}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:13.5px;}
+  th,td{text-align:left;padding:10px 14px 10px 0;border-bottom:1px solid var(--rule-2);vertical-align:top;}
+  th{
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+    font-weight:600;border-bottom:1px solid var(--rule);padding-bottom:8px;
+  }
+  td{color:var(--ink-2);}
+  td:first-child{color:var(--ink);font-weight:500;padding-right:22px;}
+  td .mono,th .mono{font-size:12px;}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .rossa{color:var(--red);font-weight:600;}
+
+  /* ---------- decisioni ---------- */
+  .dec{border-top:1px solid var(--rule);padding-block:20px 6px;}
+  .dec__q{font-weight:600;color:var(--ink);margin-bottom:12px;font-size:15px;}
+  .dec__rows{display:flex;flex-direction:column;gap:0;}
+  .dec__row{
+    display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1.05fr);
+    gap:12px;align-items:baseline;
+    padding-block:9px;border-bottom:1px solid var(--rule-2);
+  }
+  .dec__row:last-child{border-bottom:0;}
+  .dec__if{color:var(--ink-2);font-size:13.5px;}
+  .dec__ar{color:var(--red);text-align:center;font-size:13px;}
+  .dec__then{font-size:13.5px;color:var(--ink);}
+  .dec__then .mono{display:block;font-size:11.5px;color:var(--ink-3);margin-top:1px;}
+  @media (max-width:640px){
+    .dec__row{grid-template-columns:1fr;gap:2px;}
+    .dec__ar{text-align:left;}
+  }
+
+  /* ---------- chiusura ---------- */
+  .cta{
+    border:1px solid var(--rule);padding:22px 24px;margin-top:20px;max-width:68ch;
+  }
+  .cta h3{margin-top:0;}
+  .cta a{
+    display:inline-block;margin-top:6px;font-weight:600;font-size:13px;
+    letter-spacing:.12em;text-transform:uppercase;text-decoration:none;
+    border-bottom:1px solid var(--red);padding-bottom:2px;
+  }
+  .cta a:hover{color:var(--ink);border-color:var(--ink);}
+
+  footer{
+    max-width:1180px;margin:0 auto;
+    padding-left:24px;padding-right:24px;padding-block:22px 10px;
+    border-top:1px solid var(--rule);
+    color:var(--ink-3);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+
+  @media print{
+    .toc,.arc{display:none;}
+    .shell{grid-template-columns:1fr;}
+    section{break-inside:auto;}
+    .fase{break-inside:avoid;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<header class="masthead">
+  <div class="masthead__in">
+    <svg class="arc" viewBox="0 0 100 100" aria-hidden="true" fill="none">
+      <path d="M62 8 A42 42 0 0 1 92 38" stroke="#C0332B" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M8 62 A42 42 0 0 0 38 92" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".45"/>
+    </svg>
+    <div class="logo"><span>Field</span><span class="p">Project</span><span class="s">SAS</span></div>
+    <h1>Guida operativa <span>del sistema</span></h1>
+    <p class="masthead__sub">Come lavorare con le skill: che cosa fare in ogni momento della commessa, quale strumento attivare, cosa devi avere in mano prima di lanciarlo e che cosa ne esce.</p>
+    <div class="masthead__meta">
+      <span>Direzione di cantiere</span>
+      <span>D.Lgs. 81/2008</span>
+      <span>Commessa 2514RW</span>
+      <span>WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B</span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Indice">
+    <div class="toc__lab">Indice</div>
+    <ol id="toc"></ol>
+  </nav>
+
+  <main>
+
+    <section id="s1">
+      <div class="sec__k">01 — Impostazione</div>
+      <h2>Come è fatto il sistema</h2>
+      <p class="lead">Il sistema non è un archivio di documenti: è un insieme di processi, ognuno con un proprio strumento. Tre regole ne spiegano il funzionamento.</p>
+
+      <h3>Una skill = un processo, con confini netti</h3>
+      <p>Ogni skill copre un processo e si ferma dove ne inizia un altro. I confini non sono formali: servono a non mescolare cose che hanno destinatari e conseguenze diverse. L'avanzamento fisico non è la contabilità del SAL; una non conformità di montaggio non è un punto di snag list; una revisione dopo l'approvazione non è una variante economica. Tenerli separati è ciò che rende i dati difendibili quando qualcuno li contesta.</p>
+
+      <h3>I registri si accumulano, i report si generano</h3>
+      <p>Le skill di registro — non conformità, instabilità progettuale, decisioni DL, scadenzario, performance fornitori — costruiscono uno storico che cresce nel tempo. Le skill di reporting non raccolgono nulla: <strong>leggono</strong> quei registri e li mettono in forma per un destinatario. Se il registro non è aggiornato, il report è vuoto. Il lavoro sta nell'alimentare i registri quando l'evento accade, non il venerdì sera.</p>
+
+      <h3>Tutto ciò che esce ha una data certa</h3>
+      <p>Registro instabilità progettuale, registro decisioni DL, non conformità, verbale di handover: sono costruiti per essere opponibili. La data di prima segnalazione di un nodo, l'anzianità di una decisione non presa, il collegamento fra una revisione e il pacchetto approvato prima: è la documentazione che sostiene le scritture formali di rito e difende gli slittamenti che non dipendono da noi.</p>
+    </section>
+
+    <section id="s2">
+      <div class="sec__k">02 — Uso quotidiano</div>
+      <h2>Come si lancia una skill</h2>
+
+      <h3>Tre modi, stesso risultato</h3>
+      <ul>
+        <li><strong>Descrivi la situazione.</strong> Non serve sapere il nome della skill: «ho trovato tre ante rigate nella suite 412» attiva da sé la gestione non conformità. È il modo normale.</li>
+        <li><strong>Chiama la skill per nome</strong> quando sai già quale vuoi: <code>/gestione-non-conformita</code>. Utile quando due processi sono vicini e vuoi essere certo di quale parte.</li>
+        <li><strong>Parti dal Quadro di Comando</strong> quando non ricordi cosa esiste: apri la scheda, copi la frase, la incolli.</li>
+      </ul>
+
+      <h3>Cosa avere pronto prima</h3>
+      <p>Quasi ogni skill fa domande, e le fa perché la risposta cambia l'esito. Tre cose accelerano qualsiasi lancio:</p>
+      <ul>
+        <li><strong>Il codice commessa</strong> — 2514RW — e il <strong>WP</strong> di riferimento. Vale come chiave di tutto: registri, report, SAL e snag usano la stessa struttura di aree.</li>
+        <li><strong>I file, allegati alla richiesta</strong>: POS, capitolato, elaborato, foto del difetto, export dell'app di cantiere. Una skill con il documento davanti lavora sul reale; senza, ti intervista.</li>
+        <li><strong>La data dell'evento</strong>, se non è oggi. I registri con data certa perdono valore se la data è quella di quando ti sei ricordato di registrarlo.</li>
+      </ul>
+
+      <div class="nota">
+        <div class="nota__lab">Regola</div>
+        <p>Se una skill ti chiede la gravità di una NC, la priorità di uno snag o il peso di un'area, <strong>non lasciarla scegliere</strong>. Quei parametri determinano scadenze e destinatari dell'escalation: il default sbagliato manda una critica nel binario delle lievi.</p>
+      </div>
+
+      <h3>Cosa fare dell'output</h3>
+      <p>Ogni skill restituisce file — Word, Excel, PDF — oltre alla risposta a schermo. Sono documenti finiti, non bozze da reimpaginare: rispettano già l'identità Field Project SAS. Il passo che resta a te è la distribuzione sui canali ufficiali della commessa e, quando il documento è un verbale, la firma.</p>
+    </section>
+
+    <section id="s3">
+      <div class="sec__k">03 — Ciclo di vita</div>
+      <h2>La commessa dall'apertura al collaudo</h2>
+      <p class="lead">Otto passaggi, quattro dei quali sono gate: se non li superi non dovresti passare oltre, e il sistema te lo dice per iscritto. Serve proprio a questo — avere un documento che dimostra che il gate non era chiuso.</p>
+
+      <div class="fase">
+        <div class="fase__n"><em>01</em></div>
+        <div class="fase__body">
+          <h4>Apertura commessa</h4>
+          <div class="fase__skill">front-end-planning</div>
+          <p>Prima di qualunque altra cosa: leggi capitolato, disegni e computo in gerarchia e fai emergere le contraddizioni finché costano poco. Ogni discordanza diventa una riga di registro e, se serve, una RFI verso GC o DL. Nel frattempo mappi gli interlocutori, i brand standard della struttura e il sopralluogo logistico.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>Contratto, capitolato, elaborati, computo, brand standard del marchio</dd>
+            <dt>Chiedi</dt><dd>«Apri la commessa [codice]: analisi documentale, registro discordanze, RFI, RTM e readiness gate»</dd>
+            <dt>Ottieni</dt><dd>Registro discordanze e RFI · RTM · Readiness Gate firmabile</dd>
+          </dl>
+          <div class="gate"><b>Gate 1 — Readiness</b>Se le voci critiche non sono chiuse, la progettazione esecutiva non si apre. Il readiness gate va firmato <em>prima</em> della Fase 2: è l'unico documento che, a valle, dimostra cosa si sapeva e cosa mancava all'inizio.</div>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>02</em></div>
+        <div class="fase__body">
+          <h4>Ambito e WBS</h4>
+          <div class="fase__skill">scope-wbs</div>
+          <p>Qui si scrive dove finisce il nostro lavoro. Inclusioni, esclusioni e assunzioni esplicite, poi la WBS su tre livelli: area fisica → lavorazioni → voci di capitolato. I codici che nascono qui vengono riusati per tutta la commessa, quindi vale la pena spenderci tempo una volta sola.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>Readiness gate chiuso, capitolato riconciliato, elenco aree</dd>
+            <dt>Chiedi</dt><dd>«Definiamo ambito e WBS della commessa [codice] sui quattro WP»</dd>
+            <dt>Ottieni</dt><dd>WBS in Word/PDF per GC e DL · Excel operativo con i codici · albero visivo</dd>
+            <dt>Alimenta</dt><dd>Avanzamento fisico, SAL, snag list: useranno tutti questi codici</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>03</em></div>
+        <div class="fase__body">
+          <h4>Progettazione esecutiva</h4>
+          <div class="fase__skill">progettazione-shop-drawing</div>
+          <p>Shop drawing e submittal sotto revision control, RFI di progettazione, campioni e strike-off, mock-up o model room come prova generale. Il change order log resta aperto fino al freeze: dopo, ogni modifica cambia natura e cambia registro.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>WBS, elaborati con numero di revisione, esito mock-up</dd>
+            <dt>Chiedi</dt><dd>«Aggiorna il registro submittal e dimmi se siamo in condizione di design freeze per il WP [n]»</dd>
+            <dt>Ottieni</dt><dd>Registro submittal · Checklist mock-up · Change order log</dd>
+          </dl>
+          <div class="gate"><b>Gate 2 — Design freeze</b>Senza freeze non si va in produzione. Dopo il freeze, ogni revisione su un pacchetto approvato non è più un change order: è instabilità progettuale, e va nel registro con data certa (§&nbsp;05).</div>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>04</em></div>
+        <div class="fase__body">
+          <h4>Passaggio di consegne</h4>
+          <div class="fase__skill">handover-commessa-pm-ddc</div>
+          <p>La commessa passa dal PM alla direzione di cantiere. Otto sezioni da verificare — quadro contrattuale, elaborati e revisioni, stato approvazioni, assunzioni dell'offerta, fornitori, governance, programma, nodi aperti — con un punteggio pesato che dice se puoi partire.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>Il PM davanti, contratto e programma vigente, elenco fornitori</dd>
+            <dt>Chiedi</dt><dd>«Facciamo l'handover della commessa [codice]: checklist 8 sezioni, semaforo, integrazioni mancanti»</dd>
+            <dt>Ottieni</dt><dd>Verbale firmato da entrambi · punteggio per sezione · integrazioni con responsabile e data</dd>
+          </dl>
+          <div class="gate"><b>Gate 3 — Completezza</b><span class="rossa">≥ 90%</span> handover completo · <span class="rossa">70–89%</span> condizionale, si firma con l'elenco delle integrazioni · <span class="rossa">&lt; 70%</span> non accettabile: si formalizza la presa in carico dichiarando il perimetro di ciò che non è stato consegnato. Obiettivo: arrivare al verde entro due settimane.</div>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>05</em></div>
+        <div class="fase__body">
+          <h4>Piano di Cantiere</h4>
+          <div class="fase__skill">piano-cantiere-ddc</div>
+          <p>Un'intervista, una volta sola, per fissare il piano macro: organigramma, sequenza dei WP con milestone, fornitori assegnati, logistica, presidio sicurezza, qualità e collaudo, rischi noti. Da qui in poi le skill operative eseguono quello che qui è stato deciso.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>Verbale di handover, WBS, cronoprogramma, fornitori per WP</dd>
+            <dt>Chiedi</dt><dd>«Costruiamo il Piano di Cantiere della commessa [codice]»</dd>
+            <dt>Ottieni</dt><dd>Piano di Cantiere in Word · Excel delle milestone</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>06</em></div>
+        <div class="fase__body">
+          <h4>Apertura del cantiere in sicurezza</h4>
+          <div class="fase__skill">cantiere-sicurezza-onboarding · verifica-pos-cse</div>
+          <p>Squadra per squadra: POS firmato e coerente con le lavorazioni <em>di questo</em> cantiere, DUVRI dove ci sono interferenze, idoneità tecnico-professionale ex art. 90, tessere di riconoscimento nominative, DURC in validità. Il POS di ogni fornitore passa dalla verifica interna <strong>prima</strong> di arrivare al CSE: sei aree di controllo ed esito GO / NO-GO.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>I documenti ricevuti dai fornitori, elenco nominativo degli operatori</dd>
+            <dt>Chiedi</dt><dd>«Verifica lo stato documentale di sicurezza per l'apertura del cantiere [codice]» · «Verifica questo POS prima dell'invio al CSE»</dd>
+            <dt>Ottieni</dt><dd>Report di apertura per DL/GC · email di sollecito ai giallo/rosso · report POS con GO/NO-GO e bozza di richiesta integrazioni</dd>
+          </dl>
+          <div class="gate"><b>Gate 4 — Ingresso in cantiere</b>Nessuna squadra entra con documentazione in stato rosso. Il DURC vale <span class="rossa">120 giorni</span> dall'emissione: quello raccolto all'apertura scade durante il cantiere, e il rinnovo non arriva da solo.</div>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>07</em></div>
+        <div class="fase__body">
+          <h4>Esecuzione</h4>
+          <div class="fase__skill">coordinamento-giornaliero-gc · logistica-e-collaudo · gestione-non-conformita · registro-instabilita-progettuale · sicurezza-continuativa-cantiere</div>
+          <p>È la fase più lunga e l'unica in cui il sistema chiede qualcosa <em>tutti i giorni</em>. Il ritmo è nella sezione successiva; qui conta il principio: ogni evento va nel suo registro nel momento in cui accade, perché il valore probatorio sta nella data.</p>
+          <dl class="kv">
+            <dt>Ogni giorno</dt><dd>Diario di cantiere e richieste del GC</dd>
+            <dt>Quando accade</dt><dd>NC con gravità e SLA · episodio di instabilità progettuale · controllo sicurezza a evento</dd>
+            <dt>In anticipo</dt><dd>Slot di scarico, con rilevamento delle sovrapposizioni su mezzi, aree e montacarichi</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="fase">
+        <div class="fase__n"><em>08</em></div>
+        <div class="fase__body">
+          <h4>Collaudo e consegna</h4>
+          <div class="fase__skill">logistica-e-collaudo</div>
+          <p>Il sopralluogo finale con DL e GC produce la snag list nello standard Field Project SAS: codice punto, area riferita alla stessa struttura WP, descrizione oggettiva, foto, responsabile, priorità e scadenza calcolata dalla priorità.</p>
+          <dl class="kv">
+            <dt>Serve avere</dt><dd>Struttura aree/WP, elenco fornitori competenti, sopralluogo fatto</dd>
+            <dt>Chiedi</dt><dd>«Prepara la snag list del collaudo della commessa [codice]»</dd>
+            <dt>Ottieni</dt><dd>Snag list con priorità e scadenze · stato per punto fino alla verifica</dd>
+          </dl>
+          <div class="gate"><b>Gate 5 — Consegna</b>I punti in priorità alta impediscono la consegna. Uno snag che resta irrisolto oltre la scadenza non si archivia: si converte in non conformità, che ha SLA ed escalation.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <div class="sec__k">04 — Ritmo</div>
+      <h2>Le routine che tengono in piedi il sistema</h2>
+      <p class="lead">Il sistema rende quanto lo alimenti. Questo è il ritmo minimo perché i report settimanali e il cruscotto mensile abbiano dentro qualcosa di vero.</p>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th>Quando</th><th>Cosa fai</th><th>Skill</th><th>Perché non si salta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ogni mattina</td>
+              <td>Briefing: squadre presenti, attività per WP, richieste del GC</td>
+              <td class="mono">coordinamento-giornaliero-gc</td>
+              <td>È la fonte di campo che il consolidato settimanale riconcilia con l'input del PM</td>
+            </tr>
+            <tr>
+              <td>Ogni sera</td>
+              <td>Debrief: cosa è stato fatto, eventi, nodi nati oggi</td>
+              <td class="mono">coordinamento-giornaliero-gc</td>
+              <td>Ricostruire a memoria tre giorni dopo produce un diario che non regge un contraddittorio</td>
+            </tr>
+            <tr>
+              <td>Appena accade</td>
+              <td>Apri la NC con gravità dichiarata; registra l'episodio di instabilità progettuale</td>
+              <td class="mono">gestione-non-conformita · registro-instabilita-progettuale</td>
+              <td>Lo SLA decorre dall'apertura e la data certa è il valore stesso del registro</td>
+            </tr>
+            <tr>
+              <td>Prima di ogni nuova fase</td>
+              <td>Verifica POS/DUVRI validi, DPI idonei, idoneità sanitaria della squadra</td>
+              <td class="mono">sicurezza-continuativa-cantiere</td>
+              <td>Le squadre cambiano composizione in corsa: chi è entrato dopo l'onboarding non è coperto</td>
+            </tr>
+            <tr>
+              <td>Settimanale</td>
+              <td>Report a DL/GC, email al cliente, consolidato per l'Advisor</td>
+              <td class="mono">reportistica-brandizzata</td>
+              <td>Il consolidato riconcilia tre fonti e segnala le discrepanze: è il quadro unico pre-riunione</td>
+            </tr>
+            <tr>
+              <td>Prima della riunione DL</td>
+              <td>Contro-agenda: temi nostri, decisioni richieste come domande chiuse, nodi con data di prima segnalazione</td>
+              <td class="mono">preparazione-riunione-dl</td>
+              <td>Senza agenda della DL, chi porta i temi decide di cosa si parla</td>
+            </tr>
+            <tr>
+              <td>Settimanale</td>
+              <td>Avanzamento fisico per WP e stato varianti</td>
+              <td class="mono">project-controller</td>
+              <td>Alimenta il report e mantiene confrontabile la baseline</td>
+            </tr>
+            <tr>
+              <td>Mensile</td>
+              <td>Cruscotto: ore risparmiate, sicurezza, NC entro SLA, rating fornitori, certificazioni in scadenza</td>
+              <td class="mono">cruscotto-mensile</td>
+              <td>È l'unica vista che attraversa più cantieri e mostra i processi che stanno scivolando</td>
+            </tr>
+            <tr>
+              <td>Mensile</td>
+              <td>Scadenzario certificazioni degli operatori</td>
+              <td class="mono">scadenzario-certificazioni-sicurezza</td>
+              <td>Preavviso a 30 giorni: sotto quella soglia il rinnovo non fa in tempo</td>
+            </tr>
+            <tr>
+              <td>A SAL</td>
+              <td>Libretto delle misure, quantità contabilizzate, cascata fino al netto ante IVA</td>
+              <td class="mono">sal-controller</td>
+              <td>Consegnato e montato non coincidono: la differenza va tracciata prima di fatturare</td>
+            </tr>
+            <tr>
+              <td>Trimestrale</td>
+              <td>Pacchetto per il commercialista, con i giustificativi mancanti evidenziati</td>
+              <td class="mono">doc-commercialista · nota-trasferte</td>
+              <td>Le ricevute di trasferta si perdono, e il recupero a fine anno costa il triplo</td>
+            </tr>
+            <tr>
+              <td>Fine commessa</td>
+              <td>Aggiorna lo storico performance dei fornitori</td>
+              <td class="mono">storico-performance-fornitori</td>
+              <td>È ciò che rende motivata la scelta delle squadre sul cantiere successivo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="s5">
+      <div class="sec__k">05 — Scelte</div>
+      <h2>Quale skill, quando due si somigliano</h2>
+      <p class="lead">Le confusioni ricorrenti sono quattro. Per ciascuna, la discriminante è una sola domanda.</p>
+
+      <div class="dec">
+        <div class="dec__q">Ho trovato un difetto. Dove lo registro?</div>
+        <div class="dec__rows">
+          <div class="dec__row"><div class="dec__if">Rilevato durante l'esecuzione, il montaggio è in corso</div><div class="dec__ar">→</div><div class="dec__then">Non conformità, con gravità e SLA<span class="mono">gestione-non-conformita</span></div></div>
+          <div class="dec__row"><div class="dec__if">Rilevato al sopralluogo di collaudo finale con DL/GC</div><div class="dec__ar">→</div><div class="dec__then">Punto di snag list, con priorità<span class="mono">logistica-e-collaudo</span></div></div>
+          <div class="dec__row"><div class="dec__if">Punto di snag scaduto e non risolto</div><div class="dec__ar">→</div><div class="dec__then">Si converte in NC: torna alla prima riga<span class="mono">gestione-non-conformita</span></div></div>
+          <div class="dec__row"><div class="dec__if">Non è un difetto: è il progetto che chiede altro</div><div class="dec__ar">→</div><div class="dec__then">Variante, non NC<span class="mono">project-controller</span></div></div>
+        </div>
+      </div>
+
+      <div class="dec">
+        <div class="dec__q">Il progetto è cambiato. Quale registro?</div>
+        <div class="dec__rows">
+          <div class="dec__row"><div class="dec__if">Siamo prima del design freeze</div><div class="dec__ar">→</div><div class="dec__then">Change order log della progettazione<span class="mono">progettazione-shop-drawing</span></div></div>
+          <div class="dec__row"><div class="dec__if">Pacchetto già approvato, rimesso in discussione da committente, DL o ID</div><div class="dec__ar">→</div><div class="dec__then">Instabilità progettuale, con data certa e ore di riprogettazione<span class="mono">registro-instabilita-progettuale</span></div></div>
+          <div class="dec__row"><div class="dec__if">La modifica ha un impatto economico da formalizzare</div><div class="dec__ar">→</div><div class="dec__then">Variante: proposta → emessa → approvata, con baseline aggiornata<span class="mono">project-controller</span></div></div>
+          <div class="dec__row"><div class="dec__if">Cambia l'importo da contabilizzare a SAL</div><div class="dec__ar">→</div><div class="dec__then">Contabilità, separata dall'avanzamento<span class="mono">sal-controller</span></div></div>
+        </div>
+      </div>
+
+      <div class="dec">
+        <div class="dec__q">Documenti di sicurezza: quale delle quattro?</div>
+        <div class="dec__rows">
+          <div class="dec__row"><div class="dec__if">Documenti aziendali per far entrare una squadra</div><div class="dec__ar">→</div><div class="dec__then">Checklist di apertura: POS, DUVRI, art. 90, tessere, DURC<span class="mono">cantiere-sicurezza-onboarding</span></div></div>
+          <div class="dec__row"><div class="dec__if">Un singolo POS da mandare al CSE</div><div class="dec__ar">→</div><div class="dec__then">Verifica in sei aree con esito GO/NO-GO<span class="mono">verifica-pos-cse</span></div></div>
+          <div class="dec__row"><div class="dec__if">Attestati e idoneità della singola persona, su più cantieri</div><div class="dec__ar">→</div><div class="dec__then">Registro nominale con preavviso a 30 giorni<span class="mono">scadenzario-certificazioni-sicurezza</span></div></div>
+          <div class="dec__row"><div class="dec__if">Nuova fase, nuovo subappalto, squadra cambiata in corsa</div><div class="dec__ar">→</div><div class="dec__then">Controllo a evento e storico comportamenti<span class="mono">sicurezza-continuativa-cantiere</span></div></div>
+        </div>
+      </div>
+
+      <div class="dec">
+        <div class="dec__q">Devo aggiornare qualcuno. Con cosa?</div>
+        <div class="dec__rows">
+          <div class="dec__row"><div class="dec__if">Registrazione interna della giornata</div><div class="dec__ar">→</div><div class="dec__then">Diario di cantiere<span class="mono">coordinamento-giornaliero-gc</span></div></div>
+          <div class="dec__row"><div class="dec__if">DL e GC, periodico formale</div><div class="dec__ar">→</div><div class="dec__then">Report settimanale PDF/Word<span class="mono">reportistica-brandizzata</span></div></div>
+          <div class="dec__row"><div class="dec__if">Cliente finale</div><div class="dec__ar">→</div><div class="dec__then">Email narrativa, stessa fonte dati<span class="mono">reportistica-brandizzata</span></div></div>
+          <div class="dec__row"><div class="dec__if">Advisor, prima della riunione di coordinamento</div><div class="dec__ar">→</div><div class="dec__then">Consolidato a tre fonti con discrepanze evidenziate<span class="mono">reportistica-brandizzata</span></div></div>
+          <div class="dec__row"><div class="dec__if">Tavolo formale con DL e committenza</div><div class="dec__ar">→</div><div class="dec__then">Contro-agenda e registro decisioni<span class="mono">preparazione-riunione-dl</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s6">
+      <div class="sec__k">06 — Parametri</div>
+      <h2>I numeri da sapere a memoria</h2>
+      <p>Sono le soglie che il sistema applica da solo, ma che devi riconoscere quando le vedi in un report o quando qualcuno te le contesta.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Parametro</th><th>Valore</th><th>Effetto</th></tr></thead>
+          <tbody>
+            <tr><td>NC critica</td><td class="num rossa">24 h</td><td>Blocca lavorazioni, impatta la sicurezza o è a vista in area chiave. Escalation immediata a fornitore + DL/GC</td></tr>
+            <tr><td>NC normale</td><td class="num">72 h</td><td>Scostamento da capitolato: impatta qualità o programma senza bloccare. DL/GC solo se scade</td></tr>
+            <tr><td>NC lieve</td><td class="num">7 giorni</td><td>Difetto estetico minore. Solo fornitore</td></tr>
+            <tr><td>NC «in scadenza»</td><td class="num">&lt; 20% SLA</td><td>Meno di 5 ore su una critica, meno di 14 su una normale</td></tr>
+            <tr><td>Snag priorità alta</td><td class="num rossa">5 giorni</td><td>Impedisce la consegna o riguarda sicurezza e funzionalità</td></tr>
+            <tr><td>Snag priorità media</td><td class="num">10 giorni</td><td>Visibile ma non bloccante</td></tr>
+            <tr><td>Handover</td><td class="num">90 / 70 %</td><td>Verde sopra 90, condizionale fra 70 e 89, non accettabile sotto 70</td></tr>
+            <tr><td>Validità DURC</td><td class="num">120 giorni</td><td>Dall'emissione: va rinnovato in corso di cantiere</td></tr>
+            <tr><td>Preavviso certificazioni</td><td class="num">30 giorni</td><td>Soglia singola prima della scadenza di attestati e idoneità</td></tr>
+            <tr><td>Escalation comportamenti</td><td class="num rossa">3 in 90 giorni</td><td>Tre segnalazioni sulla stessa squadra: si sale a DL/GC</td></tr>
+            <tr><td>Consolidato Advisor</td><td class="num">3 fonti</td><td>Campo, PM, app di cantiere. Con meno di due è un report di parte, non un consolidato</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="s7">
+      <div class="sec__k">07 — Attenzione</div>
+      <h2>Gli errori che costano di più</h2>
+
+      <h4>Mescolare avanzamento fisico e contabilità</h4>
+      <p>«Siamo al 60%» e «possiamo fatturare il 60%» sono due frasi diverse e due skill diverse. L'avanzamento pesa le aree, il SAL valorizza le voci contrattuali e sottrae ritenuta di garanzia, recupero anticipo ed eventuali penali. Confonderli in un documento che esce verso il GC è difficile da recuperare.</p>
+
+      <h4>Aprire una NC senza dichiarare la gravità</h4>
+      <p>La gravità determina lo SLA e chi riceve l'escalation. Una critica registrata come normale perde 48 ore e non arriva a DL/GC nel momento in cui serviva.</p>
+
+      <h4>Alimentare i registri a fine settimana</h4>
+      <p>I registri con data certa valgono per la data. Un episodio di instabilità progettuale registrato venerdì per lunedì è comunque utile, ma ha perso la parte di valore che serviva davvero: dimostrare quando si è saputo.</p>
+
+      <h4>Mandare un POS al CSE senza verificarlo</h4>
+      <p>Il POS incompleto torna indietro dal Coordinatore, con il ritardo che ne consegue sull'ingresso della squadra. La verifica interna costa pochi minuti e produce già la bozza di richiesta di integrazioni al fornitore.</p>
+
+      <h4>Trattare una squadra cambiata come una squadra onboardata</h4>
+      <p>L'onboarding certifica le persone che c'erano quel giorno. Chi subentra a metà cantiere non è coperto da nulla finché non passa dal controllo a evento.</p>
+
+      <h4>Arrivare alla riunione DL senza contro-agenda</h4>
+      <p>Se la DL non manda l'agenda, l'ordine del giorno lo fa chi porta i temi. Le decisioni richieste vanno formulate come domande chiuse: una domanda aperta a verbale non produce una decisione, produce un altro rinvio.</p>
+
+      <h4>Chiedere il cruscotto mensile senza aver alimentato nulla</h4>
+      <p>Il cruscotto non raccoglie dati: li aggrega. Se il mese è stato registrato a spot, il cruscotto è onesto e lo mostra — ma non è un errore del cruscotto.</p>
+    </section>
+
+    <section id="s8">
+      <div class="sec__k">08 — Evoluzione</div>
+      <h2>Quando nessuna skill corrisponde</h2>
+      <p>Capita, ed è l'informazione più utile che il sistema possa darti: significa che stai facendo a mano un processo che nessuno ha ancora codificato.</p>
+      <ol>
+        <li><strong>Verifica che sia davvero scoperto.</strong> Spesso il processo esiste sotto un altro nome: cerca nel Quadro di Comando per parola chiave, non per titolo.</li>
+        <li><strong>Se si ripete, mappalo</strong> con <code>mappa-tesoro</code>: scompone le attività ripetitive area per area e indica da quali tre partire.</li>
+        <li><strong>Codificalo</strong> con <code>skill-creator</code>, che costruisce la nuova skill e la installa nel sistema.</li>
+        <li><strong>Aggiungila al Quadro di Comando</strong>: è un oggetto nell'array dei gruppi, conteggi e filtri si aggiornano da soli.</li>
+      </ol>
+
+      <div class="nota">
+        <div class="nota__lab">Criterio</div>
+        <p>Vale la pena codificare un processo quando ricorre <strong>almeno una volta al mese</strong> e ha un output riconoscibile — un documento, un registro, una comunicazione. Sotto quella frequenza, una skill costa più di quanto rende.</p>
+      </div>
+
+      <div class="cta">
+        <h3>Il catalogo completo</h3>
+        <p>Tutte le skill e i moduli del Board, con cosa producono e la frase per lanciarli, stanno nel Quadro di Comando: si cerca per parola chiave e si filtra per area.</p>
+        <a href="https://claude.ai/artifact/JPKEJ1HvJaWBmjr2ofDJQo">Apri il Quadro di Comando</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <span>Field Project SAS — Vicenza</span>
+  <span>Guida operativa · revisione 1</span>
+</footer>
+
+<script>
+(function(){
+  var titles = [
+    ["s1","Come è fatto il sistema"],
+    ["s2","Come si lancia una skill"],
+    ["s3","Ciclo di vita della commessa"],
+    ["s4","Le routine"],
+    ["s5","Quale skill, quando"],
+    ["s6","I numeri da sapere"],
+    ["s7","Errori che costano"],
+    ["s8","Quando nessuna corrisponde"]
+  ];
+  var toc = document.getElementById("toc");
+  toc.innerHTML = titles.map(function(t,i){
+    var k = String(i+1).padStart(2,"0");
+    return '<li><a href="#'+t[0]+'" data-k="'+t[0]+'"><span class="k">'+k+'</span><span>'+t[1]+'</span></a></li>';
+  }).join("");
+
+  var links = {};
+  Array.prototype.forEach.call(toc.querySelectorAll("a"), function(a){ links[a.dataset.k] = a; });
+
+  function mark(id){
+    for(var k in links){ links[k].classList.toggle("on", k === id); }
+  }
+  mark("s1");
+
+  if("IntersectionObserver" in window){
+    var seen = {};
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ seen[e.target.id] = e.isIntersecting ? e.boundingClientRect.top : null; });
+      var best = null;
+      titles.forEach(function(t){
+        var el = document.getElementById(t[0]);
+        var r = el.getBoundingClientRect();
+        if(r.top <= 140) best = t[0];
+      });
+      mark(best || titles[0][0]);
+    }, {rootMargin:"-100px 0px -60% 0px", threshold:[0,1]});
+    titles.forEach(function(t){ io.observe(document.getElementById(t[0])); });
+  }
+})();
+</script>

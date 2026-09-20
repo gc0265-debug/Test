@@ -5,8 +5,17 @@ raccoglie tutte le skill di processo e i moduli applicativi del Board di cantier
 
 ## Contenuto
 
-`quadro-comando.html` — pagina autonoma (nessuna dipendenza da installare, nessun
-build step). Si apre direttamente nel browser oppure si pubblica come artifact.
+Due pagine autonome (nessuna dipendenza, nessun build step): si aprono nel browser
+o si pubblicano come artifact, e si rimandano a vicenda.
+
+- `quadro-comando.html` — il catalogo: ogni skill e ogni modulo del Board come
+  pulsante, con filtro per area e ricerca.
+- `guida-operativa.html` — il metodo: come si usa il sistema, in che ordine e con
+  quali soglie. Segue l'identita' visiva Field Project SAS (nero `#1A1A1A`,
+  rosso `#C0332B`, Montserrat, linee sottili) come da
+  `reportistica-brandizzata/references/brand-identity.md`.
+
+### Quadro di Comando
 
 Per ogni comando la scheda riporta:
 
@@ -32,11 +41,25 @@ Per ogni comando la scheda riporta:
 | Board di cantiere | i 7 moduli applicativi di questo repository |
 | Strumenti trasversali | generazione file, identità visiva, creazione skill |
 
+## Guida operativa
+
+Otto sezioni: impianto del sistema, come si lancia una skill, il ciclo di vita
+della commessa in otto passaggi con i cinque gate, le routine per cadenza, gli
+alberi di decisione fra skill che si somigliano, le soglie operative (SLA delle
+NC, priorita' snag, semaforo handover, validita' DURC, preavvisi), gli errori
+ricorrenti e cosa fare quando nessuna skill copre il processo.
+
+I parametri citati sono estratti dalle skill stesse, non inventati: quando una
+skill cambia soglia, la guida va riallineata.
+
 ## Manutenzione
 
-I dati sono in un unico array `GROUPS` in fondo al file: per aggiungere una skill
-basta inserire un oggetto nel gruppo corrispondente. Filtri, ricerca, conteggi di
-testata e schede di dettaglio si aggiornano da soli.
+Nel Quadro di Comando i dati sono in un unico array `GROUPS` in fondo al file:
+per aggiungere una skill basta inserire un oggetto nel gruppo corrispondente.
+Filtri, ricerca, conteggi di testata e schede di dettaglio si aggiornano da soli.
+
+La guida e' testo statico: le sezioni sono `<section id="sN">` e l'indice laterale
+si genera dall'array `titles` in fondo al file.
 
 La pagina rispetta il tema chiaro/scuro del dispositivo, funziona a larghezza
 telefono e non richiede connessione se non per i font.

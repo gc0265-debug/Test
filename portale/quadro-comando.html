@@ -107,6 +107,12 @@
   .mark__name{font-family:"Archivo",sans-serif;font-weight:700;font-size:15px;letter-spacing:-.01em;line-height:1.2;}
   .mark__sub{font-size:11.5px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;}
   .topbar__spacer{flex:1 1 40px;}
+  .guidalink{
+    font-size:12.5px;letter-spacing:.06em;text-decoration:none;flex:none;
+    color:var(--ink-soft);border-bottom:1px solid var(--line);padding-bottom:2px;
+  }
+  .guidalink:hover{color:var(--accent);border-color:var(--accent);}
+  .guidalink:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
   .search{position:relative;flex:1 1 240px;max-width:340px;}
   .search input{
     width:100%;
@@ -344,6 +350,7 @@
       </div>
     </div>
     <div class="topbar__spacer"></div>
+    <a class="guidalink" href="https://claude.ai/artifact/FeUzm9e1i1FYvaNSpZgcb8">Guida operativa</a>
     <div class="search">
       <span class="search__icon" aria-hidden="true">⌕</span>
       <label class="sr-only" for="q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Cerca</label>
@@ -356,7 +363,7 @@
   <section class="intro">
     <div>
       <h1>Tutto il sistema,<br><em>un solo pannello.</em></h1>
-      <p>Ogni processo di commessa — dall'apertura al collaudo — ha qui il suo comando. Premi una voce per leggere cosa fa, quando si attiva, cosa produce e cosa <strong>non</strong> deve fare, e per copiare la frase con cui lanciarla.</p>
+      <p>Ogni processo di commessa — dall'apertura al collaudo — ha qui il suo comando. Premi una voce per leggere cosa fa, quando si attiva, cosa produce e cosa <strong>non</strong> deve fare, e per copiare la frase con cui lanciarla. Per il metodo — quando si attiva cosa, in che ordine e con quali soglie — c'&egrave; la <a href="https://claude.ai/artifact/FeUzm9e1i1FYvaNSpZgcb8" style="color:var(--accent)">guida operativa</a>.</p>
     </div>
     <div class="meta" id="meta"></div>
   </section>
