@@ -11,9 +11,13 @@ o si pubblicano come artifact, e si rimandano a vicenda.
 - `quadro-comando.html` — il catalogo: ogni skill e ogni modulo del Board come
   pulsante, con filtro per area e ricerca.
 - `guida-operativa.html` — il metodo: come si usa il sistema, in che ordine e con
-  quali soglie. Segue l'identita' visiva Field Project SAS (nero `#1A1A1A`,
-  rosso `#C0332B`, Montserrat, linee sottili) come da
-  `reportistica-brandizzata/references/brand-identity.md`.
+  quali soglie.
+
+Entrambe seguono l'identita' visiva Field Project SAS — nero `#1A1A1A`, rosso
+`#C0332B`, Montserrat, filetti sottili al posto di riquadri pieni, molto spazio
+bianco — come da `reportistica-brandizzata/references/brand-identity.md`. Nel
+Quadro di Comando il filetto rosso a sinistra di una scheda segnala le fasi in
+sequenza; quello grigio i presidi trasversali.
 
 ### Quadro di Comando
 
