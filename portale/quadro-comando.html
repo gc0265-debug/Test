@@ -678,7 +678,7 @@ const GROUPS = [
   {
     id:"board", n:"▣", seq:false, tone:"board",
     title:"Board di cantiere — moduli applicativi",
-    note:"L'app Board Field Project: dati strutturati che alimentano il consolidato settimanale. Sette moduli, una base dati SQLite, API REST per ogni entità.",
+    note:"L'app Board Field Project: sette moduli, una base dati SQLite, API REST per ogni entità. Nota: l'«app di cantiere» che il consolidato settimanale riconcilia è InSite, non il Board — finché non esiste un ponte fra i due, quanto registri qui va riportato a mano nel consolidato.",
     items:[
       {
         name:"Dashboard", slug:"/",
@@ -776,12 +776,13 @@ const GROUPS = [
         cmd:"Prepara una presentazione su [argomento] per la riunione del [data]."
       },
       {
-        name:"Identità visiva Field Project", slug:"brand-guidelines",
-        desc:"Le regole grafiche applicate a tutta la reportistica brandizzata.",
-        what:"Colori, tipografia e impaginazione che ogni deliverable esterno deve rispettare.",
-        when:["Nuovo template o documento destinato all'esterno"],
-        out:["Applicazione dell'identità Field Project SAS"],
-        cmd:"Applica l'identità visiva Field Project SAS a questo documento."
+        name:"Linee guida brand (Anthropic)", slug:"brand-guidelines",
+        desc:"Applica i colori e la tipografia del brand Anthropic. Non è l'identità Field Project SAS.",
+        what:"Attenzione a non confonderla: questa skill applica il look-and-feel di Anthropic. L'identità visiva Field Project SAS — nero #1A1A1A, rosso #C0332B, Montserrat, filetti sottili e molto spazio bianco — non è una skill a sé: vive dentro reportistica-brandizzata, nel file references/brand-identity.md, e viene applicata automaticamente da quella skill a tutta la reportistica di cantiere.",
+        when:["Serve esplicitamente il brand Anthropic","Per il brand Field Project non serve: lo applica già reportistica-brandizzata"],
+        out:["Applicazione della palette e tipografia Anthropic"],
+        never:["Documenti di commessa destinati a DL, GC o cliente → reportistica-brandizzata, che porta l'identità Field Project"],
+        cmd:"Applica le linee guida del brand Anthropic a questo artifact."
       },
       {
         name:"Creazione nuove skill", slug:"skill-creator",

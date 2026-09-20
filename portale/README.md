@@ -52,6 +52,21 @@ ricorrenti e cosa fare quando nessuna skill copre il processo.
 I parametri citati sono estratti dalle skill stesse, non inventati: quando una
 skill cambia soglia, la guida va riallineata.
 
+### Schemi
+
+Tre diagrammi SVG inline nella guida HTML, riesportati in `img/*.png` per la
+versione Word:
+
+| # | Schema | Mostra |
+| --- | --- | --- |
+| 1 | Chi alimenta chi | quali registri leggono il report settimanale e il cruscotto, e le due fonti esterne che il consolidato riconcilia |
+| 2 | I cinque gate | le otto fasi su due righe e i punti in cui il passaggio e' sbarrato |
+| 3 | Dove finisce una modifica | il design freeze come spartiacque fra change order, instabilita' progettuale, variante e SAL |
+
+Gli SVG sono la fonte: i PNG si rigenerano da li' (Chromium headless, larghezza
+doppia del viewBox, ritaglio al contenuto). Se cambi uno schema, riesporta il
+PNG corrispondente prima di rigenerare il Word.
+
 ### Versione Word
 
 `Guida_Operativa_Sistema_Field_Project.docx` — stessa guida in formato Word,
@@ -67,6 +82,15 @@ node genera-guida-docx.js .        # scrive il .docx nella cartella indicata
 
 Lo script tiene i colori del brand in testa al file (`NERO`, `ROSSO`, `FONT`):
 quando cambia il contenuto della guida HTML, va aggiornato anche li' e rilanciato.
+
+## Discordanze note
+
+- `cruscotto-mensile` aggrega anche da `pm-rappresentativo-gili-2514rw`, che non
+  risulta installata: quel KPI resta vuoto finche' la skill non esiste.
+- `brand-guidelines` applica il brand Anthropic, non Field Project SAS.
+  L'identita' FP vive in `reportistica-brandizzata/references/brand-identity.md`.
+- L'«app di cantiere» che il consolidato settimanale riconcilia e' InSite
+  (cfr. `Ponte_InSite_SAL_2514RW.xlsx`), non il Board di questo repository.
 
 ## Manutenzione
 

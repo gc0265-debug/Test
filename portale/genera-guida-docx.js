@@ -9,7 +9,7 @@ const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
-  Footer, PageNumber, PageBreak, LevelFormat, convertMillimetersToTwip
+  Footer, PageNumber, PageBreak, LevelFormat, convertMillimetersToTwip, ImageRun
 } = require("docx");
 
 /* ---------- identita' Field Project SAS ---------- */
@@ -145,6 +145,37 @@ function tabella(intestazioni, righe, larghezze, fortePrimaColonna = true) {
 }
 
 const SPAZIO = (n) => new Paragraph({ spacing: { after: n || 120 }, children: [] });
+
+
+/* ---------- figure ---------- */
+const LARGHEZZA_PX = 643; // 170 mm di colonna utile a 96 dpi
+
+function dimensioniPng(buf) {            // legge l'IHDR
+  return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+}
+
+function figura(file, titolo, didascalia) {
+  const buf = fs.readFileSync(path.join(__dirname, "img", file));
+  const { w, h } = dimensioniPng(buf);
+  const larghezza = Math.min(LARGHEZZA_PX, w);
+  const altezza = Math.round(larghezza * h / w);
+  return [
+    new Paragraph({
+      spacing: { before: 240, after: 100 },
+      keepNext: true,
+      children: [new ImageRun({ type: "png", data: buf, transformation: { width: larghezza, height: altezza } })],
+    }),
+    new Paragraph({
+      spacing: { after: 40 },
+      children: [new TextRun({ text: titolo.toUpperCase(), size: 15, bold: true, color: ROSSO, font: FONT, characterSpacing: 20 })],
+    }),
+    new Paragraph({
+      spacing: { after: 260, line: 275 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: RIGA, space: 10 } },
+      children: runs(didascalia, { size: 17, color: GRIGIO }),
+    }),
+  ];
+}
 
 /* ---------- fasi del ciclo di vita ---------- */
 function fase(n, titolo, skill, corpo, kv, gate) {
@@ -315,6 +346,8 @@ const corpo = [
   P("Ogni skill copre un processo e si ferma dove ne inizia un altro. I confini non sono formali: servono a non mescolare cose che hanno destinatari e conseguenze diverse. L'avanzamento fisico non è la contabilità del SAL; una non conformità di montaggio non è un punto di snag list; una revisione dopo l'approvazione non è una variante economica. Tenerli separati è ciò che rende i dati difendibili quando qualcuno li contesta."),
   H2("I registri si accumulano, i report si generano"),
   P("Le skill di registro — non conformità, instabilità progettuale, decisioni DL, scadenzario, performance fornitori — costruiscono uno storico che cresce nel tempo. Le skill di reporting non raccolgono nulla: **leggono** quei registri e li mettono in forma per un destinatario. Se il registro non è aggiornato, il report è vuoto. Il lavoro sta nell'alimentare i registri quando l'evento accade, non il venerdì sera."),
+  ...figura("fig3.png", "Figura 1 — Chi alimenta chi",
+    "Le skill di reporting non raccolgono dati: leggono i registri che hai alimentato durante la settimana. Il report settimanale ne legge tre; il cruscotto li rilegge tutti, più i report già emessi. Le due fonti tratteggiate non sono tue — arrivano dal PM e dall'app di cantiere — e il consolidato serve proprio a riconciliarle con i dati di campo: con meno di due fonti non è un consolidato."),
   H2("Tutto ciò che esce ha una data certa"),
   P("Registro instabilità progettuale, registro decisioni DL, non conformità, verbale di handover: sono costruiti per essere opponibili. La data di prima segnalazione di un nodo, l'anzianità di una decisione non presa, il collegamento fra una revisione e il pacchetto approvato prima: è la documentazione che sostiene le scritture formali di rito e difende gli slittamenti che non dipendono da noi."),
 
@@ -322,7 +355,7 @@ const corpo = [
   H1("Come si lancia una skill", "02"),
   H2("Tre modi, stesso risultato"),
   BUL("**Descrivi la situazione.** Non serve sapere il nome della skill: «ho trovato tre ante rigate nella suite 412» attiva da sé la gestione non conformità. È il modo normale."),
-  BUL("**Chiama la skill per nome** quando sai già quale vuoi: `/gestione-non-conformita`. Utile quando due processi sono vicini e vuoi essere certo di quale parte."),
+  BUL("**Chiama la skill per nome** quando sai già quale vuoi e i due processi sono vicini: `/gestione-non-conformita`. Le skill sono installate sotto il prefisso `anthropic-skills:`, quindi in alcuni client il nome per esteso è `/anthropic-skills:gestione-non-conformita` — se il nome corto non trova nulla, prova con il prefisso."),
   BUL("**Parti dal Quadro di Comando** quando non ricordi cosa esiste: apri la scheda, copi la frase, la incolli."),
   H2("Cosa avere pronto prima"),
   P("Quasi ogni skill fa domande, e le fa perché la risposta cambia l'esito. Tre cose accelerano qualsiasi lancio:"),
@@ -335,7 +368,9 @@ const corpo = [
 
   /* --- 03 --- */
   H1("La commessa dall'apertura al collaudo", "03"),
-  P("Otto passaggi, cinque dei quali sono gate: se non li superi non dovresti passare oltre, e il sistema te lo dice per iscritto. Serve proprio a questo — avere un documento che dimostra che il gate non era chiuso.", { size: 21, color: NERO }),
+  P("Otto passaggi, scanditi da cinque gate: se non li superi non dovresti passare oltre, e il sistema te lo dice per iscritto. Serve proprio a questo — avere un documento che dimostra che il gate non era chiuso.", { size: 21, color: NERO }),
+  ...figura("fig1.png", "Figura 2 — I cinque gate",
+    "Le otto fasi corrono in sequenza, ma il passaggio è sbarrato in cinque punti. Un gate non superato non è un ritardo da recuperare in corsa: è un documento firmato che dice cosa mancava e quando. Non tutti i passaggi sono sbarrati: fra 02 e 03, fra 05 e 06 e fra 07 e 08 si procede senza gate formale."),
 
   ...fase("01", "Apertura commessa", "front-end-planning",
     "Prima di qualunque altra cosa: leggi capitolato, disegni e computo in gerarchia e fai emergere le contraddizioni finché costano poco. Ogni discordanza diventa una riga di registro e, se serve, una RFI verso GC o DL. Nel frattempo mappi gli interlocutori, i brand standard della struttura e il sopralluogo logistico.",
@@ -430,6 +465,8 @@ const corpo = [
     ["Non è un difetto: è il progetto che chiede altro", "Variante, non NC", "project-controller"],
   ]),
 
+  ...figura("fig2.png", "Figura 3 — Dove finisce una modifica",
+    "Il design freeze è l'unico spartiacque: prima è governo della progettazione, dopo è instabilità da documentare. I tre registri non sono alternative — lo stesso episodio può percorrere tutta la catena, ma parte sempre dal registro dell'instabilità. Un difetto di montaggio non entra in questo schema: è una non conformità."),
   ...decisione("Il progetto è cambiato. Quale registro?", [
     ["Siamo prima del design freeze", "Change order log della progettazione", "progettazione-shop-drawing"],
     ["Pacchetto già approvato, rimesso in discussione da committente, DL o ID", "Instabilità progettuale, con data certa e ore di riprogettazione", "registro-instabilita-progettuale"],
