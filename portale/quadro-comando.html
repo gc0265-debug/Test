@@ -1,0 +1,1015 @@
+<title>Quadro di Comando Field Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#EDEFF2;
+    --surface:#FFFFFF;
+    --surface-2:#F6F7F9;
+    --ink:#0F1319;
+    --ink-soft:#5C6674;
+    --ink-faint:#8A93A1;
+    --line:#D5DAE1;
+    --line-soft:#E4E8ED;
+    --accent:#17399E;
+    --accent-ink:#FFFFFF;
+    --accent-wash:#E6EAF7;
+    --brass:#9A6A12;
+    --brass-wash:#F6EEDC;
+    --alert:#A32017;
+    --alert-wash:#F8E7E5;
+    --ok:#10614A;
+    --ok-wash:#E0EFEA;
+    --shadow:0 1px 2px rgba(15,19,25,.06), 0 8px 24px -16px rgba(15,19,25,.28);
+    --sheet-shadow:-24px 0 60px -30px rgba(15,19,25,.45);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0C0F14;
+      --surface:#151A21;
+      --surface-2:#1B222B;
+      --ink:#E7EBF1;
+      --ink-soft:#98A3B2;
+      --ink-faint:#737E8D;
+      --line:#262E39;
+      --line-soft:#1F2630;
+      --accent:#8AABFF;
+      --accent-ink:#0C0F14;
+      --accent-wash:#1B2740;
+      --brass:#D9A441;
+      --brass-wash:#2A2317;
+      --alert:#F08A80;
+      --alert-wash:#31201E;
+      --ok:#5FC8A3;
+      --ok-wash:#152A24;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
+      --sheet-shadow:-24px 0 60px -30px rgba(0,0,0,.85);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0C0F14;
+    --surface:#151A21;
+    --surface-2:#1B222B;
+    --ink:#E7EBF1;
+    --ink-soft:#98A3B2;
+    --ink-faint:#737E8D;
+    --line:#262E39;
+    --line-soft:#1F2630;
+    --accent:#8AABFF;
+    --accent-ink:#0C0F14;
+    --accent-wash:#1B2740;
+    --brass:#D9A441;
+    --brass-wash:#2A2317;
+    --alert:#F08A80;
+    --alert-wash:#31201E;
+    --ok:#5FC8A3;
+    --ok-wash:#152A24;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
+    --sheet-shadow:-24px 0 60px -30px rgba(0,0,0,.85);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:"Archivo","Archivo Expanded","Helvetica Neue",Arial,sans-serif;margin:0;text-wrap:balance;}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;}
+
+  /* ---------- barra superiore ---------- */
+  .topbar{
+    position:sticky;
+    top:env(safe-area-inset-top, 0px);
+    z-index:40;
+    background:color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar__in{
+    max-width:1240px;margin:0 auto;
+    padding-block:12px;padding-left:20px;padding-right:20px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .mark{display:flex;align-items:center;gap:12px;min-width:0;}
+  .mark__sigil{
+    width:38px;height:38px;flex:none;
+    display:grid;place-items:center;
+    background:var(--accent);color:var(--accent-ink);
+    font-family:"Archivo",sans-serif;font-weight:700;font-size:13px;letter-spacing:.04em;
+  }
+  .mark__txt{min-width:0;}
+  .mark__name{font-family:"Archivo",sans-serif;font-weight:700;font-size:15px;letter-spacing:-.01em;line-height:1.2;}
+  .mark__sub{font-size:11.5px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;}
+  .topbar__spacer{flex:1 1 40px;}
+  .search{position:relative;flex:1 1 240px;max-width:340px;}
+  .search input{
+    width:100%;
+    font:inherit;font-size:14px;
+    color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:2px;
+    padding:9px 12px 9px 34px;
+  }
+  .search input::placeholder{color:var(--ink-faint);}
+  .search input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+  .search__icon{
+    position:absolute;left:11px;top:50%;transform:translateY(-50%);
+    color:var(--ink-faint);font-size:13px;pointer-events:none;
+  }
+
+  /* ---------- corpo ---------- */
+  .wrap{max-width:1240px;margin:0 auto;padding-block:0 72px;padding-left:20px;padding-right:20px;}
+
+  .intro{
+    display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+    gap:36px;align-items:end;
+    padding-block:40px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .intro h1{font-size:clamp(28px,4.4vw,44px);letter-spacing:-.025em;line-height:1.04;font-weight:700;}
+  .intro h1 em{font-style:normal;color:var(--accent);}
+  .intro p{margin:14px 0 0;color:var(--ink-soft);max-width:60ch;font-size:15.5px;}
+  .meta{display:flex;flex-direction:column;gap:2px;}
+  .meta__row{
+    display:flex;justify-content:space-between;gap:16px;align-items:baseline;
+    padding:7px 0;border-bottom:1px dotted var(--line);
+    font-size:13px;
+  }
+  .meta__row:first-child{border-top:1px dotted var(--line);}
+  .meta__k{color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;font-size:11px;}
+  .meta__v{font-family:"IBM Plex Mono",monospace;font-weight:500;font-variant-numeric:tabular-nums;}
+
+  /* ---------- filtro sequenza ---------- */
+  .rail{padding-block:22px 6px;}
+  .rail__lab{
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);
+    margin-bottom:10px;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{
+    font:inherit;font-size:13px;
+    display:inline-flex;align-items:center;gap:7px;
+    padding:6px 12px;
+    background:transparent;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:999px;
+    cursor:pointer;transition:background .12s,color .12s,border-color .12s;
+  }
+  .chip:hover{border-color:var(--ink-faint);color:var(--ink);}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .chip .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-faint);}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .chip[aria-pressed="true"] .n{color:var(--accent-ink);opacity:.72;}
+
+  /* ---------- gruppi ---------- */
+  .group{padding-block:34px 4px;}
+  .group__head{display:flex;align-items:baseline;gap:14px;margin-bottom:4px;flex-wrap:wrap;}
+  .group__n{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+    color:var(--accent);letter-spacing:.06em;
+  }
+  .group__n--flat{color:var(--brass);}
+  .group h2{font-size:20px;letter-spacing:-.015em;font-weight:700;}
+  .group__note{color:var(--ink-soft);font-size:13.5px;margin:2px 0 18px;max-width:66ch;}
+
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
+
+  .card{
+    font:inherit;text-align:left;
+    display:flex;flex-direction:column;gap:8px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--line);
+    border-radius:2px;
+    padding:14px 16px 15px;
+    cursor:pointer;
+    color:var(--ink);
+    transition:border-color .13s, transform .13s, box-shadow .13s;
+  }
+  .card:hover{border-color:var(--ink-faint);border-left-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow);}
+  .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .card[data-tone="sicurezza"]{border-left-color:var(--brass);}
+  .card[data-tone="sicurezza"]:hover{border-left-color:var(--brass);}
+  .card[data-tone="board"]{border-left-color:var(--ok);}
+  .card[data-tone="board"]:hover{border-left-color:var(--ok);}
+  .card__top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .card__name{font-family:"Archivo",sans-serif;font-weight:600;font-size:15px;line-height:1.25;letter-spacing:-.01em;}
+  .card__arrow{color:var(--ink-faint);font-size:14px;line-height:1;flex:none;margin-top:2px;}
+  .card:hover .card__arrow{color:var(--accent);}
+  .card__slug{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-faint);word-break:break-all;}
+  .card__desc{font-size:13.5px;color:var(--ink-soft);margin:0;}
+  .card__out{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto;padding-top:4px;}
+  .tag{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.02em;
+    padding:2px 6px;border-radius:2px;
+    background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line-soft);
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .tag--doc{background:var(--accent-wash);color:var(--accent);border-color:transparent;}
+  .tag--xls{background:var(--ok-wash);color:var(--ok);border-color:transparent;}
+  .tag--alert{background:var(--alert-wash);color:var(--alert);border-color:transparent;}
+
+  .empty{
+    padding:40px 20px;text-align:center;color:var(--ink-soft);
+    border:1px dashed var(--line);border-radius:2px;
+  }
+
+  /* ---------- scheda laterale ---------- */
+  .scrim{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(9,12,17,.42);
+    opacity:0;pointer-events:none;transition:opacity .18s;
+  }
+  .scrim.on{opacity:1;pointer-events:auto;}
+  .sheet{
+    position:fixed;z-index:60;
+    top:0;right:0;bottom:0;
+    width:min(480px,100%);
+    background:var(--surface);
+    border-left:1px solid var(--line);
+    box-shadow:var(--sheet-shadow);
+    transform:translateX(102%);
+    transition:transform .22s cubic-bezier(.3,.7,.3,1);
+    display:flex;flex-direction:column;
+    padding-top:env(safe-area-inset-top, 0px);
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  .sheet.on{transform:translateX(0);}
+  .sheet__head{
+    padding:18px 22px 14px;border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-start;gap:14px;
+  }
+  .sheet__head h3{font-size:19px;letter-spacing:-.015em;line-height:1.2;font-weight:700;}
+  .sheet__eyebrow{
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);
+    margin-bottom:5px;
+  }
+  .sheet__close{
+    font:inherit;font-size:18px;line-height:1;
+    flex:none;margin-left:auto;
+    width:30px;height:30px;border-radius:2px;
+    background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);
+    cursor:pointer;
+  }
+  .sheet__close:hover{color:var(--ink);}
+  .sheet__close:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .sheet__body{overflow-y:auto;padding:4px 22px 28px;flex:1;}
+  .blk{padding-block:16px;border-bottom:1px solid var(--line-soft);}
+  .blk:last-child{border-bottom:0;}
+  .blk__lab{
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:7px;
+  }
+  .blk p{margin:0;font-size:14px;color:var(--ink);}
+  .blk ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .blk li{
+    font-size:13.5px;color:var(--ink);
+    padding-left:16px;position:relative;
+  }
+  .blk li::before{
+    content:"";position:absolute;left:0;top:.62em;
+    width:6px;height:1px;background:var(--ink-faint);
+  }
+  .blk--warn .blk__lab{color:var(--alert);}
+  .blk--warn li::before{background:var(--alert);}
+  .files{display:flex;flex-direction:column;gap:5px;}
+  .file{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;
+    padding:6px 9px;background:var(--surface-2);
+    border:1px solid var(--line-soft);border-radius:2px;
+    color:var(--ink);word-break:break-all;
+  }
+  .cmd{
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .cmd__txt{
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.5;
+    width:100%;resize:none;
+    background:var(--surface-2);color:var(--ink);
+    border:1px solid var(--line);border-radius:2px;
+    padding:10px 11px;
+  }
+  .cmd__txt:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{
+    font:inherit;font-size:13.5px;font-weight:500;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:10px 16px;border-radius:2px;cursor:pointer;
+    background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);
+    transition:opacity .12s;
+  }
+  .btn:hover{opacity:.9;}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .btn[data-done="1"]{background:var(--ok);border-color:var(--ok);color:#fff;}
+  .links{display:flex;flex-wrap:wrap;gap:6px;}
+  .link{
+    font:inherit;font-size:12.5px;
+    padding:5px 10px;border-radius:999px;cursor:pointer;
+    background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);
+    font-family:"IBM Plex Mono",monospace;
+  }
+  .link:hover{color:var(--accent);border-color:var(--accent);}
+  .link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  footer{
+    border-top:1px solid var(--line);
+    margin-top:40px;padding-block:22px 8px;
+    color:var(--ink-faint);font-size:12.5px;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+
+  @media (max-width:860px){
+    .intro{grid-template-columns:1fr;gap:26px;align-items:start;}
+  }
+  @media (max-width:560px){
+    .topbar__in{gap:12px;}
+    .search{max-width:none;}
+    .sheet{width:100%;border-left:0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;}
+  }
+</style>
+
+<header class="topbar">
+  <div class="topbar__in">
+    <div class="mark">
+      <div class="mark__sigil">FP</div>
+      <div class="mark__txt">
+        <div class="mark__name">Quadro di Comando</div>
+        <div class="mark__sub">Field Project SAS</div>
+      </div>
+    </div>
+    <div class="topbar__spacer"></div>
+    <div class="search">
+      <span class="search__icon" aria-hidden="true">⌕</span>
+      <label class="sr-only" for="q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Cerca</label>
+      <input id="q" type="search" placeholder="Cerca: POS, SAL, snag list, trasferte…" autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="intro">
+    <div>
+      <h1>Tutto il sistema,<br><em>un solo pannello.</em></h1>
+      <p>Ogni processo di commessa — dall'apertura al collaudo — ha qui il suo comando. Premi una voce per leggere cosa fa, quando si attiva, cosa produce e cosa <strong>non</strong> deve fare, e per copiare la frase con cui lanciarla.</p>
+    </div>
+    <div class="meta" id="meta"></div>
+  </section>
+
+  <nav class="rail" aria-label="Filtra per area">
+    <div class="rail__lab">Aree del sistema</div>
+    <div class="chips" id="chips"></div>
+  </nav>
+
+  <div id="groups"></div>
+
+  <footer>
+    <span>Field Project SAS — Vicenza · coordinamento installazioni arredo contract</span>
+    <span class="mono">D.Lgs. 81/2008 · WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B</span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
+  <div class="sheet__head">
+    <div>
+      <div class="sheet__eyebrow" id="sheetArea"></div>
+      <h3 id="sheetTitle"></h3>
+    </div>
+    <button class="sheet__close" id="sheetClose" aria-label="Chiudi">×</button>
+  </div>
+  <div class="sheet__body" id="sheetBody"></div>
+</aside>
+
+<script>
+const GROUPS = [
+  {
+    id:"apertura", n:"01", seq:true, tone:"skill",
+    title:"Apertura & Progettazione",
+    note:"Prima che un solo pezzo arrivi in cantiere. Ogni fase apre un gate: senza readiness gate non si progetta, senza design freeze non si produce, senza handover il Direttore di Cantiere non prende in carico.",
+    items:[
+      {
+        name:"Apertura commessa & Kick-off", slug:"front-end-planning",
+        desc:"Analisi documentale gerarchica di capitolato, disegni e computo, con registro discordanze e RFI verso GC/DL.",
+        what:"Struttura la Fase 1 di una nuova commessa: legge capitolato, elaborati e computo in gerarchia, apre il registro delle discordanze e le RFI verso GC/DL, mappa stakeholder e brand standard, imposta il site survey logistico e costruisce la RTM (requisito → fonte → disegno → item). Chiude con un readiness gate che autorizza — o blocca — l'apertura della progettazione esecutiva.",
+        when:["Nuova commessa assegnata, prima che si apra la progettazione esecutiva","Capitolato e disegni si contraddicono e serve tracciare la discordanza","Sopralluogo logistico iniziale (accessi, montacarichi, aree di stoccaggio)","Domanda: «siamo pronti ad aprire la progettazione?»"],
+        out:["Registro_Discordanze_RFI_[COMMESSA].xlsx","RTM_[COMMESSA].xlsx","Readiness_Gate_[COMMESSA].docx"],
+        never:["Commesse già avviate","Varianti in corso d'opera → project-controller","Instabilità progettuale dopo l'approvazione → registro-instabilita-progettuale"],
+        next:["scope-wbs"],
+        cmd:"Apri la nuova commessa [CODICE] — [Cliente] / [Struttura]. Parti dal front-end planning: analisi capitolato + disegni, registro discordanze e RFI, RTM e readiness gate."
+      },
+      {
+        name:"Ambito & WBS a 3 livelli", slug:"scope-wbs",
+        desc:"Inclusioni, esclusioni e assunzioni esplicite, più la WBS codificata area fisica → lavorazioni → voci capitolato.",
+        what:"Formalizza dove finisce il nostro lavoro e dove inizia quello altrui — la causa prima delle varianti e delle NC «di confine». Genera la WBS a 3 livelli con codici WP riutilizzati da project-controller (avanzamento) e sal-controller (contabilità) per tutta la durata della commessa.",
+        when:["Subito dopo il front-end planning","Quando il GC chiede «cosa è incluso nel contratto?»","Prima di assegnare le lavorazioni ai fornitori","Prima di attivare avanzamento fisico o SAL"],
+        out:["WBS in Word/PDF per GC/DL","Excel operativo con codici WP","Diagramma ad albero della commessa"],
+        never:["Avanzamento fisico su WBS già definita → project-controller","Contabilità SAL → sal-controller"],
+        prev:["front-end-planning"], next:["project-controller","sal-controller"],
+        cmd:"Definiamo ambito e WBS della commessa [CODICE]: inclusioni, esclusioni, assunzioni e WBS a 3 livelli sui WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B."
+      },
+      {
+        name:"Shop drawing, submittal & design freeze", slug:"progettazione-shop-drawing",
+        desc:"Revision control su disegni e campioni, mock-up come gate pre-produzione, change order log fino al freeze.",
+        what:"Governa la Fase 2: drawing register e revision control, RFI di progettazione, campioni e strike-off, mock-up / model room come gate pre-produzione, design freeze e change order log. Coordina anche clash e blocking con gli altri trade.",
+        when:["«Possiamo andare in produzione?»","«Il mock-up è approvato?»","Arriva una revisione di shop drawing","Si discute grado AWI / Premium / Custom o conformità BIFMA","Clash con impianti o blocking plan da coordinare"],
+        out:["Registro_Submittal_ShopDrawing_[COMMESSA].xlsx","Checklist_MockUp_[COMMESSA].docx","Change_Order_Log_[COMMESSA].xlsx"],
+        never:["Ambito e WBS → scope-wbs","Revisioni su pacchetti approvati dopo il freeze → registro-instabilita-progettuale","NC di montaggio → gestione-non-conformita","Varianti economiche → project-controller"],
+        prev:["scope-wbs"], next:["handover-commessa-pm-ddc"],
+        cmd:"Aggiorna il registro submittal/shop drawing della commessa [CODICE] e dimmi se siamo in condizione di design freeze per [WP]."
+      },
+      {
+        name:"Handover PM → Direttore di Cantiere", slug:"handover-commessa-pm-ddc",
+        desc:"Checklist in 8 sezioni, punteggio semaforico pesato e verbale firmato da entrambi.",
+        what:"Il passaggio di consegne formale quando la commessa lascia la fase contrattuale/progettuale ed entra in cantiere. Verifica contratto, elaborati con revisioni, stato approvazioni, assunzioni d'offerta, fornitori, governance, programma e nodi aperti; calcola il semaforo e produce l'elenco delle integrazioni mancanti con responsabile e scadenza.",
+        when:["Il Direttore di Cantiere entra in commessa","Domanda: «cosa mi serve per partire?»","Il PM dichiara la commessa pronta al cantiere"],
+        out:["Verbale di handover firmato","Punteggio semaforico pesato per sezione","Elenco integrazioni mancanti con responsabile e data"],
+        never:["Checklist documentale di sicurezza → cantiere-sicurezza-onboarding","Definizione ambito/WBS → scope-wbs"],
+        prev:["progettazione-shop-drawing"], next:["piano-cantiere-ddc"],
+        cmd:"Facciamo l'handover della commessa [CODICE] dal PM al Direttore di Cantiere: checklist 8 sezioni, semaforo e integrazioni mancanti."
+      },
+      {
+        name:"Piano di Cantiere", slug:"piano-cantiere-ddc",
+        desc:"Organigramma, sequenza WP e milestone, logistica macro, sicurezza, qualità/collaudo, rischi iniziali.",
+        what:"Intervista il Direttore di Cantiere e costruisce il piano macro della commessa, dalla presa in carico al collaudo: organigramma, sequenza dei WP con milestone, fornitori assegnati, logistica macro, presidio sicurezza D.Lgs. 81/2008, piano qualità e collaudo, comunicazione e registro rischi iniziale.",
+        when:["Dopo l'handover, prima di aprire fisicamente il cantiere","Serve un master plan da condividere con GC e DL","Cambia in modo sostanziale la sequenza dei WP"],
+        out:["Piano_di_Cantiere_[COMMESSA].docx","Piano_di_Cantiere_[COMMESSA]_Milestone.xlsx"],
+        never:["Apertura pre-progettazione → front-end-planning","Ambito/WBS → scope-wbs","Avanzamento giornaliero o slot di scarico puntuali → skill operative"],
+        prev:["handover-commessa-pm-ddc"], next:["cantiere-sicurezza-onboarding"],
+        cmd:"Costruiamo il Piano di Cantiere della commessa [CODICE]: organigramma, sequenza WP con milestone, logistica macro, sicurezza e collaudo."
+      }
+    ]
+  },
+  {
+    id:"sicurezza", n:"§ 81/08", seq:false, tone:"sicurezza",
+    title:"Sicurezza — presidio continuo",
+    note:"Quattro presidi distinti, non intercambiabili: documenti aziendali all'apertura, verifica del singolo POS prima del CSE, scadenze nominali che vivono su più cantieri, controllo a evento in corso d'opera.",
+    items:[
+      {
+        name:"Apertura cantiere in sicurezza", slug:"cantiere-sicurezza-onboarding",
+        desc:"POS, DUVRI, idoneità tecnico-professionale art. 90, tessere di riconoscimento e DURC, squadra per squadra.",
+        what:"Traccia per ogni squadra o subappaltatore lo stato della documentazione di sicurezza, segnala i documenti mancanti o scaduti, genera il report di apertura cantiere per DL/GC e le email di sollecito urgente verso i subappaltatori in stato giallo o rosso.",
+        when:["Apertura di un nuovo cantiere","Ingresso di una nuova squadra prima del montaggio","Verifica: «il cantiere può partire in sicurezza?»"],
+        out:["Report apertura cantiere per DL/GC","Email di sollecito ai subappaltatori giallo/rosso","Stato documentale per squadra"],
+        never:["Audit dei contratti → auditing-contratti-montaggio","Sicurezza in corso d'opera → sicurezza-continuativa-cantiere","Avanzamento fisico o varianti → project-controller"],
+        next:["verifica-pos-cse","scadenzario-certificazioni-sicurezza"],
+        cmd:"Verifica lo stato documentale di sicurezza per l'apertura del cantiere [COMMESSA]: POS, DUVRI, art. 90, tessere e DURC per ogni squadra."
+      },
+      {
+        name:"Verifica POS prima del CSE", slug:"verifica-pos-cse",
+        desc:"Sei aree critiche, esito GO / NO-GO e bozza email al fornitore con le integrazioni richieste.",
+        what:"Controlla il POS di un fornitore prima che arrivi al Coordinatore per la Sicurezza: attestati e validità, rischi generali, rischi specifici per mansione, firme obbligatorie (RSPP, datore di lavoro, medico competente), dati anagrafici degli operatori, dati formali aziendali e coerenza con il cantiere.",
+        when:["«Ho ricevuto il POS»","«Devo mandare il POS al CSE»","Il POS sembra incompleto o generico"],
+        out:["Report_Verifica_POS_[CodiceCommessa]_[RagioneSociale]_[DataVerifica].docx","Esito GO / NO-GO","Bozza email al fornitore con le integrazioni"],
+        never:["Checklist documentale di apertura → cantiere-sicurezza-onboarding","Scadenze nominali per operatore → scadenzario-certificazioni-sicurezza"],
+        prev:["cantiere-sicurezza-onboarding"],
+        cmd:"Verifica questo POS prima dell'invio al CSE: controlla attestati, rischi specifici per mansione, firme RSPP/DL/medico e coerenza cantiere. Dammi esito GO/NO-GO."
+      },
+      {
+        name:"Scadenzario certificazioni", slug:"scadenzario-certificazioni-sicurezza",
+        desc:"Registro nominale per operatore, trasversale a più cantieri, con preavviso sulle scadenze.",
+        what:"Formazione generale e specifica (16 h rischio alto), idoneità sanitaria, primo soccorso e antincendio, abilitazioni PLE, carrelli e ponteggi: il registro vive nel tempo, segue l'operatore da un cantiere all'altro e avvisa prima della scadenza. Si attiva automaticamente anche quando generi il cruscotto mensile.",
+        when:["Controllo periodico delle scadenze","Un attestato sta per scadere","Un operatore si sposta su un altro cantiere","Generazione del cruscotto mensile"],
+        out:["Registro_Scadenze_Certificazioni.xlsx","Elenco certificazioni in scadenza con preavviso"],
+        never:["Documenti aziendali POS/DUVRI/DURC → cantiere-sicurezza-onboarding","Verifica puntuale di un POS → verifica-pos-cse"],
+        cmd:"Aggiorna lo scadenzario certificazioni sicurezza e dimmi cosa scade nei prossimi 60 giorni, operatore per operatore."
+      },
+      {
+        name:"Sicurezza in corso d'opera", slug:"sicurezza-continuativa-cantiere",
+        desc:"Controllo a evento: nuova fase, nuovo subappalto, squadra cambiata. Escalation a 3 segnalazioni in 90 giorni.",
+        what:"Tra apertura cantiere e collaudo finale verifica insieme POS e DUVRI ancora validi, DPI idonei alla fase in corso e idoneità sanitaria, interrogando lo scadenzario. Tiene lo storico dei comportamenti a rischio per squadra, con soglia di escalation verso DL e GC.",
+        when:["Parte una nuova fase lavorativa","Entra un nuovo subappalto","Cambia la composizione di una squadra già onboardata","Rilevato un comportamento a rischio","Subentro di operai non onboardati"],
+        out:["Verifica a evento POS/DUVRI/DPI","Storico comportamenti a rischio per squadra","Escalation a DL/GC oltre soglia"],
+        never:["Apertura cantiere → cantiere-sicurezza-onboarding","Scadenze individuali → scadenzario-certificazioni-sicurezza","Collaudo finale → logistica-e-collaudo"],
+        prev:["cantiere-sicurezza-onboarding"],
+        cmd:"Parte la fase [attività] sul cantiere [COMMESSA] con la squadra [fornitore]: verifica POS/DUVRI validi, DPI idonei e idoneità sanitaria."
+      }
+    ]
+  },
+  {
+    id:"esecuzione", n:"02", seq:true, tone:"skill",
+    title:"Esecuzione in cantiere",
+    note:"Il presidio quotidiano: cosa è successo oggi, cosa arriva domani, cosa non è conforme e cosa è tornato in progettazione dopo essere stato approvato.",
+    items:[
+      {
+        name:"Diario di cantiere & richieste GC", slug:"coordinamento-giornaliero-gc",
+        desc:"Briefing, debrief, presenze squadre, eventi della giornata e registro delle azioni assegnate dal GC.",
+        what:"Il tracciamento quotidiano informale che poi alimenta il report settimanale: squadre presenti, attività svolte, eventi, più il registro delle richieste del GC con scadenza e follow-up.",
+        when:["Briefing mattutino o debrief serale","Il GC assegna una richiesta ad hoc","«Cosa è stato fatto oggi?»","Presenze squadre della giornata"],
+        out:["Diario di cantiere giornaliero","Registro richieste GC con scadenze e follow-up"],
+        never:["Report formale settimanale → reportistica-brandizzata","Aprire una non conformità → gestione-non-conformita","Snag list di collaudo → logistica-e-collaudo"],
+        next:["reportistica-brandizzata"],
+        cmd:"Registra il diario di cantiere di oggi per la commessa [CODICE]: squadre presenti, attività per WP, eventi e richieste ricevute dal GC."
+      },
+      {
+        name:"Slot di scarico & snag list", slug:"logistica-e-collaudo",
+        desc:"Prenotazione arrivi con rilevamento sovrapposizioni, e snag list standard per il collaudo finale.",
+        what:"Due processi complementari: la pianificazione logistica pre-cantiere, che prenota gli slot di scarico e segnala automaticamente le sovrapposizioni tra fornitori, mezzi, aree e montacarichi; e la snag list del collaudo finale con DL e GC, con posizione, priorità e scadenza per ogni punto.",
+        when:["Pianificazione arrivi merce","Due fornitori chiedono lo stesso montacarichi","Sopralluogo di collaudo con DL/GC","Punch list pre-consegna"],
+        out:["Calendario slot di scarico con conflitti evidenziati","Snag list standard Field Project SAS"],
+        never:["NC rilevate durante l'esecuzione ordinaria → gestione-non-conformita (un punto irrisolto di snag list può però essere convertito in NC)"],
+        cmd:"Prenota gli slot di scarico della prossima settimana per la commessa [CODICE] e verifica sovrapposizioni su mezzi, aree e montacarichi."
+      },
+      {
+        name:"Non conformità con SLA", slug:"gestione-non-conformita",
+        desc:"Apertura, gravità, SLA, stato Aperta → In lavorazione → Verificata → Chiusa, escalation a DL/GC.",
+        what:"Difetti di montaggio, materiali danneggiati, scostamenti da progetto o capitolato: assegna lo SLA per gravità, traccia lo stato, segnala i ritardi rispetto allo SLA ed effettua l'escalation per le NC critiche o scadute.",
+        when:["Rilevato un difetto di montaggio o un danno","Scostamento dal capitolato","Serve escalation verso un fornitore","Carichi foto o elenchi di problemi dal cantiere"],
+        out:["Scheda NC con gravità e SLA","Registro NC con stato e ritardi","Escalation a DL/GC per NC critiche"],
+        never:["Snag list finale di collaudo → logistica-e-collaudo","Varianti contrattuali → project-controller","Audit contratti di fornitura → auditing-contratti-montaggio"],
+        next:["storico-performance-fornitori"],
+        cmd:"Apri una non conformità sulla commessa [CODICE]: [descrizione difetto], WP [n], fornitore [nome]. Assegna gravità e SLA."
+      },
+      {
+        name:"Registro instabilità progettuale", slug:"registro-instabilita-progettuale",
+        desc:"Data certa su ogni revisione di pacchetto già approvato, con impatto su programma e ore di riprogettazione.",
+        what:"Traccia con data certa le revisioni su pacchetti già approvati, i dettagli mai definiti e le modifiche di committente, DL o Interior Designer che riportano il lavoro in progettazione, collegando ogni episodio al pacchetto approvato precedente. Produce l'estratto settimanale per l'Advisor, a supporto delle scritture formali di rito e della difesa degli slittamenti.",
+        when:["Un pacchetto approvato torna in discussione","Un dettaglio non è mai stato definito","«Torniamo in progettazione»","Serve difendere uno slittamento di programma"],
+        out:["Registro_IP_[COMMESSA].xlsx","Estratto settimanale per l'Advisor"],
+        never:["Varianti economiche formalizzate → project-controller","NC di montaggio → gestione-non-conformita","Extra lavori fornitori"],
+        cmd:"Registra un episodio di instabilità progettuale sulla commessa [CODICE]: [pacchetto] già approvato il [data], modifica richiesta da [committente/DL/ID]. Stima impatto su programma e ore."
+      }
+    ]
+  },
+  {
+    id:"controllo", n:"03", seq:true, tone:"skill",
+    title:"Controllo & Contabilità",
+    note:"Due contabilità distinte che non vanno mai mescolate: l'avanzamento fisico in percentuale e la contabilità economica del SAL.",
+    items:[
+      {
+        name:"Avanzamento fisico & varianti", slug:"project-controller",
+        desc:"Percentuali di avanzamento sulla WBS e gestione delle varianti contrattuali.",
+        what:"Lavora sulla struttura creata da scope-wbs per misurare l'avanzamento fisico della commessa e gestire le varianti contrattuali formalizzate.",
+        when:["Aggiornamento avanzamento per WP","Nasce una variante contrattuale","Serve la percentuale di completamento per il report"],
+        out:["Avanzamento fisico per codice WBS","Registro varianti"],
+        never:["Contabilità economica del SAL → sal-controller","Stime di tempi → estimated-tool","Snag e punch list → logistica-e-collaudo"],
+        prev:["scope-wbs"], next:["reportistica-brandizzata"],
+        cmd:"Aggiorna l'avanzamento fisico della commessa [CODICE] per WP e segnalami gli scostamenti rispetto al programma."
+      },
+      {
+        name:"SAL & contabilità lavori", slug:"sal-controller",
+        desc:"Libretto delle misure digitale, valorizzazione a corpo e a misura, cascata fino al netto ante IVA.",
+        what:"Gestisce lo Stato di Avanzamento Lavori nel flusso esecutore → General Contractor / Direzione Lavori: raccolta dati di cantiere in libretto delle misure digitale, valorizzazione delle voci contrattuali, e cascata economica completa — lavori progressivi, ritenuta di garanzia, recupero anticipo, penali, netto da liquidare ante IVA — con Excel a formule native.",
+        when:["Preparazione di un SAL o di un acconto","«Quanto possiamo fatturare?»","Certificato di pagamento (CDP) da verificare","Riconciliazione consegnato vs montato"],
+        out:["Libretto delle misure digitale","Registro SAL ed Excel a formule native","Ponte_InSite_SAL_[COMMESSA].xlsx"],
+        never:["Avanzamento fisico in percentuale → project-controller","Stime di tempi → estimated-tool","Snag o punch list"],
+        prev:["scope-wbs"],
+        cmd:"Prepariamo il SAL n. [n] della commessa [CODICE]: quantità contabilizzate per WP, ritenuta di garanzia, recupero anticipo e netto ante IVA."
+      },
+      {
+        name:"Stima tempi", slug:"estimated-tool",
+        desc:"Strumento di stima delle durate delle attività.",
+        what:"Supporta la stima dei tempi delle lavorazioni, a monte della programmazione e delle milestone.",
+        when:["Serve una durata attendibile per una lavorazione","Verifica di fattibilità di una milestone"],
+        out:["Stima di durata per attività"],
+        never:["Avanzamento reale → project-controller","Contabilità → sal-controller"],
+        cmd:"Stima i tempi di montaggio per [attività] sul WP [n] della commessa [CODICE]."
+      }
+    ]
+  },
+  {
+    id:"governance", n:"04", seq:true, tone:"skill",
+    title:"Reporting & Governance",
+    note:"Quello che esce dalla commessa verso l'esterno: DL, GC, cliente finale, Advisor. Ogni destinatario ha il suo formato e il suo livello di dettaglio.",
+    items:[
+      {
+        name:"Report settimanale & consolidato Advisor", slug:"reportistica-brandizzata",
+        desc:"Tre destinatari, tre formati: PDF/Word per DL e GC, email narrativa al cliente, consolidato per l'Advisor.",
+        what:"Genera la reportistica periodica in identità Field Project SAS. Il consolidato per l'Advisor riconcilia tre fonti — dati di campo del Direttore di Cantiere e del preposto, input strutturato del PM, dati dell'app di cantiere — in un quadro unico pre-riunione, con avanzamento per WP, criticità, verifica milestone e segnalazione esplicita delle discrepanze tra fonti.",
+        when:["Fine settimana, report a DL/GC","Aggiornamento narrativo al cliente finale","Prima della riunione di coordinamento con l'Advisor","I dati di campo e quelli del PM non tornano"],
+        out:["Report settimanale PDF/Word per DL/GC","Email narrativa per il cliente finale","Consolidato Advisor con discrepanze tra fonti","Input_PM_Settimanale.xlsx"],
+        never:["Notifica singola di una NC o di un problema di sicurezza — qui vengono aggregate nel periodico"],
+        prev:["coordinamento-giornaliero-gc","project-controller"],
+        cmd:"Prepara il report settimanale della commessa [CODICE] per DL/GC e il consolidato per l'Advisor, riconciliando dati di campo, input PM e app di cantiere."
+      },
+      {
+        name:"Contro-agenda riunione DL", slug:"preparazione-riunione-dl",
+        desc:"Una pagina con i temi che portiamo noi al tavolo e le decisioni richieste come domande chiuse.",
+        what:"Quando la riunione con DL e committenza arriva senza agenda né materiali, costruisce la contro-agenda di una pagina: temi che l'esecutore porta al tavolo, decisioni richieste formulate come domande chiuse, nodi in attesa con la data di prima segnalazione. Dopo la riunione aggiorna il registro decisioni e pendenze con esiti, anzianità e solleciti.",
+        when:["Riunione DL o di coordinamento con il committente","La DL non ha mandato agenda","Una decisione è ferma da settimane","L'esito della riunione è rimasto confuso"],
+        out:["Contro-agenda di una pagina","Registro_Decisioni_DL_[COMMESSA].xlsx con anzianità e solleciti"],
+        never:["Riunione interna ATI/Advisor → reportistica-brandizzata","Diario quotidiano → coordinamento-giornaliero-gc"],
+        cmd:"Prepara la contro-agenda per la riunione DL di [data] sulla commessa [CODICE]: temi nostri, decisioni richieste come domande chiuse, nodi in attesa con data di prima segnalazione."
+      },
+      {
+        name:"Cruscotto mensile", slug:"cruscotto-mensile",
+        desc:"Vista d'insieme su più cantieri: ore risparmiate, stato sicurezza, NC entro SLA, rating fornitori.",
+        what:"Aggrega in un unico report le metriche di tutte le altre skill di coordinamento: ore risparmiate stimate, stato sicurezza D.Lgs. 81, percentuale di NC chiuse entro SLA, rating medio fornitori, collaudi standardizzati, certificazioni in scadenza. Non raccoglie dati da zero: legge quanto già tracciato altrove.",
+        when:["Fine mese","«Quanto tempo ho risparmiato?»","Vista d'insieme su più cantieri invece del dettaglio di un processo"],
+        out:["Cruscotto mensile con KPI aggregati"],
+        never:["Dettaglio operativo di un singolo processo — usa la skill specifica"],
+        prev:["gestione-non-conformita","cantiere-sicurezza-onboarding","storico-performance-fornitori"],
+        cmd:"Genera il cruscotto mensile di [mese/anno]: ore risparmiate, stato sicurezza, NC chiuse entro SLA, rating fornitori e certificazioni in scadenza."
+      },
+      {
+        name:"Storico performance fornitori", slug:"storico-performance-fornitori",
+        desc:"Puntualità, qualità e affidabilità documentale in un punteggio pesato, con classifica e alert sui pattern.",
+        what:"Costruisce lo storico di fornitori e squadre di montaggio nel tempo e su più cantieri, attingendo ai dati già tracciati da gestione-non-conformita (qualità) e cantiere-sicurezza-onboarding (affidabilità documentale).",
+        when:["«Con chi conviene lavorare?»","Scelta delle squadre per un nuovo cantiere","Un fornitore mostra NC ricorrenti","Serve la scheda di un subappaltatore"],
+        out:["Scheda fornitore con punteggio pesato","Classifica squadre","Alert su pattern negativi ricorrenti"],
+        never:["Valutazione contrattuale o legale → auditing-contratti-montaggio","Tracking di una singola NC aperta → gestione-non-conformita"],
+        prev:["gestione-non-conformita"],
+        cmd:"Aggiorna lo storico performance fornitori e dimmi quali squadre conviene coinvolgere sul prossimo cantiere."
+      }
+    ]
+  },
+  {
+    id:"contratti", n:"⚖", seq:false, tone:"skill",
+    title:"Contratti & fornitori",
+    note:"Prima della firma, non dopo.",
+    items:[
+      {
+        name:"Audit contratti di montaggio", slug:"auditing-contratti-montaggio",
+        desc:"Contraddizioni interne, clausole asimmetriche e lacune, classificate con codici A/B/C/D.",
+        what:"Audit dei contratti con fornitori e subappaltatori di montaggio per progetti fit-out e hospitality: rileva contraddizioni interne, clausole asimmetriche, lacune (RCT/RCO, sicurezza D.Lgs. 81/2008, headcount, planning, PEC) ed errori formali. Genera un report Word comparativo che affianca, per ogni anomalia, il testo originale e la proposta di testo corretto.",
+        when:["Arriva un contratto di montaggio o posa da firmare","Sospetto di clausole capestro","Subappalto di montaggio da formalizzare"],
+        out:["Report Word comparativo testo originale / testo proposto","Anomalie classificate A/B/C/D"],
+        never:["Valutazione delle performance del fornitore → storico-performance-fornitori"],
+        cmd:"Fai l'audit di questo contratto di montaggio: contraddizioni interne, clausole asimmetriche, lacune su RCT/RCO, sicurezza, headcount, planning e PEC."
+      },
+      {
+        name:"Review contratto generico", slug:"contract-reviewer",
+        desc:"Lettura critica di un contratto qualsiasi prima della firma, con segnalazione dei punti a rischio.",
+        what:"Per i contratti che non sono di montaggio: locazioni, NDA, incarichi, accordi commerciali. Evidenzia cosa conta prima della firma.",
+        when:["«Devo firmare questo?»","NDA, lettera di incarico, accordo commerciale da valutare"],
+        out:["Elenco dei punti critici con livello di rischio"],
+        never:["Contratti di montaggio/posa → auditing-contratti-montaggio (molto più specifico)"],
+        cmd:"Rivedi questo contratto prima che lo firmi e segnalami tutto ciò che è a mio sfavore."
+      }
+    ]
+  },
+  {
+    id:"amministrazione", n:"€", seq:false, tone:"skill",
+    title:"Amministrazione Field Project SAS",
+    note:"Il lato studio: quello che serve al commercialista e alla dichiarazione dei redditi dei soci.",
+    items:[
+      {
+        name:"Pacchetto commercialista", slug:"doc-commercialista",
+        desc:"Trasferte, spese mediche, bollette e fatture manuali verificate contro una lista scadenze auto-aggiornata.",
+        what:"Verifica le cartelle di categoria contro _Lista_Scadenze.xlsx, estrae i dati e segnala i giustificativi ricorrenti attesi ma assenti. Copre trasferte (riepilogo mensile per giorni fuori comune Italia, km A/R auto in comodato d'uso, giorni estero, dettaglio giornate), spese mediche, bollette con cadenze diverse e fatture manuali incluso reverse charge.",
+        when:["Pacchetto trimestrale per il commercialista","Il commercialista chiede un dato specifico","Controllo dei giustificativi mancanti","Dichiarazione dei redditi dei soci"],
+        out:["Pacchetto trimestrale Excel + lettera Word","Elenco giustificativi attesi ma assenti"],
+        never:["Sola nota trasferte con ricevute Q1/Q2/Q3 → nota-trasferte"],
+        cmd:"Prepara il pacchetto per il commercialista del [trimestre/anno]: trasferte, spese mediche, bollette e fatture manuali, con l'elenco dei giustificativi mancanti."
+      },
+      {
+        name:"Nota trasferte", slug:"nota-trasferte",
+        desc:"Ricevuta per ricevuta dalle cartelle Q1/Q2/Q3: giorni fuori sede, km auto propria, spese documentate.",
+        what:"Raccoglie le ricevute di trasferta dalle cartelle quadrimestrali e compila il registro annuale più la lettera di accompagnamento per il commercialista, a supporto del calcolo dell'indennità di trasferta.",
+        when:["Raccolta ricevute di trasferta","Aggiornamento del registro trasferte","Biglietti treno, volo o viaggi in auto propria da registrare"],
+        out:["Nota_Trasferte_[Anno].xlsx","Lettera Word di accompagnamento"],
+        never:["Spese mediche, bollette, fatture manuali o pacchetto trimestrale generale → doc-commercialista"],
+        cmd:"Compila la Nota Trasferte [anno] dalle cartelle Q1/Q2/Q3: giorni fuori sede, km auto propria e spese documentate ricevuta per ricevuta."
+      }
+    ]
+  },
+  {
+    id:"board", n:"▣", seq:false, tone:"board",
+    title:"Board di cantiere — moduli applicativi",
+    note:"L'app Board Field Project: dati strutturati che alimentano il consolidato settimanale. Sette moduli, una base dati SQLite, API REST per ogni entità.",
+    items:[
+      {
+        name:"Dashboard", slug:"/",
+        desc:"Vista d'apertura: contatori per entità, widget di categoria e cattura rapida.",
+        what:"Aggrega i conteggi delle altre entità e offre la cattura rapida di una voce senza passare dai form completi.",
+        when:["Apertura dell'app","Serve il quadro sintetico del giorno"],
+        out:["Contatori per entità","Quick capture"],
+        cmd:"Apri la dashboard del Board di cantiere."
+      },
+      {
+        name:"Cantieri", slug:"/cantieri",
+        desc:"Anagrafica commesse: cliente, indirizzo, stato, date, budget, tag.",
+        what:"Il record radice a cui si agganciano lavorazioni, giornale e documenti.",
+        when:["Nuova commessa da registrare nell'app","Aggiornamento stato o date di una commessa"],
+        out:["Record cantiere: title, address, client, status, start_date, end_date, budget, notes, tags"],
+        cmd:"Registra un nuovo cantiere nel Board: [nome], cliente [cliente], indirizzo [indirizzo]."
+      },
+      {
+        name:"Lavorazioni", slug:"/lavorazioni",
+        desc:"Attività per cantiere con stato, priorità, scadenza e impresa assegnata.",
+        what:"Le attività operative collegate al cantiere, con stato da-fare / in corso / fatto, priorità e impresa esecutrice.",
+        when:["Pianificazione delle attività del WP","Assegnazione a un'impresa","Aggiornamento stato lavorazione"],
+        out:["Record lavorazione: title, description, cantiere_id, status, priority, deadline, impresa, tags"],
+        cmd:"Aggiungi una lavorazione al cantiere [nome]: [attività], impresa [fornitore], scadenza [data]."
+      },
+      {
+        name:"Giornale", slug:"/giornale",
+        desc:"Giornale dei lavori: data, meteo, numero operai, attività, criticità, note.",
+        what:"La registrazione giornaliera strutturata; è la fonte di campo che il consolidato settimanale riconcilia con l'input del PM.",
+        when:["Fine giornata di cantiere","Serve la cronologia delle presenze e degli eventi"],
+        out:["Record giornale: date, weather, workers_count, activities, issues, notes"],
+        cmd:"Registra il giornale di oggi nel Board: cantiere [nome], [n] operai, attività svolte e criticità."
+      },
+      {
+        name:"Maestranze", slug:"/maestranze",
+        desc:"Rubrica operatori e squadre: ruolo, azienda, telefono, stato, qualifiche.",
+        what:"L'anagrafica delle persone in cantiere, con il campo qualifiche che si lega al presidio certificazioni.",
+        when:["Nuovo operatore o squadra in cantiere","Serve un contatto rapido","Controllo incrociato con lo scadenzario certificazioni"],
+        out:["Record maestranza: title, role, company, phone, status, qualifications, tags"],
+        cmd:"Aggiungi una maestranza al Board: [nome], ruolo [ruolo], azienda [impresa], qualifiche [elenco]."
+      },
+      {
+        name:"Documenti", slug:"/documenti",
+        desc:"Indice documentale per cantiere: tipo, link, note, tag.",
+        what:"Il registro dei documenti di commessa, agganciati al cantiere di riferimento.",
+        when:["Archiviazione di un elaborato, un POS, un verbale","Serve ritrovare un documento per tipo o tag"],
+        out:["Record documento: title, type, cantiere_id, url, notes, tags"],
+        cmd:"Archivia un documento nel Board: [titolo], tipo [tipo], cantiere [nome], link [url]."
+      },
+      {
+        name:"Archivio", slug:"/archivio",
+        desc:"Voci archiviate, fuori dal flusso operativo ma recuperabili.",
+        what:"Dove finiscono le voci chiuse, per non sporcare le viste attive senza perdere lo storico.",
+        when:["Chiusura di una commessa o di una lavorazione","Recupero di uno storico"],
+        out:["Voci archiviate con riferimento all'entità originaria"],
+        cmd:"Mostrami l'archivio del Board e cosa è stato chiuso nell'ultimo mese."
+      }
+    ]
+  },
+  {
+    id:"strumenti", n:"⚙", seq:false, tone:"skill",
+    title:"Strumenti trasversali",
+    note:"Non processi di commessa: motori che le altre skill usano per produrre file, documenti e nuove automazioni.",
+    items:[
+      {
+        name:"Generazione Excel", slug:"xlsx",
+        desc:"Crea e modifica fogli .xlsx con formule native — il motore dietro registri, WBS e SAL.",
+        what:"Produce i file Excel delle altre skill, con formule reali e non valori incollati.",
+        when:["Serve un registro, un libretto misure o una WBS in Excel"],
+        out:[".xlsx con formule native"],
+        cmd:"Genera un file Excel con [struttura richiesta] e formule native."
+      },
+      {
+        name:"Generazione Word", slug:"docx",
+        desc:"Produce i .docx: verbali, report, lettere e piani.",
+        what:"Il motore documentale dietro verbali di handover, report POS, piani di cantiere e lettere.",
+        when:["Serve un documento Word impaginato"],
+        out:[".docx"],
+        cmd:"Genera un documento Word con [contenuto]."
+      },
+      {
+        name:"Generazione PDF", slug:"pdf",
+        desc:"Crea, legge e compila PDF, inclusi moduli.",
+        what:"Lettura e produzione di PDF, utile per capitolati, elaborati e moduli da compilare.",
+        when:["Un capitolato o un elaborato arriva in PDF","Serve un PDF finale per DL/GC"],
+        out:[".pdf"],
+        cmd:"Estrai il contenuto di questo PDF / genera un PDF con [contenuto]."
+      },
+      {
+        name:"Generazione presentazioni", slug:"pptx",
+        desc:"Costruisce i .pptx per riunioni e presentazioni di commessa.",
+        what:"Deck per riunioni di coordinamento e presentazioni al cliente.",
+        when:["Serve una presentazione per una riunione"],
+        out:[".pptx"],
+        cmd:"Prepara una presentazione su [argomento] per la riunione del [data]."
+      },
+      {
+        name:"Identità visiva Field Project", slug:"brand-guidelines",
+        desc:"Le regole grafiche applicate a tutta la reportistica brandizzata.",
+        what:"Colori, tipografia e impaginazione che ogni deliverable esterno deve rispettare.",
+        when:["Nuovo template o documento destinato all'esterno"],
+        out:["Applicazione dell'identità Field Project SAS"],
+        cmd:"Applica l'identità visiva Field Project SAS a questo documento."
+      },
+      {
+        name:"Creazione nuove skill", slug:"skill-creator",
+        desc:"Trasforma un processo ripetitivo in una nuova skill del sistema.",
+        what:"Quando un processo si ripete a mano più volte, lo si codifica: questa è la skill che costruisce le altre.",
+        when:["Un processo manuale si ripete ogni settimana","Un vuoto nel sistema che nessuna skill copre"],
+        out:["Nuova skill installata nel sistema"],
+        next:["mappa-tesoro"],
+        cmd:"Costruiamo una nuova skill per [processo ripetitivo]."
+      },
+      {
+        name:"Mappa delle automazioni", slug:"mappa-tesoro",
+        desc:"Scompone le attività ripetitive dell'azienda e indica le 3 priorità da cui partire.",
+        what:"Mappa area per area cosa si ripete e cosa è automatizzabile, con una classifica di priorità.",
+        when:["Si vuole capire cosa automatizzare dopo","Revisione periodica del sistema"],
+        out:["Mappa attività automatizzabili con 3 priorità"],
+        next:["skill-creator"],
+        cmd:"Facciamo la mappa delle attività ripetitive di Field Project SAS e dimmi le 3 priorità da automatizzare."
+      },
+      {
+        name:"Contesto aziendale", slug:"impronta",
+        desc:"Cinque file di contesto — identità, offerta, clienti, tono, metodo — che alimentano tutte le skill.",
+        what:"L'intervista che dà al sistema il contesto di Field Project SAS, così ogni deliverable esce con il tono giusto.",
+        when:["Prima configurazione del sistema","Cambia il posizionamento o l'offerta"],
+        out:["5 file di contesto aziendale"],
+        cmd:"Aggiorniamo i file di contesto di Field Project SAS."
+      },
+      {
+        name:"Brief mattutino", slug:"morning",
+        desc:"Il riepilogo della giornata, su richiesta o ricorrente nei giorni feriali.",
+        what:"Rende la giornata in un brief; può essere impostato come attività ricorrente.",
+        when:["«Fammi il brief di oggi»"],
+        out:["Brief giornaliero"],
+        cmd:"Fammi il morning brief."
+      },
+      {
+        name:"Documenti condivisi", slug:"docs",
+        desc:"Documenti vivi che si scrivono e si commentano insieme, invece di file statici.",
+        what:"Per piani, memo, specifiche e write-up destinati a essere letti, commentati e modificati nel tempo.",
+        when:["Serve un documento condiviso da editare insieme","Un memo che resterà in revisione"],
+        out:["Documento condiviso con link"],
+        cmd:"Creiamo un documento condiviso su [argomento]."
+      }
+    ]
+  }
+];
+
+/* ---------- indice ---------- */
+const INDEX = {};
+GROUPS.forEach(g => g.items.forEach(it => { INDEX[it.slug] = {item:it, group:g}; }));
+
+const el = s => document.querySelector(s);
+const groupsEl = el("#groups");
+const chipsEl = el("#chips");
+const sheet = el("#sheet");
+const scrim = el("#scrim");
+const sheetBody = el("#sheetBody");
+
+let activeArea = "tutte";
+let query = "";
+let lastFocus = null;
+
+/* ---------- intestazione dati ---------- */
+(function renderMeta(){
+  const skills = GROUPS.filter(g => g.id !== "board").reduce((n,g) => n + g.items.length, 0);
+  const moduli = (GROUPS.find(g => g.id === "board") || {items:[]}).items.length;
+  const rows = [
+    ["Comandi disponibili", skills + moduli],
+    ["Skill installate", skills],
+    ["Moduli Board", moduli],
+    ["Aree del sistema", GROUPS.length],
+    ["Commessa di riferimento", "2514RW"]
+  ];
+  el("#meta").innerHTML = rows.map(([k,v]) =>
+    '<div class="meta__row"><span class="meta__k">'+k+'</span><span class="meta__v">'+v+'</span></div>'
+  ).join("");
+})();
+
+/* ---------- filtri ---------- */
+function renderChips(){
+  const all = [{id:"tutte", n:"", title:"Tutte le aree"}].concat(
+    GROUPS.map(g => ({id:g.id, n:g.n, title:g.title}))
+  );
+  chipsEl.innerHTML = all.map(c =>
+    '<button class="chip" type="button" data-area="'+c.id+'" aria-pressed="'+(c.id===activeArea)+'">'
+    + (c.n ? '<span class="n">'+c.n+'</span>' : '')
+    + '<span>'+c.title+'</span></button>'
+  ).join("");
+}
+
+function tagClass(f){
+  if(/\.xlsx/i.test(f)) return "tag tag--xls";
+  if(/\.(docx|pdf|pptx)/i.test(f)) return "tag tag--doc";
+  return "tag";
+}
+function shortOut(f){
+  const t = f.replace(/\[COMMESSA\]|\[CodiceCommessa\]|\[RagioneSociale\]|\[DataVerifica\]|\[Anno\]/g,"…").replace(/^assets\//,"");
+  return t.length > 30 ? t.slice(0,29) + "…" : t;
+}
+function matches(it, g){
+  if(activeArea !== "tutte" && g.id !== activeArea) return false;
+  if(!query) return true;
+  const hay = [it.name, it.slug, it.desc, it.what, (it.when||[]).join(" "), (it.out||[]).join(" "), (it.never||[]).join(" ")].join(" ").toLowerCase();
+  return query.split(/\s+/).filter(Boolean).every(t => hay.includes(t));
+}
+
+function render(){
+  let shown = 0;
+  const html = GROUPS.map(g => {
+    const items = g.items.filter(it => matches(it,g));
+    if(!items.length) return "";
+    shown += items.length;
+    return '<section class="group" id="area-'+g.id+'">'
+      + '<div class="group__head"><span class="group__n'+(g.seq?"":" group__n--flat")+'">'+g.n+'</span><h2>'+g.title+'</h2></div>'
+      + '<p class="group__note">'+g.note+'</p>'
+      + '<div class="grid">'
+      + items.map(it =>
+          '<button class="card" type="button" data-slug="'+it.slug+'" data-tone="'+g.tone+'">'
+          + '<div class="card__top"><span class="card__name">'+it.name+'</span><span class="card__arrow" aria-hidden="true">→</span></div>'
+          + '<span class="card__slug mono">'+it.slug+'</span>'
+          + '<p class="card__desc">'+it.desc+'</p>'
+          + ((it.out && it.out.length) ? '<span class="card__out">'
+              + it.out.slice(0,2).map(o => '<span class="'+tagClass(o)+'">'+shortOut(o)+'</span>').join("")
+              + (it.out.length>2 ? '<span class="tag">+'+(it.out.length-2)+'</span>' : '')
+              + '</span>' : '')
+          + '</button>'
+        ).join("")
+      + '</div></section>';
+  }).join("");
+
+  groupsEl.innerHTML = shown ? html
+    : '<div class="empty" style="margin-top:32px">Nessun comando corrisponde a «'+query+'». Prova con POS, SAL, snag, NC, trasferte, WBS.</div>';
+}
+
+/* ---------- scheda ---------- */
+function openSheet(slug){
+  const rec = INDEX[slug];
+  if(!rec) return;
+  const it = rec.item, g = rec.group;
+  lastFocus = document.activeElement;
+
+  const list = (label, arr, warn) => (arr && arr.length)
+    ? '<div class="blk'+(warn?" blk--warn":"")+'"><div class="blk__lab">'+label+'</div><ul>'
+      + arr.map(x => '<li>'+x+'</li>').join("") + '</ul></div>'
+    : "";
+  const files = (arr) => (arr && arr.length)
+    ? '<div class="blk"><div class="blk__lab">Cosa produce</div><div class="files">'
+      + arr.map(f => '<span class="file">'+f+'</span>').join("") + '</div></div>'
+    : "";
+  const chain = (label, arr) => (arr && arr.length)
+    ? '<div class="blk"><div class="blk__lab">'+label+'</div><div class="links">'
+      + arr.map(s => '<button class="link" type="button" data-goto="'+s+'">'+s+'</button>').join("") + '</div></div>'
+    : "";
+
+  el("#sheetArea").textContent = g.title;
+  el("#sheetTitle").textContent = it.name;
+  sheetBody.innerHTML =
+      '<div class="blk"><div class="blk__lab">Comando · '+it.slug+'</div><p>'+it.what+'</p></div>'
+    + list("Quando si attiva", it.when)
+    + files(it.out)
+    + list("Non usare per", it.never, true)
+    + chain("A monte", it.prev)
+    + chain("A valle", it.next)
+    + '<div class="blk"><div class="blk__lab">Frase per lanciarlo</div><div class="cmd">'
+      + '<textarea class="cmd__txt" id="cmdTxt" rows="4" readonly>'+it.cmd+'</textarea>'
+      + '<button class="btn" type="button" id="copyBtn">Copia la frase</button>'
+      + '</div></div>';
+
+  sheet.classList.add("on");
+  scrim.classList.add("on");
+  sheet.setAttribute("aria-hidden","false");
+  el("#sheetClose").focus();
+  sheetBody.scrollTop = 0;
+}
+
+function closeSheet(){
+  sheet.classList.remove("on");
+  scrim.classList.remove("on");
+  sheet.setAttribute("aria-hidden","true");
+  if(lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+
+/* ---------- eventi ---------- */
+chipsEl.addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if(!b) return;
+  activeArea = b.dataset.area;
+  try{ localStorage.setItem("fp.area", activeArea); }catch(_){}
+  renderChips();
+  render();
+});
+
+groupsEl.addEventListener("click", e => {
+  const c = e.target.closest(".card");
+  if(c) openSheet(c.dataset.slug);
+});
+
+sheetBody.addEventListener("click", e => {
+  const go = e.target.closest("[data-goto]");
+  if(go){ openSheet(go.dataset.goto); return; }
+  if(e.target.id === "copyBtn"){
+    const ta = el("#cmdTxt"), btn = e.target;
+    const done = () => {
+      btn.textContent = "Copiata";
+      btn.dataset.done = "1";
+      setTimeout(() => { btn.textContent = "Copia la frase"; btn.dataset.done = "0"; }, 1800);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ta.value).then(done).catch(() => {
+        ta.focus(); ta.select();
+        btn.textContent = "Selezionata — premi Ctrl/Cmd + C";
+      });
+    } else {
+      ta.focus(); ta.select();
+      btn.textContent = "Selezionata — premi Ctrl/Cmd + C";
+    }
+  }
+});
+
+el("#sheetClose").addEventListener("click", closeSheet);
+scrim.addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && sheet.classList.contains("on")) closeSheet();
+});
+
+el("#q").addEventListener("input", e => {
+  query = e.target.value.trim().toLowerCase();
+  render();
+});
+
+/* ---------- avvio ---------- */
+try{
+  const saved = localStorage.getItem("fp.area");
+  if(saved && (saved === "tutte" || GROUPS.some(g => g.id === saved))) activeArea = saved;
+}catch(_){}
+renderChips();
+render();
+</script>
