@@ -52,6 +52,22 @@ ricorrenti e cosa fare quando nessuna skill copre il processo.
 I parametri citati sono estratti dalle skill stesse, non inventati: quando una
 skill cambia soglia, la guida va riallineata.
 
+### Versione Word
+
+`Guida_Operativa_Sistema_Field_Project.docx` — stessa guida in formato Word,
+con copertina, indice, tabelle e pie' di pagina numerato, da stampare o
+consegnare a chi entra in commessa.
+
+Si rigenera con lo script che la produce:
+
+```bash
+npm install docx
+node genera-guida-docx.js .        # scrive il .docx nella cartella indicata
+```
+
+Lo script tiene i colori del brand in testa al file (`NERO`, `ROSSO`, `FONT`):
+quando cambia il contenuto della guida HTML, va aggiornato anche li' e rilanciato.
+
 ## Manutenzione
 
 Nel Quadro di Comando i dati sono in un unico array `GROUPS` in fondo al file:
