@@ -90,7 +90,13 @@ quando cambia il contenuto della guida HTML, va aggiornato anche li' e rilanciat
 ## Discordanze note
 
 - `cruscotto-mensile` aggrega anche da `pm-rappresentativo-gili-2514rw`, che non
-  risulta installata: quel KPI resta vuoto finche' la skill non esiste.
+  risulta installata. Definizione recuperata da Google Drive
+  (`PM-Rappresentativo-GILI-2514RW.md`, 06/07/2026) e ricostruita come skill in
+  `skills/pm-rappresentativo-gili-2514rw/SKILL.md`. **Resta aperto** lo
+  scostamento: la definizione descrive un agente di mappatura processi, mentre
+  il cruscotto le chiede indicatori di presidio operativo di commessa
+  (% riunioni coperte, completezza SAL per WP, NC su WP2-4). Vedi la sezione 6
+  del file. Finche' non e' risolto, quel KPI va dato come non disponibile.
 - `brand-guidelines` applica il brand Anthropic, non Field Project SAS.
   L'identita' FP vive in `reportistica-brandizzata/references/brand-identity.md`.
 - L'«app di cantiere» che il consolidato settimanale riconcilia e' InSite

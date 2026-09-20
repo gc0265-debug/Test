@@ -721,6 +721,16 @@ const GROUPS = [
         cmd:"Applica le linee guida del brand Anthropic a questo artifact."
       },
       {
+        name:"Mappatura processi (Process-I)", slug:"pm-rappresentativo-gili-2514rw",
+        desc:"Decide SE un processo merita una skill, prima di scriverla. Recuperata dal Drive, non ancora attiva.",
+        what:"Intervista guidata su trigger, attori, stato attuale e dove il processo è già tracciato; poi verifica le sovrapposizioni con le skill esistenti e, solo dopo conferma esplicita, costruisce la skill con la sua scheda metrica. Tiene separate le due metriche di valore: ore risparmiate per ciò che oggi fai a mano, conteggio dei controlli per ciò che oggi non fai affatto. Stato: la definizione è stata recuperata da Google Drive ma la skill non risulta installata, e quello che cruscotto-mensile le chiede non corrisponde a quello che la definizione produce.",
+        when:["«Voglio automatizzare questo processo»","«Non abbiamo ancora una skill per…»","Un'attività manuale si ripete ogni settimana","Dubbio fra skill nuova ed estensione di una esistente"],
+        out:["Verbale dell'intervista di mappatura","Nuova skill o estensione di una esistente","Scheda metrica separata per tipo di valore"],
+        never:["Ricognizione a tappeto delle attività ripetitive → mappa-tesoro","Sola scrittura tecnica di una skill già decisa → skill-creator","Metriche economiche → sal-controller"],
+        next:["skill-creator"],
+        cmd:"Mappiamo il processo [nome]: trigger, attori, come lo gestisco oggi e se è già coperto da una skill esistente."
+      },
+      {
         name:"Creazione nuove skill", slug:"skill-creator",
         desc:"Trasforma un processo ripetitivo in una nuova skill del sistema.",
         what:"Quando un processo si ripete a mano più volte, lo si codifica: questa è la skill che costruisce le altre.",
