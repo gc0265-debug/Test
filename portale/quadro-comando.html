@@ -518,7 +518,7 @@ const GROUPS = [
   {
     id:"governance", n:"04", seq:true, tone:"skill",
     title:"Reporting & Governance",
-    note:"Quello che esce dalla commessa verso l'esterno: DL, GC, cliente finale, Advisor. Ogni destinatario ha il suo formato e il suo livello di dettaglio.",
+    note:"Quello che esce dalla commessa verso l'esterno: DL, GC, cliente finale, Advisor. Ogni destinatario ha il suo formato e il suo livello di dettaglio. Il presidio è l'eccezione: non guarda l'opera, guarda la posizione di chi la coordina.",
     items:[
       {
         name:"Report settimanale & consolidato Advisor", slug:"reportistica-brandizzata",
@@ -548,6 +548,16 @@ const GROUPS = [
         never:["Dettaglio operativo di un singolo processo — usa la skill specifica"],
         prev:["gestione-non-conformita","cantiere-sicurezza-onboarding","storico-performance-fornitori"],
         cmd:"Genera il cruscotto mensile di [mese/anno]: ore risparmiate, stato sicurezza, NC chiuse entro SLA, rating fornitori e certificazioni in scadenza."
+      },
+      {
+        name:"Presidio GC — Registro Allert", slug:"pm-rappresentativo-gili-2514rw",
+        desc:"L'unica skill che non guarda l'opera ma la posizione di chi la coordina: cosa hai segnalato, quando, a chi, e cosa hai rimesso a chi ne ha la competenza.",
+        what:"Tiene il Registro Allert delle comunicazioni di tutela verso la committenza e classifica ogni output in perimetro, grigio o fuori perimetro — con rimessione sempre nominale, mai «si valuterà». Applica gli otto pattern di tutela, la scala di sollecito 7/15/30 giorni e il registro delle vulnerabilità dell'infrastruttura (casella di posta, firma, copertura assicurativa). Legge il fascicolo Presidio_GC e il Registro Allert: senza quei due file non ha memoria. Stato: ricostruita, da caricare fra le skill attive.",
+        when:["Stai per scrivere una comunicazione che tocca un tema fuori dal tuo incarico","«Questo rientra nel mio perimetro?»","Una segnalazione formale è ferma e il termine è scaduto","Revisione periodica del registro, per cercare comunicazioni mai tracciate","Prima di firmare o commentare un contratto di fornitura"],
+        out:["Riga di Registro Allert con tipologia e stato","Testo della comunicazione con la formula di rimessione","Elenco solleciti dovuti a 7/15/30 giorni","Registro vulnerabilità con priorità","I quattro indicatori per il cruscotto mensile"],
+        never:["Mappare processi da automatizzare → mappa-tesoro","Scrivere o modificare una skill → skill-creator","Decisioni e pendenze del tavolo DL → preparazione-riunione-dl","Revisioni su progetto approvato → registro-instabilita-progettuale","Difetti di montaggio → gestione-non-conformita"],
+        next:["cruscotto-mensile"],
+        cmd:"Registro Allert 2514RW: devo rispondere a [tema]. Classifica in perimetro/grigio/fuori perimetro, scrivi la comunicazione con la rimessione nominale e preparami la riga di registro."
       },
       {
         name:"Storico performance fornitori", slug:"storico-performance-fornitori",
@@ -719,16 +729,6 @@ const GROUPS = [
         out:["Applicazione della palette e tipografia Anthropic"],
         never:["Documenti di commessa destinati a DL, GC o cliente → reportistica-brandizzata, che porta l'identità Field Project"],
         cmd:"Applica le linee guida del brand Anthropic a questo artifact."
-      },
-      {
-        name:"Mappatura processi (Process-I)", slug:"pm-rappresentativo-gili-2514rw",
-        desc:"Decide SE un processo merita una skill, prima di scriverla. Recuperata dal Drive, non ancora attiva.",
-        what:"Intervista guidata su trigger, attori, stato attuale e dove il processo è già tracciato; poi verifica le sovrapposizioni con le skill esistenti e, solo dopo conferma esplicita, costruisce la skill con la sua scheda metrica. Tiene separate le due metriche di valore: ore risparmiate per ciò che oggi fai a mano, conteggio dei controlli per ciò che oggi non fai affatto. Stato: la definizione è stata recuperata da Google Drive ma la skill non risulta installata, e quello che cruscotto-mensile le chiede non corrisponde a quello che la definizione produce.",
-        when:["«Voglio automatizzare questo processo»","«Non abbiamo ancora una skill per…»","Un'attività manuale si ripete ogni settimana","Dubbio fra skill nuova ed estensione di una esistente"],
-        out:["Verbale dell'intervista di mappatura","Nuova skill o estensione di una esistente","Scheda metrica separata per tipo di valore"],
-        never:["Ricognizione a tappeto delle attività ripetitive → mappa-tesoro","Sola scrittura tecnica di una skill già decisa → skill-creator","Metriche economiche → sal-controller"],
-        next:["skill-creator"],
-        cmd:"Mappiamo il processo [nome]: trigger, attori, come lo gestisco oggi e se è già coperto da una skill esistente."
       },
       {
         name:"Creazione nuove skill", slug:"skill-creator",
