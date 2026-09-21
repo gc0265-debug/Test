@@ -97,8 +97,8 @@ quando cambia il contenuto della guida HTML, va aggiornato anche li' e rilanciat
   restano invariate e la skill e' stata ri-mirata sul **presidio** — Registro
   Allert, perimetro di competenza, pattern di tutela — che nessuna delle 41
   skill copriva. Il nome e' rimasto invariato per non rompere il riferimento
-  del cruscotto. Resta da confermare a chi corrisponde la sigla «AT» negli
-  indicatori (ipotesi: Andrea Turcato, PM di WP1 e WP4).
+  del cruscotto. La sigla «AT» degli indicatori e' Andrea Turcato, PM di WP1 e WP4
+  (confermato il 21.09.2026).
   La skill non copia dati identificativi, compensi o vulnerabilita': rimanda
   al fascicolo `Presidio_GC` e al `Registro_Allert`, che restano fuori dal
   repository.

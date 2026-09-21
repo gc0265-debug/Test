@@ -31,14 +31,24 @@ cosa è stato esplicitamente rimesso a chi ne ha la competenza.
 Il presidio **non contiene** i dati: li legge dal fascicolo, che vive
 fuori da questa skill.
 
-- `Presidio_GC_v7.0.md` — identità, perimetro dell'incarico, contatti,
+- `Presidio_GC.md` — identità, perimetro dell'incarico, contatti,
   vulnerabilità, pattern consolidati
-- `Registro_Allert_2514RW_v7.docx` — le comunicazioni tracciate, A4
+- `Registro_Allert_2514RW.docx` — le comunicazioni tracciate, A4
   orizzontale, tabella a 7 colonne
 
-Vanno caricati entrambi a inizio lavoro. Se mancano, chiedili prima di
-procedere: senza il fascicolo il presidio non ha memoria, e una riga
-inserita senza la numerazione corrente rompe il registro.
+Vanno caricati entrambi a inizio lavoro, **nella versione corrente**. Se
+mancano, chiedili prima di procedere: senza il fascicolo il presidio non
+ha memoria, e una riga inserita senza la numerazione corrente rompe il
+registro.
+
+> **Verifica la versione prima di scrivere.** Questa skill non cita mai
+> un numero di versione, e non deve farlo: il registro viene revisionato
+> spesso e ogni numero scritto qui invecchia. Due controlli a inizio
+> sessione: che il file caricato sia l'ultimo, e che il fascicolo
+> narrativo non sia più vecchio del registro. Se lo è, il registro fa
+> fede e il fascicolo va riallineato — una vulnerabilità chiusa mesi fa
+> e ancora scritta come aperta fa perdere tempo e credibilità al
+> presidio.
 
 ## 1. Le tre categorie — si applicano a ogni output
 
@@ -147,12 +157,12 @@ Il «gap evitato» appartiene alla metrica *rischio intercettato*, non a
 avverrebbero, non ore sottratte a un lavoro manuale. Le due non si
 sommano mai.
 
-> **Da confermare — chi è «AT».** La sigla non è sciolta in nessun
-> documento. L'ipotesi fondata è **Andrea Turcato**, PM di commessa di
-> WP1 FOH e WP4 SCALA B: sarebbe lui il PM che di fatto rappresenta la
-> committenza anche sui WP che non sono i suoi, ed è esattamente ciò
-> che i tre indicatori misurano. Finché non è confermato, gli
-> indicatori vanno prodotti dichiarando l'assunzione.
+> **«AT» è Andrea Turcato** — PM di commessa di WP1 FOH e WP4 SCALA B,
+> confermato dall'utente il 21.09.2026. È lui il PM che di fatto
+> rappresenta la committenza anche sui WP che non sono i suoi: i tre
+> indicatori misurano quanto quella copertura si estende oltre il suo
+> perimetro nominale. Una NC su WP2 o WP3 segnalata da lui è un dato di
+> copertura, non un'anomalia da correggere.
 
 ## 8. Confini con le altre skill
 
