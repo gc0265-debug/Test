@@ -165,6 +165,8 @@ CREATE TABLE IF NOT EXISTS milestone (
     titolo TEXT NOT NULL,
     data_inizio TEXT NOT NULL,
     data_fine TEXT NOT NULL,
+    baseline_data_inizio TEXT,                 -- congelata alla creazione; non si sposta con le modifiche
+    baseline_data_fine TEXT,                   -- successive, a meno di un reset esplicito della baseline
     stato TEXT NOT NULL DEFAULT 'pianificata'
           CHECK(stato IN ('pianificata','in-corso','completata')),
     note TEXT,

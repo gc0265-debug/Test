@@ -28,9 +28,13 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   tutela, collegabile a una criticità o decisione che lo ha originato.
   Struttura generica ispirata alla funzione di presidio GC, non una
   sincronizzazione automatica con il relativo fascicolo.
-- **Timeline Montaggi** — Gantt per settimane o mesi sulle milestone
-  (date di inizio/fine montaggio per commessa, work package, piano e
-  zona), con evidenza visiva di ciò che è in ritardo.
+- **Timeline Montaggi** — tabella Gantt per settimane o mesi sulle
+  milestone (nome attività, data inizio, data fine, piano, zona, work
+  package), con le colonne ferme a sinistra e solo le barre che
+  scorrono in orizzontale. Ogni milestone congela una baseline alla
+  creazione: se le date si spostano, la barra originale resta visibile
+  in trasparenza accanto a quella attuale, a mostrare lo scostamento
+  — reimpostabile dalla scheda di modifica una volta gestito.
 - **Lezioni Apprese** — raccolte dalle altre sezioni (criticità,
   decisioni, allert) tramite collegamento opzionale, per non ripetere
   gli stessi errori sulla prossima commessa.

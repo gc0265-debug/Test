@@ -32,5 +32,15 @@ ensureColumns('documenti', [
 ]);
 ensureColumns('decisioni', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
 ensureColumns('allert', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
+ensureColumns('milestone', [
+  { name: 'baseline_data_inizio', def: 'TEXT' },
+  { name: 'baseline_data_fine', def: 'TEXT' },
+]);
+// milestone create prima di questa modifica: la baseline parte dalle date correnti,
+// così da non mostrare uno scostamento inesistente al primo avvio dopo l'aggiornamento.
+db.exec(`
+  UPDATE milestone SET baseline_data_inizio = data_inizio, baseline_data_fine = data_fine
+  WHERE baseline_data_inizio IS NULL
+`);
 
 module.exports = db;

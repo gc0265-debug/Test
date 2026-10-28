@@ -1,8 +1,9 @@
-// Timeline Montaggi — Gantt per settimane/mesi sulle milestone (date di
-// inizio/fine montaggio per commessa, work package, piano e zona). Vista
-// costruita a barre percentuali su un intervallo di date comune: niente
-// libreria esterna, solo CSS. "Stampa elenco" genera invece una versione
-// tabellare (le barre non sono pensate per la stampa).
+// Timeline Montaggi — tabella Gantt per settimane/mesi sulle milestone.
+// Le colonne Attività/Inizio/Fine restano ferme (sticky a sinistra della
+// finestra di scroll); solo la parte con le barre scorre in orizzontale.
+// Ogni milestone congela una baseline alla creazione: se le date correnti
+// si spostano, la barra originale resta visibile in trasparenza accanto
+// a quella attuale, a mostrare lo scostamento.
 
 import { api } from '../api.js';
 import { state } from '../state.js';
@@ -101,6 +102,16 @@ function openForm(existing, onSaved) {
     field('Data fine', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true })),
   ]));
   form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata')));
+  if (existing?.ha_scostamento) {
+    form.appendChild(el('label', { style: 'display:flex;gap:6px;align-items:flex-start;font-size:11.5px;color:var(--ink-2);margin:-6px 0 14px' }, [
+      el('input', { type: 'checkbox', name: 'reimposta_baseline', style: 'margin-top:2px' }),
+      el('span', {}, [
+        'Reimposta la baseline su queste date',
+        el('div', { class: 'field__hint', style: 'margin-top:2px' },
+          `Baseline attuale: ${formatDate(existing.baseline_data_inizio)} → ${formatDate(existing.baseline_data_fine)}. Spunta per far coincidere la barra di riferimento con le nuove date.`),
+      ]),
+    ]));
+  }
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
@@ -111,6 +122,7 @@ function openForm(existing, onSaved) {
     e.preventDefault();
     const data = formData(form);
     data.commessa_id = state.commessaId;
+    data.reimposta_baseline = data.reimposta_baseline === '1';
     try {
       if (existing) await api.put(`/milestone/${existing.id}`, data);
       else await api.post('/milestone', data);
@@ -157,11 +169,12 @@ export async function renderTimeline(container) {
     const commessa = state.commesse.find((c) => c.id === state.commessaId);
     printReport('Elenco milestone', commessa, [{
       heading: 'Milestone / montaggi',
-      columns: ['Titolo', 'Piano', 'Zona', 'WP', 'Inizio', 'Fine', 'Stato'],
+      columns: ['Titolo', 'Piano', 'Zona', 'WP', 'Inizio', 'Fine', 'Stato', 'Scostamento da baseline'],
       rows: lastRows.map((m) => [
         m.titolo, m.piano || '—', m.zona || '—', m.wp_codice || '—',
         formatDate(m.data_inizio), formatDate(m.data_fine),
         m.in_ritardo ? 'In ritardo' : STATO[m.stato][0],
+        m.ha_scostamento ? `era ${formatDate(m.baseline_data_inizio)} → ${formatDate(m.baseline_data_fine)}` : '—',
       ]),
     }]);
   }
@@ -191,8 +204,17 @@ export async function renderTimeline(container) {
 
     const axis = buildAxis(rangeStart, rangeEnd, granularity);
 
+    const labelCols = (nome, meta, inizio, fine) => el('div', { class: 'gantt__label' }, [
+      el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
+        el('div', { class: 'gantt__label-titolo' }, nome),
+        meta ? el('div', { class: 'gantt__label-meta' }, meta) : null,
+      ]),
+      el('div', { class: 'gantt__label-col gantt__label-col--data' }, inizio),
+      el('div', { class: 'gantt__label-col gantt__label-col--data' }, fine),
+    ]);
+
     const headerRow = el('div', { class: 'gantt__row gantt__row--head' }, [
-      el('div', { class: 'gantt__label gantt__label--head' }, 'Milestone'),
+      labelCols('Attività', null, 'Inizio', 'Fine'),
       el('div', { class: 'gantt__axis' }, axis.map((s) => el('div', {
         class: 'gantt__col', style: `left:${s.startPct}%;width:${s.widthPct}%`,
       }, [
@@ -201,39 +223,51 @@ export async function renderTimeline(container) {
       ]))),
     ]);
 
-    const rows = res.data.map((m) => {
-      const startOffset = Math.max(0, daysBetween(rangeStart, m.data_inizio));
-      const endOffset = Math.min(totalDays, daysBetween(rangeStart, m.data_fine) + 1);
+    function bar(dataInizio, dataFine, extraClass, titleText, clickable) {
+      const startOffset = Math.max(0, daysBetween(rangeStart, dataInizio));
+      const endOffset = Math.min(totalDays, daysBetween(rangeStart, dataFine) + 1);
       const leftPct = startOffset / totalDays * 100;
       const widthPct = Math.max(1, (endOffset - startOffset) / totalDays * 100);
-      const cls = m.in_ritardo ? 'ritardo' : m.stato;
+      return el('div', {
+        class: extraClass,
+        style: `left:${leftPct}%;width:${widthPct}%`,
+        title: titleText,
+        onclick: clickable || null,
+      });
+    }
 
-      return el('div', { class: 'gantt__row' }, [
-        el('div', { class: 'gantt__label' }, [
-          el('div', { class: 'gantt__label-titolo' }, m.titolo),
-          el('div', { class: 'gantt__label-meta' }, [m.piano, m.zona, m.wp_codice].filter(Boolean).join(' · ') || '—'),
-        ]),
-        el('div', { class: 'gantt__track' }, [
-          el('div', {
-            class: `gantt__bar gantt__bar--${cls}`,
-            style: `left:${leftPct}%;width:${widthPct}%`,
-            title: `${m.titolo} · ${formatDate(m.data_inizio)} → ${formatDate(m.data_fine)}${m.in_ritardo ? ' · IN RITARDO' : ''}`,
-            onclick: () => openForm(m, refresh),
-          }, m.in_ritardo ? '⚠' : ''),
-        ]),
+    const rows = res.data.map((m) => {
+      const cls = m.in_ritardo ? 'ritardo' : m.stato;
+      const track = el('div', { class: 'gantt__track' });
+      if (m.ha_scostamento) {
+        track.appendChild(bar(
+          m.baseline_data_inizio, m.baseline_data_fine, 'gantt__bar-baseline',
+          `Baseline: ${formatDate(m.baseline_data_inizio)} → ${formatDate(m.baseline_data_fine)}`
+        ));
+      }
+      track.appendChild(bar(
+        m.data_inizio, m.data_fine, `gantt__bar gantt__bar--${cls}`,
+        `${m.titolo} · ${formatDate(m.data_inizio)} → ${formatDate(m.data_fine)}${m.in_ritardo ? ' · IN RITARDO' : ''}${m.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,
+        () => openForm(m, refresh)
+      ));
+
+      return el('div', { class: 'gantt__row' + (m.ha_scostamento ? ' gantt__row--scostamento' : '') }, [
+        labelCols([m.titolo, m.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null], [m.piano, m.zona, m.wp_codice].filter(Boolean).join(' · ') || '—', formatDate(m.data_inizio), formatDate(m.data_fine)),
+        track,
       ]);
     });
 
     const chart = el('div', { class: 'gantt__chart' }, [
       headerRow,
       ...rows,
-      el('div', { class: 'gantt__today-line', style: `left: calc(220px + (100% - 220px) * ${todayFrac})` }),
+      el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + (100% - var(--gantt-label-w)) * ${todayFrac})` }),
     ]);
 
     ganttHost.appendChild(el('div', { class: 'gantt' }, chart));
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dot gantt__legend-dot--baseline' }), 'Baseline (scostamento)']),
     ]));
   }
 
