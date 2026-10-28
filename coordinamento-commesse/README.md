@@ -23,8 +23,33 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   generabile in automatico dalle criticità ancora aperte (come la Nota
   di Coordinamento ATI del 29.09.2026) e poi modificabile prima
   dell'invio; si stampa o si esporta in PDF dal browser.
+- **Registro Allert** — classificazione di perimetro (interno, GC, DL,
+  committente, fornitore, esterno) e tracciamento delle azioni di
+  tutela, collegabile a una criticità o decisione che lo ha originato.
+  Struttura generica ispirata alla funzione di presidio GC, non una
+  sincronizzazione automatica con il relativo fascicolo.
 - **Diario di Cantiere, Lavorazioni, Maestranze, Documenti** — la
   gestione commessa di base, sullo stesso modello di Board.
+
+Inoltre:
+
+- **Accesso con utente/password**. Al primo avvio viene creato un
+  utente amministratore (`admin@giovannicazzola.org`) con una password
+  temporanea stampata **solo in console** — da cambiare dalla pagina
+  Utenti (visibile solo agli amministratori) dopo il primo accesso.
+  Nota: le sessioni sono tenute in memoria, quindi si perdono ad ogni
+  riavvio del server (si rifà il login, non serve altro).
+- **Storico modifiche** su Registro Criticità, Registro Decisioni e
+  Registro Allert: chi ha creato/modificato/chiuso/eliminato cosa e
+  quando, visibile dal pulsante "Storico" su ogni riga. Il Cruscotto
+  mostra anche le ultime attività su tutta la commessa.
+- **Promemoria scadenze** sul Cruscotto: le criticità urgenti (viola)
+  in scadenza entro 3 giorni o già scadute, elencate ed evidenziate
+  anche nella tabella del registro.
+- **Esportazione in Excel** del Registro Criticità, del Registro
+  Decisioni e del Registro Allert, dal pulsante "Esporta Excel" di
+  ciascuna pagina — stesso formato con cui oggi si condividono questi
+  dati con SAC/GILI/Jacob's.
 
 L'app è multi-commessa: ogni commessa ha i propri Work Package (di
 default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B, la convenzione
@@ -82,8 +107,8 @@ coordinamento-commesse/
 
 ## Cosa manca di proposito
 
-Autenticazione e permessi per ruolo (oggi chiunque raggiunga l'URL può
-scrivere su tutti i registri — accettabile per un uso interno, da
-aggiungere se l'app esce dalla rete dell'azienda). Deploy: nessuna
-configurazione Railway/Render ancora inclusa, a differenza di Board —
-va aggiunta quando si decide dove ospitarlo.
+Deploy: nessuna configurazione Railway/Render ancora inclusa, a
+differenza di Board — va aggiunta quando si decide dove ospitarlo. Le
+sessioni di accesso sono in memoria (si perdono ad ogni riavvio del
+server) e non c'è invio di promemoria via email: le scadenze sono
+visibili solo aprendo l'app.

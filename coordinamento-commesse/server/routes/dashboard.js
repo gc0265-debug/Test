@@ -18,13 +18,23 @@ router.get('/:commessaId', (req, res) => {
   // ---- criticità ----
   const criticitaRows = db.prepare('SELECT * FROM criticita WHERE commessa_id = ?').all(commessaId);
   const criticitaAperte = criticitaRows.filter(c => c.stato !== 'chiusa');
-  const violaScadute = criticitaAperte.filter(c => c.urgenza === 'viola' && c.entro_quando && daysBetween(oggi, c.entro_quando) < 0);
+  const violaAperte = criticitaAperte.filter(c => c.urgenza === 'viola' && c.entro_quando);
+  const violaScadute = violaAperte.filter(c => daysBetween(oggi, c.entro_quando) < 0);
+  const inScadenza3gg = violaAperte.filter(c => { const g = daysBetween(oggi, c.entro_quando); return g >= 0 && g <= 3; });
+  // promemoria scadenze: le prossime 5 criticità urgenti per data di scadenza,
+  // scadute comprese — pensate per essere mostrate direttamente sul Cruscotto.
+  const prossimeScadenze = violaAperte
+    .map(c => ({ id: c.id, tema: c.tema, entro_quando: c.entro_quando, giorni_rimanenti: daysBetween(oggi, c.entro_quando) }))
+    .sort((a, b) => a.giorni_rimanenti - b.giorni_rimanenti)
+    .slice(0, 5);
   const criticita = {
     totali: criticitaRows.length,
     aperte: criticitaAperte.length,
-    viola_aperte: criticitaAperte.filter(c => c.urgenza === 'viola').length,
+    viola_aperte: violaAperte.length,
     viola_scadute: violaScadute.length,
+    in_scadenza_3gg: inScadenza3gg.length,
     verde_aperte: criticitaAperte.filter(c => c.urgenza === 'verde').length,
+    prossime_scadenze: prossimeScadenze,
   };
 
   // ---- decisioni ----
@@ -52,7 +62,19 @@ router.get('/:commessaId', (req, res) => {
   const lavorazioni = { 'da-fare': 0, 'in-corso': 0, completata: 0, bloccata: 0 };
   lavorazioniRows.forEach(r => { lavorazioni[r.stato] = r.n; });
 
-  res.json({ commessa, criticita, decisioni, lavorazioni });
+  // ---- allert (presidio GC / tutela) ----
+  const allertRows = db.prepare('SELECT stato, classificazione FROM allert WHERE commessa_id = ?').all(commessaId);
+  const allertAperti = allertRows.filter(a => a.stato !== 'chiuso');
+  const allert = {
+    totali: allertRows.length,
+    aperti: allertAperti.length,
+    critici_aperti: allertAperti.filter(a => a.classificazione === 'critico').length,
+  };
+
+  // ---- attività recente (storico modifiche, ultime 8 su tutti i registri) ----
+  const attivitaRecente = db.prepare('SELECT * FROM audit_log WHERE commessa_id = ? ORDER BY created_at DESC LIMIT 8').all(commessaId);
+
+  res.json({ commessa, criticita, decisioni, lavorazioni, allert, attivita_recente: attivitaRecente });
 });
 
 module.exports = router;

@@ -1,8 +1,17 @@
 const express = require('express');
 const db = require('../db/database');
 const { daysBetween, todayStr } = require('../utils/dates');
+const { logAudit, diffFields } = require('../utils/audit');
 
 const router = express.Router();
+
+const TRACKED = [
+  { key: 'tema', label: 'Tema' },
+  { key: 'a_chi', label: 'A chi' },
+  { key: 'stato', label: 'Stato' },
+  { key: 'data_decisione', label: 'Decisa il' },
+  { key: 'conferma_scritta', label: 'Conferma scritta' },
+];
 
 // anzianita_giorni: giorni dalla prima richiesta, calcolata fino a oggi se
 // ancora aperta/parziale, fino alla data_decisione se decisa. oltre_21gg
@@ -56,7 +65,9 @@ router.post('/', (req, res) => {
     impatto_se_non_decisa || null, esito_ultima_riunione || null, data_decisione || null, stato || 'richiesta',
     conferma_scritta ? 1 : 0, rif_conferma || null, n_riproposte || 0, note || null
   );
-  res.status(201).json(arricchisci(db.prepare('SELECT * FROM decisioni WHERE id = ?').get(result.lastInsertRowid)));
+  const row = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(result.lastInsertRowid);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'decisioni', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: tema });
+  res.status(201).json(arricchisci(row));
 });
 
 router.put('/:id', (req, res) => {
@@ -76,7 +87,10 @@ router.put('/:id', (req, res) => {
     next.conferma_scritta ? 1 : 0, next.rif_conferma || null, next.n_riproposte || 0, next.note || null,
     req.params.id
   );
-  res.json(arricchisci(db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id)));
+  const row = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id);
+  const dettaglio = diffFields(existing, next, TRACKED);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'decisioni', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornata' });
+  res.json(arricchisci(row));
 });
 
 // Rilancia una decisione ancora aperta: incrementa n_riproposte e azzera
@@ -86,12 +100,16 @@ router.post('/:id/rilancia', (req, res) => {
   const existing = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'decisione non trovata' });
   db.prepare('UPDATE decisioni SET n_riproposte = n_riproposte + 1, updated_at=unixepoch() WHERE id = ?').run(req.params.id);
-  res.json(arricchisci(db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id)));
+  const row = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'decisioni', entity_id: row.id, azione: 'rilancio', utente: req.user?.nome, dettaglio: `Sollecito n. ${row.n_riproposte}` });
+  res.json(arricchisci(row));
 });
 
 router.delete('/:id', (req, res) => {
-  const result = db.prepare('DELETE FROM decisioni WHERE id = ?').run(req.params.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'decisione non trovata' });
+  const existing = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'decisione non trovata' });
+  db.prepare('DELETE FROM decisioni WHERE id = ?').run(req.params.id);
+  logAudit({ commessa_id: existing.commessa_id, entity_type: 'decisioni', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: existing.tema });
   res.status(204).end();
 });
 

@@ -3,7 +3,9 @@
 // della convenzione Field Project), senza riportare nominativi o dati
 // identificativi di terzi — sono un punto di partenza, non un'esportazione.
 
+const crypto = require('crypto');
 const db = require('./database');
+const { hashPassword } = require('../utils/auth');
 
 function seed() {
   const count = db.prepare('SELECT COUNT(*) AS n FROM commesse').get().n;
@@ -91,4 +93,27 @@ function seed() {
   console.log(`Seed completato: commessa ${commessaId} (2514RW) con ${Object.keys(wp).length} work package.`);
 }
 
+// Crea l'utente amministratore al primissimo avvio (tabella users vuota),
+// con una password temporanea generata e stampata solo in console —
+// da cambiare dalla pagina Utenti dopo il primo accesso.
+function seedAdminUser() {
+  const count = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
+  if (count > 0) return;
+
+  const tempPassword = crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  db.prepare(`
+    INSERT INTO users (nome, email, password_hash, ruolo) VALUES (?, ?, ?, 'admin')
+  `).run('Giovanni Cazzola', 'admin@giovannicazzola.org', hashPassword(tempPassword));
+
+  console.log('');
+  console.log('========================================================');
+  console.log(' Primo avvio: creato utente amministratore');
+  console.log(' Email:    admin@giovannicazzola.org');
+  console.log(` Password: ${tempPassword}`);
+  console.log(' Cambiala dalla pagina Utenti dopo il primo accesso.');
+  console.log('========================================================');
+  console.log('');
+}
+
 seed();
+seedAdminUser();

@@ -1,8 +1,17 @@
 const express = require('express');
 const db = require('../db/database');
 const { daysBetween, todayStr } = require('../utils/dates');
+const { logAudit, diffFields } = require('../utils/audit');
 
 const router = express.Router();
+
+const TRACKED = [
+  { key: 'tema', label: 'Tema' },
+  { key: 'destinatario', label: 'Destinatario' },
+  { key: 'urgenza', label: 'Urgenza' },
+  { key: 'stato', label: 'Stato' },
+  { key: 'entro_quando', label: 'Entro quando' },
+];
 
 // Arricchisce una riga con i campi calcolati usati dall'interfaccia:
 // giorni_rimanenti (solo per urgenza='viola' con scadenza impostata) e
@@ -55,7 +64,9 @@ router.post('/', (req, res) => {
     commessa_id, wp_id || null, tema, cosa_serve || null, entro_quando || null, impatto_programma || null,
     destinatario || null, urgenza || 'normale', stato || 'aperta', data_apertura || todayStr(), note || null
   );
-  res.status(201).json(arricchisci(db.prepare('SELECT * FROM criticita WHERE id = ?').get(result.lastInsertRowid)));
+  const row = db.prepare('SELECT * FROM criticita WHERE id = ?').get(result.lastInsertRowid);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'criticita', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: tema });
+  res.status(201).json(arricchisci(row));
 });
 
 router.put('/:id', (req, res) => {
@@ -78,12 +89,19 @@ router.put('/:id', (req, res) => {
     next.destinatario || null, next.urgenza, next.stato, next.data_apertura, next.data_chiusura || null, next.note || null,
     req.params.id
   );
-  res.json(arricchisci(db.prepare('SELECT * FROM criticita WHERE id = ?').get(req.params.id)));
+  const row = db.prepare('SELECT * FROM criticita WHERE id = ?').get(req.params.id);
+  const dettaglio = diffFields(existing, next, TRACKED);
+  const azione = (existing.stato !== 'chiusa' && next.stato === 'chiusa') ? 'chiusa'
+    : (existing.stato === 'chiusa' && next.stato !== 'chiusa') ? 'riaperta' : 'modificata';
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'criticita', entity_id: row.id, azione, utente: req.user?.nome, dettaglio: dettaglio || 'aggiornata' });
+  res.json(arricchisci(row));
 });
 
 router.delete('/:id', (req, res) => {
-  const result = db.prepare('DELETE FROM criticita WHERE id = ?').run(req.params.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'criticità non trovata' });
+  const existing = db.prepare('SELECT * FROM criticita WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'criticità non trovata' });
+  db.prepare('DELETE FROM criticita WHERE id = ?').run(req.params.id);
+  logAudit({ commessa_id: existing.commessa_id, entity_type: 'criticita', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: existing.tema });
   res.status(204).end();
 });
 

@@ -1,10 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const crypto = require('crypto');
 const path = require('path');
 
 require('./db/database'); // crea lo schema se non esiste
 require('./db/seed');     // popola solo se il database è vuoto
 
+const { requireAuth } = require('./utils/auth');
+
+const authRouter = require('./routes/auth');
 const commesseRouter = require('./routes/commesse');
 const criticitaRouter = require('./routes/criticita');
 const decisioniRouter = require('./routes/decisioni');
@@ -14,22 +19,36 @@ const lavorazioniRouter = require('./routes/lavorazioni');
 const maestranzeRouter = require('./routes/maestranze');
 const documentiRouter = require('./routes/documenti');
 const dashboardRouter = require('./routes/dashboard');
+const allertRouter = require('./routes/allert');
+const auditRouter = require('./routes/audit');
+const exportRouter = require('./routes/export');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-app.use('/api/commesse', commesseRouter);
-app.use('/api/criticita', criticitaRouter);
-app.use('/api/decisioni', decisioniRouter);
-app.use('/api/note-coordinamento', noteCoordinamentoRouter);
-app.use('/api/diario', diarioRouter);
-app.use('/api/lavorazioni', lavorazioniRouter);
-app.use('/api/maestranze', maestranzeRouter);
-app.use('/api/documenti', documentiRouter);
-app.use('/api/dashboard', dashboardRouter);
+app.use(session({
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 },
+}));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.use('/api/auth', authRouter);
+
+// tutto il resto delle API richiede una sessione autenticata
+app.use('/api/commesse', requireAuth, commesseRouter);
+app.use('/api/criticita', requireAuth, criticitaRouter);
+app.use('/api/decisioni', requireAuth, decisioniRouter);
+app.use('/api/note-coordinamento', requireAuth, noteCoordinamentoRouter);
+app.use('/api/diario', requireAuth, diarioRouter);
+app.use('/api/lavorazioni', requireAuth, lavorazioniRouter);
+app.use('/api/maestranze', requireAuth, maestranzeRouter);
+app.use('/api/documenti', requireAuth, documentiRouter);
+app.use('/api/dashboard', requireAuth, dashboardRouter);
+app.use('/api/allert', requireAuth, allertRouter);
+app.use('/api/audit', requireAuth, auditRouter);
+app.use('/api/export', requireAuth, exportRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));

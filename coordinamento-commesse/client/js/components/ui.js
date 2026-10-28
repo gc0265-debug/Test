@@ -27,6 +27,12 @@ export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+export function formatDateTime(unixSeconds) {
+  return new Date(unixSeconds * 1000).toLocaleString('it-IT', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
 // ---------- toast ----------
 export function toast(message, { error = false } = {}) {
   const layer = document.getElementById('toastLayer');

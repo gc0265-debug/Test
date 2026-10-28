@@ -9,6 +9,7 @@ import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
 } from '../components/ui.js';
+import { openStorico } from '../components/storico.js';
 
 const URGENZA = { viola: ['Urgente (3gg)', 'viola'], verde: ['Dovuta da controparte', 'verde'], normale: ['Normale', 'normale'] };
 const STATO = { aperta: ['Aperta', 'outline'], 'in-attesa': ['In attesa', 'ambra'], chiusa: ['Chiusa', 'verde'] };
@@ -77,7 +78,10 @@ export async function renderCriticita(container) {
       pillFilter('', 'Tutte'),
       pillFilter('chiusa', 'Chiuse'),
     ]),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
+    ]),
   ]);
   container.appendChild(toolbar);
 
@@ -110,6 +114,7 @@ export async function renderCriticita(container) {
             class: 'btn btn--sm btn--ghost',
             onclick: async () => { await api.put(`/criticita/${row.id}`, { ...row, stato: 'chiusa' }); toast('Criticità chiusa.'); refresh(); },
           }, 'Chiudi') : null,
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('criticita', row.id, row.tema) }, 'Storico'),
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
           el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
@@ -122,7 +127,10 @@ export async function renderCriticita(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { rowClass: (r) => r.scaduta ? 'row-scaduta' : '', emptyLabel: 'Nessuna criticità in questo filtro.' });
+    ], res.data, {
+      rowClass: (r) => r.scaduta ? 'row-scaduta' : (r.urgenza === 'viola' && r.stato !== 'chiusa' && r.giorni_rimanenti !== null && r.giorni_rimanenti <= 3 ? 'row-warn' : ''),
+      emptyLabel: 'Nessuna criticità in questo filtro.',
+    });
 
     // ridisegna i filtri per riflettere la selezione corrente
     toolbar.firstChild.innerHTML = '';

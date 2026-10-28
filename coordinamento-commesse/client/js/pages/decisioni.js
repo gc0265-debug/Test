@@ -10,6 +10,7 @@ import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
 } from '../components/ui.js';
+import { openStorico } from '../components/storico.js';
 
 const STATO = { richiesta: ['Richiesta', 'outline'], parziale: ['Parziale', 'ambra'], decisa: ['Decisa', 'verde'] };
 
@@ -70,7 +71,10 @@ export async function renderDecisioni(container) {
 
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
+    ]),
   ]);
   container.appendChild(toolbar);
 
@@ -110,6 +114,7 @@ export async function renderDecisioni(container) {
             class: 'btn btn--sm btn--ghost',
             onclick: async () => { await api.post(`/decisioni/${row.id}/rilancia`); toast('Sollecito registrato.'); refresh(); },
           }, 'Rilancia') : null,
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('decisioni', row.id, row.tema) }, 'Storico'),
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
           el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',

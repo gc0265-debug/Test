@@ -148,6 +148,60 @@ CREATE TABLE IF NOT EXISTS documenti (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Utenti: accesso con email/password, ruolo admin (gestisce gli utenti)
+-- o operatore. Lo storico modifiche registra il nome di chi ha agito.
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    ruolo TEXT NOT NULL DEFAULT 'operatore'
+          CHECK(ruolo IN ('admin','operatore')),
+    attivo INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Registro Allert: classificazione di perimetro e azioni di tutela
+-- (funzione di presidio GC), collegabile alla criticità o decisione
+-- che lo ha originato — distinto dal coordinamento operativo ma
+-- agganciabile ad esso.
+CREATE TABLE IF NOT EXISTS allert (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    data TEXT NOT NULL DEFAULT (date('now')),
+    perimetro TEXT NOT NULL DEFAULT 'interno'
+              CHECK(perimetro IN ('interno','gc','dl','committente','fornitore','esterno')),
+    classificazione TEXT NOT NULL DEFAULT 'attenzione'
+                    CHECK(classificazione IN ('informativo','attenzione','critico')),
+    descrizione TEXT NOT NULL,
+    azione_tutela TEXT,
+    rif_documento TEXT,
+    rif_criticita_id INTEGER REFERENCES criticita(id) ON DELETE SET NULL,
+    rif_decisione_id INTEGER REFERENCES decisioni(id) ON DELETE SET NULL,
+    stato TEXT NOT NULL DEFAULT 'aperto'
+          CHECK(stato IN ('aperto','monitorato','chiuso')),
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Storico modifiche: traccia creazione/modifica/chiusura/eliminazione su
+-- criticità, decisioni e allert con l'utente autenticato e un riassunto
+-- testuale di cosa è cambiato — ai fini di tracciabilità D.Lgs. 81/2008.
+CREATE TABLE IF NOT EXISTS audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER REFERENCES commesse(id) ON DELETE CASCADE,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    azione TEXT NOT NULL
+          CHECK(azione IN ('creata','modificata','chiusa','riaperta','eliminata','rilancio')),
+    utente TEXT,
+    dettaglio TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 CREATE INDEX IF NOT EXISTS idx_wp_commessa ON work_packages(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_criticita_commessa ON criticita(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_criticita_wp ON criticita(wp_id);
@@ -157,3 +211,6 @@ CREATE INDEX IF NOT EXISTS idx_diario_commessa ON diario(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_lavorazioni_commessa ON lavorazioni(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_maestranze_commessa ON maestranze(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_documenti_commessa ON documenti(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_allert_commessa ON allert(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_log(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_commessa ON audit_log(commessa_id);
