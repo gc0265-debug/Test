@@ -53,20 +53,28 @@ function isoWeek(dateStr) {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
+// px/giorno per granularità: scelto perché ogni colonna (settimana ~90px,
+// mese ~150px) resti leggibile anche su commesse che coprono molti mesi —
+// il grafico cresce in larghezza (scroll orizzontale) invece di schiacciare
+// le colonne, a differenza del vecchio layout a percentuale.
+function pxPerDay(granularity) {
+  return granularity === 'week' ? 90 / 7 : 150 / 30.44;
+}
+
 function buildAxis(rangeStart, rangeEnd, granularity) {
-  const totalDays = Math.max(1, daysBetween(rangeStart, rangeEnd));
+  const ppd = pxPerDay(granularity);
   const segments = [];
   if (granularity === 'week') {
     let cursor = mondayOnOrBefore(rangeStart);
     while (cursor < rangeEnd) {
       const segEnd = addDays(cursor, 7);
       const startOffset = Math.max(0, daysBetween(rangeStart, cursor));
-      const endOffset = Math.min(totalDays, daysBetween(rangeStart, segEnd));
+      const endOffset = daysBetween(rangeStart, segEnd);
       segments.push({
         label: `Sett. ${isoWeek(cursor)}`,
         sub: `${formatShort(cursor)}–${formatShort(addDays(cursor, 6))}`,
-        startPct: startOffset / totalDays * 100,
-        widthPct: Math.max(0, endOffset - startOffset) / totalDays * 100,
+        leftPx: startOffset * ppd,
+        widthPx: Math.max(0, endOffset - startOffset) * ppd,
       });
       cursor = segEnd;
     }
@@ -75,12 +83,12 @@ function buildAxis(rangeStart, rangeEnd, granularity) {
     while (cursor < rangeEnd) {
       const segEnd = firstOfNextMonth(cursor);
       const startOffset = Math.max(0, daysBetween(rangeStart, cursor));
-      const endOffset = Math.min(totalDays, daysBetween(rangeStart, segEnd));
+      const endOffset = daysBetween(rangeStart, segEnd);
       segments.push({
         label: monthLabel(cursor),
         sub: '',
-        startPct: startOffset / totalDays * 100,
-        widthPct: Math.max(0, endOffset - startOffset) / totalDays * 100,
+        leftPx: startOffset * ppd,
+        widthPx: Math.max(0, endOffset - startOffset) * ppd,
       });
       cursor = segEnd;
     }
@@ -198,13 +206,17 @@ export async function renderTimeline(container) {
     const paddedStart = addDays(minStart, -3);
     const rangeStart = granularity === 'week' ? mondayOnOrBefore(paddedStart) : firstOfMonth(paddedStart);
     const rangeEnd = addDays(maxEnd, 7);
-    const totalDays = Math.max(1, daysBetween(rangeStart, rangeEnd));
+    const ppd = pxPerDay(granularity);
+    const totalWidthPx = Math.max(1, daysBetween(rangeStart, rangeEnd)) * ppd;
     const oggi = todayISO();
-    const todayFrac = Math.min(1, Math.max(0, daysBetween(rangeStart, oggi) / totalDays));
+    const todayOffsetPx = Math.max(0, daysBetween(rangeStart, oggi)) * ppd;
 
     const axis = buildAxis(rangeStart, rangeEnd, granularity);
 
-    const labelCols = (nome, meta, inizio, fine) => el('div', { class: 'gantt__label' }, [
+    const labelCols = (nome, meta, inizio, fine, onEdit) => el('div', {
+      class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : ''),
+      onclick: onEdit || null,
+    }, [
       el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
         el('div', { class: 'gantt__label-titolo' }, nome),
         meta ? el('div', { class: 'gantt__label-meta' }, meta) : null,
@@ -215,8 +227,8 @@ export async function renderTimeline(container) {
 
     const headerRow = el('div', { class: 'gantt__row gantt__row--head' }, [
       labelCols('Attività', null, 'Inizio', 'Fine'),
-      el('div', { class: 'gantt__axis' }, axis.map((s) => el('div', {
-        class: 'gantt__col', style: `left:${s.startPct}%;width:${s.widthPct}%`,
+      el('div', { class: 'gantt__axis', style: `width:${totalWidthPx}px` }, axis.map((s) => el('div', {
+        class: 'gantt__col', style: `left:${s.leftPx}px;width:${s.widthPx}px`,
       }, [
         el('div', { class: 'gantt__col-label' }, s.label),
         s.sub ? el('div', { class: 'gantt__col-sub' }, s.sub) : null,
@@ -225,12 +237,12 @@ export async function renderTimeline(container) {
 
     function bar(dataInizio, dataFine, extraClass, titleText, clickable) {
       const startOffset = Math.max(0, daysBetween(rangeStart, dataInizio));
-      const endOffset = Math.min(totalDays, daysBetween(rangeStart, dataFine) + 1);
-      const leftPct = startOffset / totalDays * 100;
-      const widthPct = Math.max(1, (endOffset - startOffset) / totalDays * 100);
+      const endOffset = daysBetween(rangeStart, dataFine) + 1;
+      const leftPx = startOffset * ppd;
+      const widthPx = Math.max(6, (endOffset - startOffset) * ppd);
       return el('div', {
         class: extraClass,
-        style: `left:${leftPct}%;width:${widthPct}%`,
+        style: `left:${leftPx}px;width:${widthPx}px`,
         title: titleText,
         onclick: clickable || null,
       });
@@ -238,7 +250,7 @@ export async function renderTimeline(container) {
 
     const rows = res.data.map((m) => {
       const cls = m.in_ritardo ? 'ritardo' : m.stato;
-      const track = el('div', { class: 'gantt__track' });
+      const track = el('div', { class: 'gantt__track', style: `width:${totalWidthPx}px` });
       if (m.ha_scostamento) {
         track.appendChild(bar(
           m.baseline_data_inizio, m.baseline_data_fine, 'gantt__bar-baseline',
@@ -252,7 +264,12 @@ export async function renderTimeline(container) {
       ));
 
       return el('div', { class: 'gantt__row' + (m.ha_scostamento ? ' gantt__row--scostamento' : '') }, [
-        labelCols([m.titolo, m.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null], [m.piano, m.zona, m.wp_codice].filter(Boolean).join(' · ') || '—', formatDate(m.data_inizio), formatDate(m.data_fine)),
+        labelCols(
+          [m.titolo, m.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null],
+          [m.piano, m.zona, m.wp_codice].filter(Boolean).join(' · ') || '—',
+          formatDate(m.data_inizio), formatDate(m.data_fine),
+          () => openForm(m, refresh)
+        ),
         track,
       ]);
     });
@@ -260,7 +277,7 @@ export async function renderTimeline(container) {
     const chart = el('div', { class: 'gantt__chart' }, [
       headerRow,
       ...rows,
-      el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + (100% - var(--gantt-label-w)) * ${todayFrac})` }),
+      el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + ${todayOffsetPx}px)` }),
     ]);
 
     ganttHost.appendChild(el('div', { class: 'gantt' }, chart));

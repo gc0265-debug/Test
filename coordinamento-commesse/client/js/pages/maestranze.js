@@ -22,4 +22,11 @@ export const renderMaestranze = createCrudPage({
     { key: 'telefono', label: 'Telefono' },
     { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
   ],
+  printColumns: [
+    { label: 'Nome', get: (r) => r.nome },
+    { label: 'Ruolo', get: (r) => r.ruolo || '—' },
+    { label: 'Azienda', get: (r) => r.azienda || '—' },
+    { label: 'Telefono', get: (r) => r.telefono || '—' },
+    { label: 'Stato', get: (r) => STATO[r.stato][0] },
+  ],
 });

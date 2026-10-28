@@ -6,8 +6,9 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
 } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 function renderPuntiEditor(punti, onChange) {
   const host = el('div');
@@ -115,56 +116,66 @@ function printableView(nota) {
   return doc;
 }
 
+function openPreview(nota) {
+  openModal(`Anteprima — ${nota.oggetto}`, el('div', {}, [
+    printableView(nota),
+    el('div', { class: 'modal__actions' }, [
+      el('button', { class: 'btn', onclick: () => closeModal() }, 'Chiudi'),
+      el('button', { class: 'btn btn--primary', onclick: () => { const w = window.open('', '_blank'); printToWindow(w, nota); } }, 'Stampa / esporta'),
+    ]),
+  ]));
+}
+
 export async function renderNote(container) {
   if (!state.commessaId) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Note di Coordinamento', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Elenco note',
+        columns: ['Data', 'Oggetto', 'Destinatari', 'Punti', 'Stato'],
+        rows: lastRows.map((n) => [formatDate(n.data), n.oggetto, n.destinatari || '—', n.punti.length, n.stato === 'inviata' ? 'Inviata' : 'Bozza']),
+      }]) }, 'Stampa elenco'),
       el('button', { class: 'btn', onclick: () => openGeneraBozza(refresh) }, 'Genera da criticità aperte'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nota vuota'),
     ]),
   ]);
   container.appendChild(toolbar);
 
-  const list = el('div');
-  container.appendChild(list);
+  const tableHost = el('div');
+  container.appendChild(tableHost);
 
   async function refresh() {
     const res = await api.get(`/note-coordinamento?commessa_id=${state.commessaId}`);
-    list.innerHTML = '';
-    if (!res.data.length) {
-      list.appendChild(el('p', { class: 'muted' }, 'Nessuna nota di coordinamento per questa commessa.'));
-      return;
-    }
-    res.data.forEach((nota) => {
-      const card = el('div', { class: 'section' }, [
-        el('div', { class: 'section__head' }, [
-          el('div', {}, [
-            el('h2', {}, nota.oggetto),
-            el('div', { class: 'muted' }, `${formatDate(nota.data)} · ${nota.punti.length} punti · ${nota.stato === 'inviata' ? 'inviata' : 'bozza'}`),
-          ]),
-          el('div', { style: 'display:flex;gap:6px' }, [
-            el('button', { class: 'btn btn--sm', onclick: () => { const w = window.open('', '_blank'); printToWindow(w, nota); } }, 'Stampa / esporta'),
-            el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(nota, refresh) }, 'Modifica'),
-            el('button', {
-              class: 'btn btn--sm btn--ghost btn--danger',
-              onclick: async () => {
-                if (!confirmDialog('Eliminare questa nota?')) return;
-                await api.del(`/note-coordinamento/${nota.id}`);
-                toast('Eliminata.');
-                refresh();
-              },
-            }, 'Elimina'),
-          ]),
+    lastRows = res.data;
+    renderTable(tableHost, [
+      { key: 'data', label: 'Data', render: (n) => formatDate(n.data) },
+      { key: 'oggetto', label: 'Oggetto', render: (n) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); openPreview(n); } }, n.oggetto) },
+      { key: 'destinatari', label: 'Destinatari' },
+      { key: 'punti', label: 'Punti', numeric: true, render: (n) => n.punti.length },
+      { key: 'stato', label: 'Stato', render: (n) => n.stato === 'inviata' ? pill('Inviata', 'verde') : pill('Bozza', 'outline') },
+      {
+        key: 'actions', label: '', className: 'actions',
+        render: (nota) => el('div', {}, [
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openPreview(nota) }, 'Anteprima'),
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(nota, refresh) }, 'Modifica'),
+          el('button', {
+            class: 'btn btn--sm btn--ghost btn--danger',
+            onclick: async () => {
+              if (!confirmDialog('Eliminare questa nota?')) return;
+              await api.del(`/note-coordinamento/${nota.id}`);
+              toast('Eliminata.');
+              refresh();
+            },
+          }, 'Elimina'),
         ]),
-        printableView(nota),
-      ]);
-      list.appendChild(card);
-    });
+      },
+    ], res.data, { emptyLabel: 'Nessuna nota di coordinamento per questa commessa.' });
   }
 
   await refresh();

@@ -5,6 +5,7 @@
 import { api } from '../api.js';
 import { state, loadCommesse, setCommessa } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 function openCommessaForm(existing, onSaved) {
   const form = el('form', {});
@@ -68,9 +69,17 @@ function openWpForm(commessaId, existing, onSaved) {
 }
 
 export async function renderCommesse(container) {
+  let lastCommesse = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('h2', {}, 'Commesse'),
-    el('button', { class: 'btn btn--primary', onclick: () => openCommessaForm(null, refreshCommesse) }, '+ Nuova commessa'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Commesse', null, [{
+        heading: 'Elenco commesse',
+        columns: ['Codice', 'Nome', 'Cliente', 'Stato'],
+        rows: lastCommesse.map((r) => [r.codice, r.nome, r.cliente || '—', r.stato]),
+      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--primary', onclick: () => openCommessaForm(null, refreshCommesse) }, '+ Nuova commessa'),
+    ]),
   ]);
   container.appendChild(toolbar);
   const commesseHost = el('div');
@@ -85,6 +94,7 @@ export async function renderCommesse(container) {
 
   async function refreshCommesse() {
     const res = await api.get('/commesse');
+    lastCommesse = res.data;
     renderTable(commesseHost, [
       { key: 'codice', label: 'Codice' },
       { key: 'nome', label: 'Nome' },

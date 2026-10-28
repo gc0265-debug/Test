@@ -236,6 +236,20 @@ CREATE TABLE IF NOT EXISTS allert (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Capitolato: scrittura in stile tabella con codici WBS, a monte dei
+-- Requisiti — una voce di capitolato può generare più requisiti di
+-- progetto (collegamento opzionale rif_capitolato_voce_id su requisiti).
+CREATE TABLE IF NOT EXISTS capitolato_voci (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    codice_wbs TEXT NOT NULL,
+    titolo TEXT NOT NULL,
+    descrizione TEXT,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 -- Requisiti: estratti da un capitolato, con codice WBS per commessa e
 -- fase di esecuzione. Ogni modifica sostanziale (titolo/descrizione)
 -- crea una nuova riga in requisiti_versioni — base per rilevare le
@@ -253,6 +267,7 @@ CREATE TABLE IF NOT EXISTS requisiti (
     stato TEXT NOT NULL DEFAULT 'bozza'
           CHECK(stato IN ('bozza','approvato','in-revisione','superato')),
     versione_corrente INTEGER NOT NULL DEFAULT 1,
+    rif_capitolato_voce_id INTEGER REFERENCES capitolato_voci(id) ON DELETE SET NULL,
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
@@ -371,6 +386,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_log(entity_type, entity_id)
 CREATE INDEX IF NOT EXISTS idx_audit_commessa ON audit_log(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_milestone_commessa ON milestone(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_lezioni_commessa ON lezioni_apprese(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_capitolato_commessa ON capitolato_voci(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_requisiti_commessa ON requisiti(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_requisiti_wbs ON requisiti(codice_wbs);
 CREATE INDEX IF NOT EXISTS idx_requisiti_versioni_requisito ON requisiti_versioni(requisito_id);

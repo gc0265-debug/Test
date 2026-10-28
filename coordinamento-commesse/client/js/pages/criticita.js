@@ -10,6 +10,7 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
+import { printReport } from '../components/report.js';
 
 const URGENZA = { viola: ['Urgente (3gg)', 'viola'], verde: ['Dovuta da controparte', 'verde'], normale: ['Normale', 'normale'] };
 const STATO = { aperta: ['Aperta', 'outline'], 'in-attesa': ['In attesa', 'ambra'], chiusa: ['Chiusa', 'verde'] };
@@ -71,7 +72,11 @@ export async function renderCriticita(container) {
     return;
   }
 
+  const dashHost = el('div', { class: 'tiles' });
+  container.appendChild(dashHost);
+
   let filtroStato = 'aperta';
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:6px' }, [
       pillFilter('aperta', 'Aperte'),
@@ -79,6 +84,11 @@ export async function renderCriticita(container) {
       pillFilter('chiusa', 'Chiuse'),
     ]),
     el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Criticità', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Criticità',
+        columns: ['Tema', 'WP', 'Destinatario', 'Urgenza', 'Stato', 'Aperta il'],
+        rows: lastRows.map((r) => [r.tema, r.wp_codice || '—', r.destinatario || '—', URGENZA[r.urgenza][0], STATO[r.stato][0], formatDate(r.data_apertura)]),
+      }]) }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
     ]),
@@ -87,6 +97,13 @@ export async function renderCriticita(container) {
 
   const tableHost = el('div');
   container.appendChild(tableHost);
+
+  function tile(label, value, cls) {
+    return el('div', { class: 'tile' }, [
+      el('div', { class: 'tile__label' }, label),
+      el('div', { class: 'tile__value' + (cls ? ' ' + cls : '') }, String(value)),
+    ]);
+  }
 
   function pillFilter(value, label) {
     const btn = el('button', {
@@ -99,7 +116,20 @@ export async function renderCriticita(container) {
   async function refresh() {
     const query = new URLSearchParams({ commessa_id: state.commessaId });
     if (filtroStato) query.set('stato', filtroStato);
-    const res = await api.get(`/criticita?${query.toString()}`);
+    const [res, allRes] = await Promise.all([
+      api.get(`/criticita?${query.toString()}`),
+      api.get(`/criticita?commessa_id=${state.commessaId}`),
+    ]);
+    lastRows = res.data;
+    const totali = allRes.data.length;
+    const aperte = allRes.data.filter((r) => r.stato !== 'chiusa').length;
+    const inRitardo = allRes.data.filter((r) => r.scaduta).length;
+    dashHost.innerHTML = '';
+    dashHost.appendChild(tile('Totali', totali));
+    dashHost.appendChild(tile('Aperte', aperte));
+    dashHost.appendChild(tile('Chiuse', totali - aperte));
+    dashHost.appendChild(tile('In ritardo', inRitardo, inRitardo > 0 ? 'alert' : ''));
+
     renderTable(tableHost, [
       { key: 'tema', label: 'Tema' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },

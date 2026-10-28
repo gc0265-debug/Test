@@ -1,5 +1,7 @@
 import { createCrudPage } from './genericCrud.js';
-import { formatDate, todayISO } from '../components/ui.js';
+import { el, formatDate, todayISO } from '../components/ui.js';
+
+const clamp = (text) => text ? el('div', { class: 'text-2lines' }, text) : '—';
 
 export const renderDiario = createCrudPage({
   apiPath: '/diario',
@@ -14,9 +16,16 @@ export const renderDiario = createCrudPage({
   ],
   columns: [
     { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },
-    { key: 'squadre', label: 'Squadre' },
-    { key: 'attivita', label: 'Attività' },
-    { key: 'eventi', label: 'Eventi' },
-    { key: 'criticita_testo', label: 'Criticità' },
+    { key: 'squadre', label: 'Squadre', render: (r) => clamp(r.squadre) },
+    { key: 'attivita', label: 'Attività', render: (r) => clamp(r.attivita) },
+    { key: 'eventi', label: 'Eventi', render: (r) => clamp(r.eventi) },
+    { key: 'criticita_testo', label: 'Criticità', render: (r) => clamp(r.criticita_testo) },
+  ],
+  printColumns: [
+    { label: 'Data', get: (r) => formatDate(r.data) },
+    { label: 'Squadre', get: (r) => r.squadre || '—' },
+    { label: 'Attività', get: (r) => r.attivita || '—' },
+    { label: 'Eventi', get: (r) => r.eventi || '—' },
+    { label: 'Criticità', get: (r) => r.criticita_testo || '—' },
   ],
 });

@@ -42,13 +42,17 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   gestione commessa di base, sullo stesso modello di Board. I
   Documenti accettano sia un link esterno sia un file caricato dal
   browser (anche entrambi sulla stessa riga).
-- **Requisiti** — estratti dal capitolato, con codice WBS per commessa
-  e fase di esecuzione (progettazione, approvvigionamento, montaggio,
-  collaudo). Ogni modifica a titolo o descrizione crea una nuova
-  versione (pulsante "Versioni"), per tracciare le molte revisioni
-  tipiche della fase di progettazione. "Richiedi approvazione" crea
-  una decisione collegata nel Registro Decisioni: le approvazioni
-  confluiscono lì, non in un registro separato.
+- **Capitolato** — scrittura in stile tabella con codici WBS, a monte
+  dei Requisiti: ogni voce mostra quanti requisiti di progetto vi sono
+  collegati.
+- **Requisiti** — estratti dal capitolato (collegabili a una voce della
+  tabella Capitolato), con codice WBS per commessa e fase di esecuzione
+  (progettazione, approvvigionamento, montaggio, collaudo). Ogni
+  modifica a titolo o descrizione crea una nuova versione (pulsante
+  "Versioni"), per tracciare le molte revisioni tipiche della fase di
+  progettazione. "Richiedi approvazione" crea una decisione collegata
+  nel Registro Decisioni: le approvazioni confluiscono lì, non in un
+  registro separato.
 - **Contratto** — il contratto stipulato, con la data di baseline del
   capitolato e la procedura di change management concordata. Ogni
   versione di un requisito successiva alla baseline è segnalata come
@@ -84,6 +88,10 @@ Inoltre:
   Decisioni e del Registro Allert, dal pulsante "Esporta Excel" di
   ciascuna pagina — stesso formato con cui oggi si condividono questi
   dati con SAC/GILI/Jacob's.
+- **Pulsante Stampa** su tutte le pagine principali (registri,
+  Lavorazioni, Maestranze, Documenti, Diario, Commesse): genera un
+  report formattato in una nuova finestra, pronto per la stampa o il
+  salvataggio in PDF dal browser.
 
 L'app è multi-commessa: ogni commessa ha i propri Work Package (di
 default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B, la convenzione

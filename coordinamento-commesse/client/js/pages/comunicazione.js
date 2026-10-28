@@ -5,6 +5,7 @@
 import { api } from '../api.js';
 import { state } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 const FREQUENZA = { giornaliera: 'Giornaliera', settimanale: 'Settimanale', quindicinale: 'Quindicinale', mensile: 'Mensile', 'ad-evento': 'Ad evento' };
 const RUOLI = [['', '—'], ['R', 'R — Responsible'], ['A', 'A — Accountable'], ['C', 'C — Consulted'], ['I', 'I — Informed']];
@@ -86,9 +87,17 @@ export async function renderComunicazione(container) {
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     'Un processo di gestione per riga, con la matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli stakeholder registrati.'));
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo processo'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Piano Comunicazioni', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Processi di comunicazione',
+        columns: ['Processo', 'Frequenza', 'Canale', 'Output atteso'],
+        rows: lastRows.map((r) => [r.nome, FREQUENZA[r.frequenza] || r.frequenza, r.canale || '—', r.output || '—']),
+      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo processo'),
+    ]),
   ]);
   container.appendChild(toolbar);
   const tableHost = el('div');
@@ -99,6 +108,7 @@ export async function renderComunicazione(container) {
       api.get(`/comunicazione/processi?commessa_id=${state.commessaId}`),
       api.get(`/stakeholder?commessa_id=${state.commessaId}`),
     ]);
+    lastRows = processiRes.data;
     const stakeholderAttivi = stakeholderRes.data.filter((s) => s.stato === 'attivo');
 
     renderTable(tableHost, [

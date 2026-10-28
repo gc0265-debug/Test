@@ -10,6 +10,7 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
+import { printReport } from '../components/report.js';
 
 const PERIMETRO = { interno: 'Interno Field Project', gc: 'GC', dl: 'DL', committente: 'Committente / GILI', fornitore: 'Fornitore', esterno: 'Esterno' };
 const CLASSIFICAZIONE = { informativo: ['Informativo', 'outline'], attenzione: ['Attenzione', 'ambra'], critico: ['Critico', 'rosso'] };
@@ -70,9 +71,15 @@ export async function renderAllert(container) {
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     'Classificazione di perimetro e azioni di tutela — funzione di presidio GC, distinta dal coordinamento operativo dei registri precedenti.'));
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Allert', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Allert',
+        columns: ['Data', 'Descrizione', 'Perimetro', 'Classificazione', 'Stato'],
+        rows: lastRows.map((r) => [formatDate(r.data), r.descrizione, PERIMETRO[r.perimetro] || r.perimetro, CLASSIFICAZIONE[r.classificazione][0], STATO[r.stato][0]]),
+      }]) }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/allert/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo allert'),
     ]),
@@ -84,6 +91,7 @@ export async function renderAllert(container) {
 
   async function refresh() {
     const res = await api.get(`/allert?commessa_id=${state.commessaId}`);
+    lastRows = res.data;
     renderTable(tableHost, [
       { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },
       { key: 'descrizione', label: 'Descrizione' },

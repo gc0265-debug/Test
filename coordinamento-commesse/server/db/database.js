@@ -36,6 +36,7 @@ ensureColumns('milestone', [
   { name: 'baseline_data_inizio', def: 'TEXT' },
   { name: 'baseline_data_fine', def: 'TEXT' },
 ]);
+ensureColumns('requisiti', [{ name: 'rif_capitolato_voce_id', def: 'INTEGER REFERENCES capitolato_voci(id) ON DELETE SET NULL' }]);
 // milestone create prima di questa modifica: la baseline parte dalle date correnti,
 // così da non mostrare uno scostamento inesistente al primo avvio dopo l'aggiornamento.
 db.exec(`

@@ -10,6 +10,7 @@ const AZIONE_LABEL = {
 const ENTITY_LABEL = {
   criticita: 'Criticità', decisioni: 'Decisione', allert: 'Allert', milestone: 'Milestone', lezioni_apprese: 'Lezione appresa',
   requisiti: 'Requisito', contratti: 'Contratto', stakeholder: 'Stakeholder', processi_comunicazione: 'Processo comunicazione',
+  capitolato_voci: 'Voce di capitolato',
 };
 
 function tile(label, value, cls, sub) {
@@ -36,7 +37,7 @@ export async function renderCruscotto(container) {
 
   container.appendChild(el('div', { class: 'section' }, [
     el('div', { class: 'section__head' }, [
-      el('div', { class: 'eyebrow' }, 'Scadenze della settimana'),
+      el('div', { class: 'section-title' }, 'Scadenze della settimana'),
       el('button', {
         class: 'btn btn--sm',
         onclick: () => printReport('Scadenze della settimana', commessa, [{
@@ -61,7 +62,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Registro Criticità'),
+    el('div', { class: 'section-title' }, 'Registro Criticità'),
     el('div', { class: 'tiles' }, [
       tile('Criticità aperte', dash.criticita.aperte),
       tile('Urgenti (viola)', dash.criticita.viola_aperte, dash.criticita.viola_aperte > 0 ? 'warn' : ''),
@@ -82,7 +83,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Milestone / Montaggi'),
+    el('div', { class: 'section-title' }, 'Milestone / Montaggi'),
     el('div', { class: 'tiles' }, [
       tile('Aperte', dash.milestone.aperte),
       tile('In scadenza (≤7gg)', dash.milestone.in_scadenza_7gg, dash.milestone.in_scadenza_7gg > 0 ? 'warn' : ''),
@@ -92,7 +93,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Registro Decisioni'),
+    el('div', { class: 'section-title' }, 'Registro Decisioni'),
     el('div', { class: 'tiles' }, [
       tile('Pendenze aperte', dash.decisioni.pendenze_aperte),
       tile('Oltre 21 giorni', dash.decisioni.oltre_21gg, dash.decisioni.oltre_21gg > 0 ? 'alert' : ''),
@@ -104,7 +105,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Lavorazioni'),
+    el('div', { class: 'section-title' }, 'Lavorazioni'),
     el('div', { class: 'tiles' }, [
       tile('Da fare', dash.lavorazioni['da-fare']),
       tile('In corso', dash.lavorazioni['in-corso']),
@@ -115,7 +116,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Requisiti & Contratto'),
+    el('div', { class: 'section-title' }, 'Requisiti & Contratto'),
     el('div', { class: 'tiles' }, [
       tile('Requisiti totali', dash.requisiti.totali),
       tile('Approvati', dash.requisiti.approvati),
@@ -129,7 +130,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Stakeholder'),
+    el('div', { class: 'section-title' }, 'Stakeholder'),
     el('div', { class: 'tiles' }, [
       tile('Attivi', dash.stakeholder.totali),
       tile('Interesse e influenza alti', dash.stakeholder.chiave, dash.stakeholder.chiave > 0 ? 'warn' : ''),
@@ -138,7 +139,7 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
-    el('div', { class: 'eyebrow' }, 'Registro Allert — presidio GC'),
+    el('div', { class: 'section-title' }, 'Registro Allert — presidio GC'),
     el('div', { class: 'tiles' }, [
       tile('Aperti', dash.allert.aperti),
       tile('Critici aperti', dash.allert.critici_aperti, dash.allert.critici_aperti > 0 ? 'alert' : ''),
@@ -149,7 +150,7 @@ export async function renderCruscotto(container) {
 
   if (dash.attivita_recente && dash.attivita_recente.length) {
     container.appendChild(el('div', { class: 'section' }, [
-      el('div', { class: 'eyebrow' }, 'Attività recente'),
+      el('div', { class: 'section-title' }, 'Attività recente'),
       el('div', { class: 'activity-list' }, dash.attivita_recente.map((a) => el('div', { class: 'activity-item' }, [
         el('span', { class: 'activity-item__tipo' }, ENTITY_LABEL[a.entity_type] || a.entity_type),
         el('span', {}, `${AZIONE_LABEL[a.azione] || a.azione}${a.dettaglio ? ' — ' + a.dettaglio : ''}`),

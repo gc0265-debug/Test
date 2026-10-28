@@ -8,6 +8,7 @@ import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, openModal, closeModal, toast, confirmDialog, formatDate,
 } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 const STATO = { attivo: 'Attivo', chiuso: 'Chiuso' };
 
@@ -97,7 +98,7 @@ async function renderContrattoCard(c, refreshAll) {
     ? (await api.get(`/contratti/${c.id}/variazioni`)).data
     : [];
 
-  return el('div', { class: 'section' }, [
+  return el('div', { class: 'section card' }, [
     el('div', { class: 'section__head' }, [
       el('div', {}, [
         el('h2', {}, c.titolo),
@@ -145,9 +146,17 @@ export async function renderContratto(container) {
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     'Il contratto stipulato con la sua baseline di capitolato: ogni modifica ai requisiti successiva alla baseline è segnalata qui come variazione da gestire secondo la procedura concordata.'));
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo contratto'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Contratto', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Contratti',
+        columns: ['Titolo', 'Controparte', 'Data stipula', 'Valore', 'Baseline capitolato', 'Stato'],
+        rows: lastRows.map((r) => [r.titolo, r.controparte || '—', formatDate(r.data_stipula), formatValore(r.valore), r.capitolato_baseline_data ? formatDate(r.capitolato_baseline_data) : '—', STATO[r.stato]]),
+      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo contratto'),
+    ]),
   ]);
   container.appendChild(toolbar);
   const listHost = el('div');
@@ -155,6 +164,7 @@ export async function renderContratto(container) {
 
   async function refresh() {
     const res = await api.get(`/contratti?commessa_id=${state.commessaId}`);
+    lastRows = res.data;
     listHost.innerHTML = '';
     if (!res.data.length) {
       listHost.appendChild(el('p', { class: 'muted' }, 'Nessun contratto registrato per questa commessa.'));

@@ -4,6 +4,7 @@
 import { api } from '../api.js';
 import { state } from '../state.js';
 import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 const TIPO = { capitolato: 'Capitolato', elaborato: 'Elaborato', verbale: 'Verbale', contratto: 'Contratto', sicurezza: 'Sicurezza', altro: 'Altro' };
 
@@ -60,9 +61,17 @@ export async function renderDocumenti(container) {
     return;
   }
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo documento'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Documenti', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Elenco documenti',
+        columns: ['Titolo', 'Tipo', 'Link', 'File', 'Note'],
+        rows: lastRows.map((r) => [r.titolo, TIPO[r.tipo] || r.tipo, r.url || '—', r.file_nome || '—', r.note || '—']),
+      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo documento'),
+    ]),
   ]);
   container.appendChild(toolbar);
   const tableHost = el('div');
@@ -70,6 +79,7 @@ export async function renderDocumenti(container) {
 
   async function refresh() {
     const res = await api.get(`/documenti?commessa_id=${state.commessaId}`);
+    lastRows = res.data;
     renderTable(tableHost, [
       { key: 'titolo', label: 'Titolo' },
       { key: 'tipo', label: 'Tipo', render: (r) => TIPO[r.tipo] || r.tipo },

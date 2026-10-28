@@ -13,9 +13,10 @@ const router = express.Router();
 router.get('/', (req, res) => {
   const { commessa_id, wp_id, fase, stato, search } = req.query;
   let sql = `
-    SELECT r.*, w.codice AS wp_codice, w.nome AS wp_nome
+    SELECT r.*, w.codice AS wp_codice, w.nome AS wp_nome, cv.codice_wbs AS capitolato_wbs, cv.titolo AS capitolato_titolo
     FROM requisiti r
     LEFT JOIN work_packages w ON r.wp_id = w.id
+    LEFT JOIN capitolato_voci cv ON r.rif_capitolato_voce_id = cv.id
     WHERE 1=1
   `;
   const params = [];
@@ -41,13 +42,13 @@ router.get('/:id/versioni', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { commessa_id, wp_id, codice_wbs, fase, titolo, descrizione, fonte_capitolato, stato, note } = req.body;
+  const { commessa_id, wp_id, codice_wbs, fase, titolo, descrizione, fonte_capitolato, rif_capitolato_voce_id, stato, note } = req.body;
   if (!commessa_id || !codice_wbs || !titolo) {
     return res.status(400).json({ error: 'commessa_id, codice_wbs e titolo sono obbligatori' });
   }
   const insertRequisito = db.prepare(`
-    INSERT INTO requisiti (commessa_id, wp_id, codice_wbs, fase, titolo, descrizione, fonte_capitolato, stato, versione_corrente, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+    INSERT INTO requisiti (commessa_id, wp_id, codice_wbs, fase, titolo, descrizione, fonte_capitolato, rif_capitolato_voce_id, stato, versione_corrente, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
   `);
   const insertVersione = db.prepare(`
     INSERT INTO requisiti_versioni (requisito_id, numero_versione, titolo, descrizione, motivo_modifica, data, autore)
@@ -56,7 +57,7 @@ router.post('/', (req, res) => {
   const creaConVersione = db.transaction(() => {
     const result = insertRequisito.run(
       commessa_id, wp_id || null, codice_wbs, fase || 'progettazione', titolo, descrizione || null,
-      fonte_capitolato || null, stato || 'bozza', note || null
+      fonte_capitolato || null, rif_capitolato_voce_id || null, stato || 'bozza', note || null
     );
     insertVersione.run(result.lastInsertRowid, titolo, descrizione || null, todayStr(), req.user?.nome || null);
     return result.lastInsertRowid;
@@ -77,12 +78,12 @@ router.put('/:id', (req, res) => {
   const aggiorna = db.transaction(() => {
     const versione = contenutoCambiato ? existing.versione_corrente + 1 : existing.versione_corrente;
     db.prepare(`
-      UPDATE requisiti SET wp_id=?, codice_wbs=?, fase=?, titolo=?, descrizione=?, fonte_capitolato=?, stato=?,
+      UPDATE requisiti SET wp_id=?, codice_wbs=?, fase=?, titolo=?, descrizione=?, fonte_capitolato=?, rif_capitolato_voce_id=?, stato=?,
         versione_corrente=?, note=?, updated_at=unixepoch()
       WHERE id=?
     `).run(
       next.wp_id || null, next.codice_wbs, next.fase, next.titolo, next.descrizione || null,
-      next.fonte_capitolato || null, next.stato, versione, next.note || null, req.params.id
+      next.fonte_capitolato || null, next.rif_capitolato_voce_id || null, next.stato, versione, next.note || null, req.params.id
     );
     if (contenutoCambiato) {
       db.prepare(`

@@ -7,6 +7,7 @@
 import { api } from '../api.js';
 import { state } from '../state.js';
 import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 function buildFieldNode(f, value) {
   if (f.type === 'select') {
@@ -18,7 +19,7 @@ function buildFieldNode(f, value) {
   return textInput(f.name, value ?? '', { required: f.required || false, placeholder: f.placeholder || '' });
 }
 
-export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true }) {
+export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true, printColumns }) {
   async function fetchRows() {
     const query = scopedByCommessa ? `?commessa_id=${state.commessaId}` : '';
     const res = await api.get(`${apiPath}${query}`);
@@ -57,12 +58,23 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
       return;
     }
 
+    let lastRows = [];
     const toolbar = el('div', { class: 'section__head' }, [
       el('div'),
-      el('button', {
-        class: 'btn btn--primary',
-        onclick: () => openForm(null, refresh),
-      }, `+ Nuovo`),
+      el('div', { style: 'display:flex;gap:8px' }, [
+        printColumns ? el('button', {
+          class: 'btn btn--sm',
+          onclick: () => printReport(titleSingular + 'i', state.commesse.find((c) => c.id === state.commessaId), [{
+            heading: titleSingular + 'i',
+            columns: printColumns.map((p) => p.label),
+            rows: lastRows.map((row) => printColumns.map((p) => p.get(row))),
+          }]),
+        }, 'Stampa') : null,
+        el('button', {
+          class: 'btn btn--primary',
+          onclick: () => openForm(null, refresh),
+        }, `+ Nuovo`),
+      ]),
     ]);
     container.appendChild(toolbar);
 
@@ -71,6 +83,7 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
 
     async function refresh() {
       const rows = await fetchRows();
+      lastRows = rows;
       const cols = [
         ...columns,
         {

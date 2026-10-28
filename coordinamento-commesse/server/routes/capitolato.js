@@ -1,0 +1,59 @@
+// Capitolato — scrittura in stile tabella con codici WBS, a monte dei
+// Requisiti di progetto. Una voce di capitolato può collegarsi a più
+// requisiti (tramite requisiti.rif_capitolato_voce_id); qui esponiamo
+// anche il conteggio dei requisiti collegati per ciascuna voce.
+
+const express = require('express');
+const db = require('../db/database');
+const { logAudit } = require('../utils/audit');
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  const { commessa_id } = req.query;
+  let sql = `
+    SELECT c.*, (SELECT COUNT(*) FROM requisiti r WHERE r.rif_capitolato_voce_id = c.id) AS n_requisiti
+    FROM capitolato_voci c
+    WHERE 1=1
+  `;
+  const params = [];
+  if (commessa_id) { sql += ' AND c.commessa_id = ?'; params.push(commessa_id); }
+  sql += ' ORDER BY c.codice_wbs ASC';
+  res.json({ data: db.prepare(sql).all(...params), total: 0 });
+});
+
+router.post('/', (req, res) => {
+  const { commessa_id, codice_wbs, titolo, descrizione, note } = req.body;
+  if (!commessa_id || !codice_wbs || !titolo) {
+    return res.status(400).json({ error: 'commessa_id, codice_wbs e titolo sono obbligatori' });
+  }
+  const result = db.prepare(`
+    INSERT INTO capitolato_voci (commessa_id, codice_wbs, titolo, descrizione, note)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(commessa_id, codice_wbs, titolo, descrizione || null, note || null);
+  const row = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(result.lastInsertRowid);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'capitolato_voci', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: `${codice_wbs} — ${titolo}` });
+  res.status(201).json(row);
+});
+
+router.put('/:id', (req, res) => {
+  const existing = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'voce di capitolato non trovata' });
+  const next = { ...existing, ...req.body };
+  db.prepare(`
+    UPDATE capitolato_voci SET codice_wbs=?, titolo=?, descrizione=?, note=?, updated_at=unixepoch() WHERE id=?
+  `).run(next.codice_wbs, next.titolo, next.descrizione || null, next.note || null, req.params.id);
+  const row = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(req.params.id);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'capitolato_voci', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: 'aggiornata' });
+  res.json(row);
+});
+
+router.delete('/:id', (req, res) => {
+  const existing = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'voce di capitolato non trovata' });
+  db.prepare('DELETE FROM capitolato_voci WHERE id = ?').run(req.params.id);
+  logAudit({ commessa_id: existing.commessa_id, entity_type: 'capitolato_voci', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: `${existing.codice_wbs} — ${existing.titolo}` });
+  res.status(204).end();
+});
+
+module.exports = router;

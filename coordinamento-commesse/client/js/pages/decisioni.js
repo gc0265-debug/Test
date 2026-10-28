@@ -11,6 +11,7 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
+import { printReport } from '../components/report.js';
 
 const STATO = { richiesta: ['Richiesta', 'outline'], parziale: ['Parziale', 'ambra'], decisa: ['Decisa', 'verde'] };
 
@@ -73,9 +74,15 @@ export async function renderDecisioni(container) {
   const dashHost = el('div', { class: 'tiles' });
   container.appendChild(dashHost);
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Decisioni', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Decisioni',
+        columns: ['Tema', 'A chi', 'Prima richiesta', 'Anzianità', 'Stato', 'Per iscritto'],
+        rows: lastRows.map((r) => [r.tema, r.a_chi || '—', formatDate(r.data_prima_richiesta), `${r.anzianita_giorni} gg`, STATO[r.stato][0], r.conferma_scritta ? 'Sì' : 'No']),
+      }]) }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
     ]),
@@ -90,6 +97,7 @@ export async function renderDecisioni(container) {
       api.get(`/dashboard/${state.commessaId}`),
       api.get(`/decisioni?commessa_id=${state.commessaId}`),
     ]);
+    lastRows = list.data;
     const d = dash.decisioni;
     dashHost.innerHTML = '';
     dashHost.appendChild(tile('Richieste totali', d.richieste_totali));

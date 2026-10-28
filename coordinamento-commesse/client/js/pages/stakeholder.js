@@ -6,6 +6,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
+import { printReport } from '../components/report.js';
 
 const CATEGORIA = { interno: 'Interno Field Project', gc: 'GC', dl: 'DL', committente: 'Committente / GILI', fornitore: 'Fornitore', advisor: 'Advisor', ente: 'Ente', altro: 'Altro' };
 const INTERESSE = ['basso', 'medio', 'alto'];
@@ -85,9 +86,17 @@ export async function renderStakeholder(container) {
   const matrixHost = el('div');
   container.appendChild(matrixHost);
 
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Stakeholder', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Stakeholder',
+        columns: ['Nome', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Stato'],
+        rows: lastRows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', CATEGORIA[r.categoria] || r.categoria, r.interesse, r.influenza, r.stato === 'attivo' ? 'Attivo' : 'Non attivo']),
+      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
+    ]),
   ]);
   container.appendChild(toolbar);
   const tableHost = el('div');
@@ -95,6 +104,7 @@ export async function renderStakeholder(container) {
 
   async function refresh() {
     const res = await api.get(`/stakeholder?commessa_id=${state.commessaId}`);
+    lastRows = res.data;
     matrixHost.innerHTML = '';
     matrixHost.appendChild(renderMatrice(res.data));
 

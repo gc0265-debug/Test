@@ -11,11 +11,15 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, formatDateTime,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
+import { printReport } from '../components/report.js';
 
 const FASE = { progettazione: 'Progettazione', approvvigionamento: 'Approvvigionamento', montaggio: 'Montaggio', collaudo: 'Collaudo' };
 const STATO = { bozza: ['Bozza', 'outline'], approvato: ['Approvato', 'verde'], 'in-revisione': ['In revisione', 'ambra'], superato: ['Superato', 'rosso'] };
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  const capitolatoRes = await api.get(`/capitolato?commessa_id=${state.commessaId}`);
+  const capitolatoOptions = [['', '— nessuna'], ...capitolatoRes.data.map((c) => [c.id, `${c.codice_wbs} — ${c.titolo}`])];
+
   const form = el('form', {});
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -28,7 +32,8 @@ function openForm(existing, onSaved) {
   if (existing) {
     form.appendChild(field('Motivo della modifica', textInput('motivo_modifica', ''), 'Registrato solo se titolo o descrizione cambiano in questo salvataggio.'));
   }
-  form.appendChild(field('Fonte nel capitolato', textInput('fonte_capitolato', existing?.fonte_capitolato ?? '', { placeholder: 'es. par. 4.2, pag. 18, rev. 3' })));
+  form.appendChild(field('Voce di capitolato', select('rif_capitolato_voce_id', capitolatoOptions, existing?.rif_capitolato_voce_id ?? ''), 'Collegamento strutturato alla tabella Capitolato, se già scritta.'));
+  form.appendChild(field('Fonte nel capitolato (testo libero)', textInput('fonte_capitolato', existing?.fonte_capitolato ?? '', { placeholder: 'es. par. 4.2, pag. 18, rev. 3' })));
   form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza')));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
   form.appendChild(el('div', { class: 'modal__actions' }, [
@@ -94,9 +99,17 @@ export async function renderRequisiti(container) {
     'Estratti dal capitolato, con codice WBS e fase di esecuzione. Le approvazioni si richiedono da qui ma confluiscono nel Registro Decisioni.'));
 
   let filtroFase = '';
+  let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Requisiti', state.commesse.find(c => c.id === state.commessaId), [{
+        heading: 'Elenco requisiti',
+        columns: ['WBS', 'Titolo', 'Fase', 'Versione', 'Stato'],
+        rows: lastRows.map((r) => [r.codice_wbs, r.titolo, FASE[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
+      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
+    ]),
   ]);
   container.appendChild(toolbar);
 
@@ -119,9 +132,13 @@ export async function renderRequisiti(container) {
     const query = new URLSearchParams({ commessa_id: state.commessaId });
     if (filtroFase) query.set('fase', filtroFase);
     const res = await api.get(`/requisiti?${query.toString()}`);
+    lastRows = res.data;
     renderTable(tableHost, [
       { key: 'codice_wbs', label: 'WBS' },
-      { key: 'titolo', label: 'Titolo' },
+      {
+        key: 'titolo', label: 'Titolo',
+        render: (r) => el('div', {}, [r.titolo, r.capitolato_wbs ? el('div', { class: 'muted', style: 'font-size:10.5px' }, `da capitolato ${r.capitolato_wbs}`) : null]),
+      },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'fase', label: 'Fase', render: (r) => FASE[r.fase] || r.fase },
       { key: 'versione', label: 'Versione', render: (r) => pill(`v${r.versione_corrente}`, r.versione_corrente > 1 ? 'ambra' : 'outline') },
