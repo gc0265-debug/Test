@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coordinamento Commesse — Field Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="side">
+      <div class="side__brand">
+        <div class="side__logo"><span>Field</span><span class="p">Project</span><span class="s">SAS</span></div>
+        <div class="side__app">Coordinamento Commesse</div>
+      </div>
+
+      <div class="side__commessa">
+        <label class="side__label" for="commessaSelect">Commessa</label>
+        <select id="commessaSelect"></select>
+      </div>
+
+      <nav class="side__nav" id="sideNav">
+        <a href="#/cruscotto" data-route="cruscotto"><span class="side__ico">◉</span>Cruscotto</a>
+        <div class="side__group">Coordinamento</div>
+        <a href="#/criticita" data-route="criticita"><span class="side__ico">▲</span>Registro Criticità</a>
+        <a href="#/decisioni" data-route="decisioni"><span class="side__ico">◆</span>Registro Decisioni</a>
+        <a href="#/note" data-route="note"><span class="side__ico">▤</span>Note di Coordinamento</a>
+        <a href="#/diario" data-route="diario"><span class="side__ico">≡</span>Diario di Cantiere</a>
+        <div class="side__group">Commessa</div>
+        <a href="#/lavorazioni" data-route="lavorazioni"><span class="side__ico">⚙</span>Lavorazioni</a>
+        <a href="#/maestranze" data-route="maestranze"><span class="side__ico">◈</span>Maestranze</a>
+        <a href="#/documenti" data-route="documenti"><span class="side__ico">▣</span>Documenti</a>
+        <div class="side__group">Gestione</div>
+        <a href="#/commesse" data-route="commesse"><span class="side__ico">⌂</span>Commesse</a>
+      </nav>
+
+      <div class="side__foot">D.Lgs. 81/2008 · HTML/JS, nessun build step</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="pageTitle">Cruscotto</h1>
+        <div class="topbar__right" id="topbarRight"></div>
+      </header>
+      <div class="content" id="content" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <div class="modal-layer" id="modalLayer" hidden>
+    <div class="modal-layer__scrim" id="modalScrim"></div>
+    <div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <div class="toast-layer" id="toastLayer"></div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

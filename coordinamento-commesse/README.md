@@ -1,0 +1,89 @@
+# Coordinamento Commesse — Field Project SAS
+
+App di coordinamento commesse, nuova e separata da **Board Field Project**
+(`client/` e `server/` alla radice del repository): nessun dato in comune,
+nessuna dipendenza fra le due.
+
+## Cos'è
+
+Non è un'estensione generica: i due registri di coordinamento ricalcano
+nel formato gli strumenti realmente in uso sulla commessa 2514RW,
+emersi analizzando `00_Corrispondenza/Presidio RSW`:
+
+- **Registro Criticità** — una criticità per Work Package, con urgenza
+  *viola* (risposta a scadenza, tipicamente 3 giorni, come in
+  `Registro_Criticita_PM`) o *verde* (risposta dovuta dalla controparte,
+  senza termine fisso). Il cruscotto segnala separatamente le urgenze
+  aperte e quelle già scadute.
+- **Registro Decisioni** — domande chiuse (SÌ/NO) verso DL/SAC/GC, con
+  anzianità in giorni, soglia dei 21 giorni, tasso di resa e percentuale
+  di conferme per iscritto — lo stesso cruscotto di
+  `Registro_Decisioni_DL_2514RW.xlsx`.
+- **Note di Coordinamento** — agenda numerata per Work Package,
+  generabile in automatico dalle criticità ancora aperte (come la Nota
+  di Coordinamento ATI del 29.09.2026) e poi modificabile prima
+  dell'invio; si stampa o si esporta in PDF dal browser.
+- **Diario di Cantiere, Lavorazioni, Maestranze, Documenti** — la
+  gestione commessa di base, sullo stesso modello di Board.
+
+L'app è multi-commessa: ogni commessa ha i propri Work Package (di
+default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B, la convenzione
+Field Project, ma modificabili) e tutti i registri sono agganciati alla
+commessa selezionata nella barra laterale.
+
+## Stack
+
+- **Client**: HTML + CSS + JavaScript puro (moduli ES nativi), **nessun
+  build step**. Si apre e si modifica un file e basta.
+- **Server**: Node + Express + SQLite (`better-sqlite3`, la stessa
+  libreria già usata da Board), per avere dati condivisi fra più
+  persone invece che bloccati nel browser di ciascuno.
+
+## Avvio
+
+```bash
+cd coordinamento-commesse
+npm run install:server   # una tantum
+npm start                 # avvia il server su http://localhost:3002
+```
+
+Al primo avvio il database viene creato vuoto e popolato con una
+commessa di esempio (2514RW, con i quattro Work Package e qualche riga
+dimostrativa nei registri) — solo se il database è vuoto: non sovrascrive
+mai dati esistenti. Per sviluppo con riavvio automatico: `npm run dev`.
+
+Il client è servito direttamente dal server Express su `/`; le API
+REST sono sotto `/api`. Non serve altro.
+
+## Struttura
+
+```
+coordinamento-commesse/
+  server/
+    index.js             bootstrap Express
+    db/
+      schema.sql          schema SQLite (stesse convenzioni di Board: snake_case, CHECK, unixepoch)
+      database.js          apertura connessione + applicazione schema
+      seed.js               popolamento iniziale, idempotente
+    routes/                 un file per gruppo di risorse (REST)
+    utils/dates.js           calcolo giorni fra date, usato per anzianità e scadenze
+  client/
+    index.html
+    css/styles.css          identità Field Project SAS (nero, rosso brand, Montserrat)
+    js/
+      app.js                 bootstrap: sidebar, selettore commessa, router
+      router.js               router hash-based, senza libreria
+      state.js                 commessa corrente e suoi work package, condivisi fra le pagine
+      api.js                    wrapper fetch
+      components/ui.js          helper DOM, tabella, modale, toast, pill
+      pages/                    una pagina per sezione; genericCrud.js fattorizza
+                                 la meccanica comune a Lavorazioni/Maestranze/Documenti/Diario
+```
+
+## Cosa manca di proposito
+
+Autenticazione e permessi per ruolo (oggi chiunque raggiunga l'URL può
+scrivere su tutti i registri — accettabile per un uso interno, da
+aggiungere se l'app esce dalla rete dell'azienda). Deploy: nessuna
+configurazione Railway/Render ancora inclusa, a differenza di Board —
+va aggiunta quando si decide dove ospitarlo.
