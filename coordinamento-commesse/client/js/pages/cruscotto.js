@@ -7,7 +7,10 @@ const AZIONE_LABEL = {
   creata: 'Creata', modificata: 'Modificata', chiusa: 'Chiusa',
   riaperta: 'Riaperta', eliminata: 'Eliminata', rilancio: 'Rilanciata',
 };
-const ENTITY_LABEL = { criticita: 'Criticità', decisioni: 'Decisione', allert: 'Allert', milestone: 'Milestone', lezioni_apprese: 'Lezione appresa' };
+const ENTITY_LABEL = {
+  criticita: 'Criticità', decisioni: 'Decisione', allert: 'Allert', milestone: 'Milestone', lezioni_apprese: 'Lezione appresa',
+  requisiti: 'Requisito', contratti: 'Contratto', stakeholder: 'Stakeholder', processi_comunicazione: 'Processo comunicazione',
+};
 
 function tile(label, value, cls, sub) {
   return el('div', { class: 'tile' }, [
@@ -109,6 +112,29 @@ export async function renderCruscotto(container) {
       tile('Bloccate', dash.lavorazioni.bloccata, dash.lavorazioni.bloccata > 0 ? 'alert' : ''),
     ]),
     el('a', { href: '#/lavorazioni', class: 'btn btn--sm', style: 'margin-top:8px' }, 'Apri le lavorazioni →'),
+  ]));
+
+  container.appendChild(el('div', { class: 'section' }, [
+    el('div', { class: 'eyebrow' }, 'Requisiti & Contratto'),
+    el('div', { class: 'tiles' }, [
+      tile('Requisiti totali', dash.requisiti.totali),
+      tile('Approvati', dash.requisiti.approvati),
+      tile('In revisione', dash.requisiti.in_revisione, dash.requisiti.in_revisione > 0 ? 'warn' : ''),
+      tile('Variazioni da gestire', dash.contratto.variazioni_da_gestire, dash.contratto.variazioni_da_gestire > 0 ? 'alert' : ''),
+    ]),
+    el('div', { style: 'display:flex;gap:8px;margin-top:8px' }, [
+      el('a', { href: '#/requisiti', class: 'btn btn--sm' }, 'Apri i requisiti →'),
+      el('a', { href: '#/contratto', class: 'btn btn--sm' }, 'Apri il contratto →'),
+    ]),
+  ]));
+
+  container.appendChild(el('div', { class: 'section' }, [
+    el('div', { class: 'eyebrow' }, 'Stakeholder'),
+    el('div', { class: 'tiles' }, [
+      tile('Attivi', dash.stakeholder.totali),
+      tile('Interesse e influenza alti', dash.stakeholder.chiave, dash.stakeholder.chiave > 0 ? 'warn' : ''),
+    ]),
+    el('a', { href: '#/stakeholder', class: 'btn btn--sm', style: 'margin-top:8px' }, 'Apri il registro →'),
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [

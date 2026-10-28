@@ -21,11 +21,12 @@ router.get('/', (req, res) => {
   const { commessa_id, wp_id, stato, perimetro, classificazione } = req.query;
   let sql = `
     SELECT a.*, w.codice AS wp_codice, w.nome AS wp_nome,
-           c.tema AS criticita_tema, d.tema AS decisione_tema
+           c.tema AS criticita_tema, d.tema AS decisione_tema, r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo
     FROM allert a
     LEFT JOIN work_packages w ON a.wp_id = w.id
     LEFT JOIN criticita c ON a.rif_criticita_id = c.id
     LEFT JOIN decisioni d ON a.rif_decisione_id = d.id
+    LEFT JOIN requisiti r ON a.rif_requisito_id = r.id
     WHERE 1=1
   `;
   const params = [];
@@ -48,17 +49,17 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res) => {
   const { commessa_id, wp_id, data, perimetro, classificazione, descrizione, azione_tutela,
-          rif_documento, rif_criticita_id, rif_decisione_id, stato, note } = req.body;
+          rif_documento, rif_criticita_id, rif_decisione_id, rif_requisito_id, stato, note } = req.body;
   if (!commessa_id || !descrizione) return res.status(400).json({ error: 'commessa_id e descrizione sono obbligatori' });
 
   const result = db.prepare(`
     INSERT INTO allert (commessa_id, wp_id, data, perimetro, classificazione, descrizione, azione_tutela,
-      rif_documento, rif_criticita_id, rif_decisione_id, stato, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      rif_documento, rif_criticita_id, rif_decisione_id, rif_requisito_id, stato, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     commessa_id, wp_id || null, data || todayStr(), perimetro || 'interno', classificazione || 'attenzione',
     descrizione, azione_tutela || null, rif_documento || null, rif_criticita_id || null, rif_decisione_id || null,
-    stato || 'aperto', note || null
+    rif_requisito_id || null, stato || 'aperto', note || null
   );
   const row = db.prepare('SELECT * FROM allert WHERE id = ?').get(result.lastInsertRowid);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'allert', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: descrizione });
@@ -72,12 +73,12 @@ router.put('/:id', (req, res) => {
 
   db.prepare(`
     UPDATE allert SET wp_id=?, data=?, perimetro=?, classificazione=?, descrizione=?, azione_tutela=?, rif_documento=?,
-      rif_criticita_id=?, rif_decisione_id=?, stato=?, note=?, updated_at=unixepoch()
+      rif_criticita_id=?, rif_decisione_id=?, rif_requisito_id=?, stato=?, note=?, updated_at=unixepoch()
     WHERE id=?
   `).run(
     next.wp_id || null, next.data, next.perimetro, next.classificazione, next.descrizione, next.azione_tutela || null,
-    next.rif_documento || null, next.rif_criticita_id || null, next.rif_decisione_id || null, next.stato, next.note || null,
-    req.params.id
+    next.rif_documento || null, next.rif_criticita_id || null, next.rif_decisione_id || null, next.rif_requisito_id || null,
+    next.stato, next.note || null, req.params.id
   );
   const row = db.prepare('SELECT * FROM allert WHERE id = ?').get(req.params.id);
   const dettaglio = diffFields(existing, next, TRACKED);

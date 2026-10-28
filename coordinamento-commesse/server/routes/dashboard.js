@@ -97,7 +97,39 @@ router.get('/:commessaId', (req, res) => {
       .map(m => ({ tipo: 'milestone', id: m.id, titolo: m.titolo, data: m.data_fine, giorni: daysBetween(oggi, m.data_fine) })),
   ].sort((a, b) => a.giorni - b.giorni);
 
-  res.json({ commessa, criticita, decisioni, lavorazioni, allert, milestone, attivita_recente: attivitaRecente, scadenze_settimana: scadenzeSettimana });
+  // ---- requisiti ----
+  const requisitiRows = db.prepare('SELECT stato FROM requisiti WHERE commessa_id = ?').all(commessaId);
+  const requisiti = {
+    totali: requisitiRows.length,
+    approvati: requisitiRows.filter(r => r.stato === 'approvato').length,
+    in_revisione: requisitiRows.filter(r => r.stato === 'in-revisione').length,
+    bozza: requisitiRows.filter(r => r.stato === 'bozza').length,
+  };
+
+  // ---- contratto: variazioni rispetto alla baseline, su tutti i contratti attivi ----
+  const contrattiAttivi = db.prepare("SELECT * FROM contratti WHERE commessa_id = ? AND stato = 'attivo'").all(commessaId);
+  let variazioniDaGestire = 0;
+  contrattiAttivi.forEach((c) => {
+    if (!c.capitolato_baseline_data) return;
+    const n = db.prepare(`
+      SELECT COUNT(*) AS n FROM requisiti_versioni rv JOIN requisiti r ON rv.requisito_id = r.id
+      WHERE r.commessa_id = ? AND rv.data > ? AND rv.numero_versione > 1
+    `).get(commessaId, c.capitolato_baseline_data).n;
+    variazioniDaGestire += n;
+  });
+  const contratto = { attivi: contrattiAttivi.length, variazioni_da_gestire: variazioniDaGestire };
+
+  // ---- stakeholder ----
+  const stakeholderRows = db.prepare("SELECT * FROM stakeholder WHERE commessa_id = ? AND stato = 'attivo'").all(commessaId);
+  const stakeholder = {
+    totali: stakeholderRows.length,
+    chiave: stakeholderRows.filter(s => s.interesse === 'alto' && s.influenza === 'alta').length,
+  };
+
+  res.json({
+    commessa, criticita, decisioni, lavorazioni, allert, milestone, requisiti, contratto, stakeholder,
+    attivita_recente: attivitaRecente, scadenze_settimana: scadenzeSettimana,
+  });
 });
 
 module.exports = router;

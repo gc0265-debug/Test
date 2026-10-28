@@ -16,13 +16,15 @@ const CLASSIFICAZIONE = { informativo: ['Informativo', 'outline'], attenzione: [
 const STATO = { aperto: ['Aperto', 'outline'], monitorato: ['Monitorato', 'ambra'], chiuso: ['Chiuso', 'verde'] };
 
 async function openForm(existing, onSaved) {
-  const [criticitaRes, decisioniRes] = await Promise.all([
+  const [criticitaRes, decisioniRes, requisitiRes] = await Promise.all([
     api.get(`/criticita?commessa_id=${state.commessaId}`),
     api.get(`/decisioni?commessa_id=${state.commessaId}`),
+    api.get(`/requisiti?commessa_id=${state.commessaId}`),
   ]);
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   const criticitaOptions = [['', '— nessuna'], ...criticitaRes.data.map((c) => [c.id, c.tema])];
   const decisioniOptions = [['', '— nessuna'], ...decisioniRes.data.map((d) => [d.id, d.tema])];
+  const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
 
   const form = el('form', {});
   form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '', { required: true })));
@@ -34,6 +36,7 @@ async function openForm(existing, onSaved) {
   form.appendChild(field('Riferimento documento', textInput('rif_documento', existing?.rif_documento ?? '', { placeholder: 'es. PEC del 12/10, verbale riunione' })));
   form.appendChild(field('Collegato a criticità', select('rif_criticita_id', criticitaOptions, existing?.rif_criticita_id ?? '')));
   form.appendChild(field('Collegato a decisione', select('rif_decisione_id', decisioniOptions, existing?.rif_decisione_id ?? '')));
+  form.appendChild(field('Collegato a requisito', select('rif_requisito_id', requisitiOptions, existing?.rif_requisito_id ?? '')));
   form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'aperto')));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
   form.appendChild(el('div', { class: 'modal__actions' }, [
@@ -87,7 +90,7 @@ export async function renderAllert(container) {
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'perimetro', label: 'Perimetro', render: (r) => PERIMETRO[r.perimetro] || r.perimetro },
       { key: 'classificazione', label: 'Classificazione', render: (r) => pill(CLASSIFICAZIONE[r.classificazione][0], CLASSIFICAZIONE[r.classificazione][1]) },
-      { key: 'collegata', label: 'Collegato a', render: (r) => r.criticita_tema || r.decisione_tema || '—' },
+      { key: 'collegata', label: 'Collegato a', render: (r) => r.criticita_tema || r.decisione_tema || (r.requisito_wbs ? `${r.requisito_wbs} — ${r.requisito_titolo}` : '—') },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       {
         key: 'actions', label: '', className: 'actions',

@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS decisioni (
     conferma_scritta INTEGER NOT NULL DEFAULT 0,  -- 0/1
     rif_conferma TEXT,
     n_riproposte INTEGER NOT NULL DEFAULT 0,
+    rif_requisito_id INTEGER REFERENCES requisiti(id) ON DELETE SET NULL,  -- approvazione nata da un requisito
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
@@ -225,11 +226,118 @@ CREATE TABLE IF NOT EXISTS allert (
     rif_documento TEXT,
     rif_criticita_id INTEGER REFERENCES criticita(id) ON DELETE SET NULL,
     rif_decisione_id INTEGER REFERENCES decisioni(id) ON DELETE SET NULL,
+    rif_requisito_id INTEGER REFERENCES requisiti(id) ON DELETE SET NULL,  -- variazione contrattuale segnalata da un requisito
     stato TEXT NOT NULL DEFAULT 'aperto'
           CHECK(stato IN ('aperto','monitorato','chiuso')),
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Requisiti: estratti da un capitolato, con codice WBS per commessa e
+-- fase di esecuzione. Ogni modifica sostanziale (titolo/descrizione)
+-- crea una nuova riga in requisiti_versioni — base per rilevare le
+-- variazioni rispetto alla baseline di un contratto.
+CREATE TABLE IF NOT EXISTS requisiti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    codice_wbs TEXT NOT NULL,                  -- es. 2514RW.WP1.03
+    fase TEXT NOT NULL DEFAULT 'progettazione'
+         CHECK(fase IN ('progettazione','approvvigionamento','montaggio','collaudo')),
+    titolo TEXT NOT NULL,
+    descrizione TEXT,
+    fonte_capitolato TEXT,                     -- riferimento al capitolato (paragrafo/pagina/revisione)
+    stato TEXT NOT NULL DEFAULT 'bozza'
+          CHECK(stato IN ('bozza','approvato','in-revisione','superato')),
+    versione_corrente INTEGER NOT NULL DEFAULT 1,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS requisiti_versioni (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    requisito_id INTEGER NOT NULL REFERENCES requisiti(id) ON DELETE CASCADE,
+    numero_versione INTEGER NOT NULL,
+    titolo TEXT NOT NULL,
+    descrizione TEXT,
+    motivo_modifica TEXT,
+    data TEXT NOT NULL DEFAULT (date('now')),
+    autore TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Contratto stipulato: baseline del capitolato (data) e procedura di
+-- change management concordata. Le versioni di requisiti successive
+-- alla baseline sono segnalate come variazioni da gestire (vedi
+-- GET /api/contratti/:id/variazioni).
+CREATE TABLE IF NOT EXISTS contratti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    titolo TEXT NOT NULL,
+    controparte TEXT,
+    data_stipula TEXT,
+    valore REAL,
+    riferimento_capitolato TEXT,
+    capitolato_baseline_data TEXT,
+    procedura_change_management TEXT,
+    stato TEXT NOT NULL DEFAULT 'attivo'
+          CHECK(stato IN ('attivo','chiuso')),
+    url TEXT,
+    file_nome TEXT,
+    file_path TEXT,
+    file_mime TEXT,
+    file_size INTEGER,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Registro Stakeholder: interesse/influenza come da prassi di project
+-- management, usato anche dalla matrice interesse/influenza e come
+-- base per le assegnazioni RACI del Piano Comunicazioni.
+CREATE TABLE IF NOT EXISTS stakeholder (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    organizzazione TEXT,
+    ruolo TEXT,
+    categoria TEXT NOT NULL DEFAULT 'interno'
+              CHECK(categoria IN ('interno','gc','dl','committente','fornitore','advisor','ente','altro')),
+    interesse TEXT NOT NULL DEFAULT 'medio' CHECK(interesse IN ('basso','medio','alto')),
+    influenza TEXT NOT NULL DEFAULT 'media' CHECK(influenza IN ('bassa','media','alta')),
+    email TEXT,
+    telefono TEXT,
+    stato TEXT NOT NULL DEFAULT 'attivo' CHECK(stato IN ('attivo','non-attivo')),
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Piano Comunicazioni: un processo di gestione per riga (riunione,
+-- aggiornamento registro, approvazione...) con frequenza/canale/output
+-- e una matrice RACI verso gli stakeholder della commessa.
+CREATE TABLE IF NOT EXISTS processi_comunicazione (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    scopo TEXT,
+    frequenza TEXT NOT NULL DEFAULT 'settimanale'
+              CHECK(frequenza IN ('giornaliera','settimanale','quindicinale','mensile','ad-evento')),
+    canale TEXT,
+    output TEXT,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS raci_assegnazioni (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    processo_id INTEGER NOT NULL REFERENCES processi_comunicazione(id) ON DELETE CASCADE,
+    stakeholder_id INTEGER NOT NULL REFERENCES stakeholder(id) ON DELETE CASCADE,
+    ruolo TEXT NOT NULL CHECK(ruolo IN ('R','A','C','I')),
+    UNIQUE(processo_id, stakeholder_id)
 );
 
 -- Storico modifiche: traccia creazione/modifica/chiusura/eliminazione su
@@ -261,3 +369,10 @@ CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_log(entity_type, entity_id)
 CREATE INDEX IF NOT EXISTS idx_audit_commessa ON audit_log(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_milestone_commessa ON milestone(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_lezioni_commessa ON lezioni_apprese(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_requisiti_commessa ON requisiti(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_requisiti_wbs ON requisiti(codice_wbs);
+CREATE INDEX IF NOT EXISTS idx_requisiti_versioni_requisito ON requisiti_versioni(requisito_id);
+CREATE INDEX IF NOT EXISTS idx_contratti_commessa ON contratti(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_stakeholder_commessa ON stakeholder(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_processi_commessa ON processi_comunicazione(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_raci_processo ON raci_assegnazioni(processo_id);

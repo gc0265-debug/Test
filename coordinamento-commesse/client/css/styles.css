@@ -273,6 +273,27 @@ td.actions{white-space:nowrap;text-align:right;}
 .gantt__legend-dot--completata{background:var(--verde);}
 .gantt__legend-dot--ritardo{background:var(--red);}
 
+/* ---------- matrice interesse/influenza (stakeholder) ---------- */
+.matrix__axis{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;}
+.matrix__axis--x{margin-left:70px;margin-bottom:4px;}
+.matrix__wrap{display:flex;gap:8px;align-items:stretch;}
+.matrix__axis--y{writing-mode:vertical-rl;transform:rotate(180deg);flex:none;display:flex;align-items:center;justify-content:center;}
+.matrix{flex:1;display:grid;grid-template-columns:70px repeat(3, 1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.matrix__corner{background:var(--paper-2);}
+.matrix__colhead, .matrix__rowhead{
+  background:var(--paper-2);padding:8px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;display:flex;align-items:center;justify-content:center;text-align:center;
+}
+.matrix__cell{background:var(--paper);padding:10px;min-height:68px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;}
+.matrix__chip{background:var(--paper-3);border-radius:2px;padding:3px 8px;font-size:11px;color:var(--ink);}
+.matrix__empty{color:var(--ink-3);font-size:12px;margin:auto;}
+
+/* ---------- matrice RACI ---------- */
+.raci-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--rule-2);}
+.raci-row select{width:170px;}
+.raci-row__nome{font-size:12.5px;font-weight:600;}
+.raci-row__ruolo{display:block;font-size:10.5px;color:var(--ink-3);font-weight:500;}
+
 @media print{
   .side, .topbar, .modal-layer, .toast-layer{display:none !important;}
   .content{padding:0;}

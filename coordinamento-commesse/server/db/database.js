@@ -30,5 +30,7 @@ ensureColumns('documenti', [
   { name: 'file_mime', def: 'TEXT' },
   { name: 'file_size', def: 'INTEGER' },
 ]);
+ensureColumns('decisioni', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
+ensureColumns('allert', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
 
 module.exports = db;

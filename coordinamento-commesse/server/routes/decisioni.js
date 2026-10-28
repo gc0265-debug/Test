@@ -27,9 +27,10 @@ function arricchisci(row) {
 router.get('/', (req, res) => {
   const { commessa_id, wp_id, stato, a_chi, search } = req.query;
   let sql = `
-    SELECT d.*, w.codice AS wp_codice, w.nome AS wp_nome
+    SELECT d.*, w.codice AS wp_codice, w.nome AS wp_nome, r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo
     FROM decisioni d
     LEFT JOIN work_packages w ON d.wp_id = w.id
+    LEFT JOIN requisiti r ON d.rif_requisito_id = r.id
     WHERE 1=1
   `;
   const params = [];
@@ -52,18 +53,18 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res) => {
   const { commessa_id, wp_id, tema, domanda_chiusa, a_chi, data_prima_richiesta, impatto_se_non_decisa,
-          esito_ultima_riunione, data_decisione, stato, conferma_scritta, rif_conferma, n_riproposte, note } = req.body;
+          esito_ultima_riunione, data_decisione, stato, conferma_scritta, rif_conferma, n_riproposte, rif_requisito_id, note } = req.body;
   if (!commessa_id || !tema || !domanda_chiusa) {
     return res.status(400).json({ error: 'commessa_id, tema e domanda_chiusa sono obbligatori' });
   }
   const result = db.prepare(`
     INSERT INTO decisioni (commessa_id, wp_id, tema, domanda_chiusa, a_chi, data_prima_richiesta, impatto_se_non_decisa,
-      esito_ultima_riunione, data_decisione, stato, conferma_scritta, rif_conferma, n_riproposte, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      esito_ultima_riunione, data_decisione, stato, conferma_scritta, rif_conferma, n_riproposte, rif_requisito_id, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     commessa_id, wp_id || null, tema, domanda_chiusa, a_chi || null, data_prima_richiesta || todayStr(),
     impatto_se_non_decisa || null, esito_ultima_riunione || null, data_decisione || null, stato || 'richiesta',
-    conferma_scritta ? 1 : 0, rif_conferma || null, n_riproposte || 0, note || null
+    conferma_scritta ? 1 : 0, rif_conferma || null, n_riproposte || 0, rif_requisito_id || null, note || null
   );
   const row = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(result.lastInsertRowid);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'decisioni', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: tema });
@@ -79,12 +80,12 @@ router.put('/:id', (req, res) => {
 
   db.prepare(`
     UPDATE decisioni SET wp_id=?, tema=?, domanda_chiusa=?, a_chi=?, data_prima_richiesta=?, impatto_se_non_decisa=?,
-      esito_ultima_riunione=?, data_decisione=?, stato=?, conferma_scritta=?, rif_conferma=?, n_riproposte=?, note=?, updated_at=unixepoch()
+      esito_ultima_riunione=?, data_decisione=?, stato=?, conferma_scritta=?, rif_conferma=?, n_riproposte=?, rif_requisito_id=?, note=?, updated_at=unixepoch()
     WHERE id=?
   `).run(
     next.wp_id || null, next.tema, next.domanda_chiusa, next.a_chi || null, next.data_prima_richiesta,
     next.impatto_se_non_decisa || null, next.esito_ultima_riunione || null, next.data_decisione || null, next.stato,
-    next.conferma_scritta ? 1 : 0, next.rif_conferma || null, next.n_riproposte || 0, next.note || null,
+    next.conferma_scritta ? 1 : 0, next.rif_conferma || null, next.n_riproposte || 0, next.rif_requisito_id || null, next.note || null,
     req.params.id
   );
   const row = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id);

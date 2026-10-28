@@ -38,6 +38,24 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   gestione commessa di base, sullo stesso modello di Board. I
   Documenti accettano sia un link esterno sia un file caricato dal
   browser (anche entrambi sulla stessa riga).
+- **Requisiti** — estratti dal capitolato, con codice WBS per commessa
+  e fase di esecuzione (progettazione, approvvigionamento, montaggio,
+  collaudo). Ogni modifica a titolo o descrizione crea una nuova
+  versione (pulsante "Versioni"), per tracciare le molte revisioni
+  tipiche della fase di progettazione. "Richiedi approvazione" crea
+  una decisione collegata nel Registro Decisioni: le approvazioni
+  confluiscono lì, non in un registro separato.
+- **Contratto** — il contratto stipulato, con la data di baseline del
+  capitolato e la procedura di change management concordata. Ogni
+  versione di un requisito successiva alla baseline è segnalata come
+  variazione da gestire, con un'azione rapida per registrarla nel
+  Registro Allert secondo la procedura concordata.
+- **Registro Stakeholder** — con matrice interesse/influenza (prassi
+  di project management) e **Piano Comunicazioni**: un processo di
+  gestione per riga (riunione, aggiornamento registro, approvazione…)
+  con frequenza/canale/output atteso e una matrice RACI
+  (Responsible/Accountable/Consulted/Informed) verso gli stakeholder
+  registrati.
 
 Inoltre:
 

@@ -24,6 +24,10 @@ const auditRouter = require('./routes/audit');
 const exportRouter = require('./routes/export');
 const milestoneRouter = require('./routes/milestone');
 const lezioniApprese = require('./routes/lezioniApprese');
+const requisitiRouter = require('./routes/requisiti');
+const contrattiRouter = require('./routes/contratti');
+const stakeholderRouter = require('./routes/stakeholder');
+const comunicazioneRouter = require('./routes/comunicazione');
 
 const app = express();
 app.use(cors());
@@ -53,6 +57,10 @@ app.use('/api/audit', requireAuth, auditRouter);
 app.use('/api/export', requireAuth, exportRouter);
 app.use('/api/milestone', requireAuth, milestoneRouter);
 app.use('/api/lezioni-apprese', requireAuth, lezioniApprese);
+app.use('/api/requisiti', requireAuth, requisitiRouter);
+app.use('/api/contratti', requireAuth, contrattiRouter);
+app.use('/api/stakeholder', requireAuth, stakeholderRouter);
+app.use('/api/comunicazione', requireAuth, comunicazioneRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));

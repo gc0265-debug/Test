@@ -14,7 +14,10 @@ import { openStorico } from '../components/storico.js';
 
 const STATO = { richiesta: ['Richiesta', 'outline'], parziale: ['Parziale', 'ambra'], decisa: ['Decisa', 'verde'] };
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  const requisitiRes = await api.get(`/requisiti?commessa_id=${state.commessaId}`);
+  const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
+
   const form = el('form', {});
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
@@ -22,6 +25,7 @@ function openForm(existing, onSaved) {
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(field('Domanda chiusa (SI/NO)', textarea('domanda_chiusa', existing?.domanda_chiusa ?? ''), 'Formulata come domanda a risposta SÌ/NO, mai aperta.'));
   form.appendChild(field('A chi', textInput('a_chi', existing?.a_chi ?? '', { placeholder: 'es. DL, SAC, GC' })));
+  form.appendChild(field('Approvazione del requisito', select('rif_requisito_id', requisitiOptions, existing?.rif_requisito_id ?? '')));
   form.appendChild(field('Prima richiesta il', dateInput('data_prima_richiesta', existing?.data_prima_richiesta || todayISO(), { required: true })));
   form.appendChild(field('Impatto se non decisa', textarea('impatto_se_non_decisa', existing?.impatto_se_non_decisa ?? '')));
   form.appendChild(field('Esito ultima riunione', textarea('esito_ultima_riunione', existing?.esito_ultima_riunione ?? '')));
@@ -97,7 +101,10 @@ export async function renderDecisioni(container) {
     dashHost.appendChild(tile('Confermate per iscritto', `${d.confermate_iscritto_pct}%`));
 
     renderTable(tableHost, [
-      { key: 'tema', label: 'Tema' },
+      {
+        key: 'tema', label: 'Tema',
+        render: (r) => el('div', {}, [r.tema, r.requisito_wbs ? el('div', { class: 'muted', style: 'font-size:10.5px' }, `approvazione requisito ${r.requisito_wbs}`) : null]),
+      },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'a_chi', label: 'A chi' },
       { key: 'data_prima_richiesta', label: 'Prima richiesta', render: (r) => formatDate(r.data_prima_richiesta) },
