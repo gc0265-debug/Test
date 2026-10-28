@@ -1,0 +1,11 @@
+{
+  "name": "coordinamento-commesse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App di coordinamento commesse — Field Project SAS. Backend Node/Express + SQLite, client HTML/CSS/JS senza build step.",
+  "scripts": {
+    "install:server": "npm install --prefix server",
+    "dev": "npm run dev --prefix server",
+    "start": "npm start --prefix server"
+  }
+}
