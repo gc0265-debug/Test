@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db/database');
-const { daysBetween, todayStr } = require('../utils/dates');
+const { daysBetween, todayStr, addDays } = require('../utils/dates');
 
 const router = express.Router();
 
@@ -74,7 +74,30 @@ router.get('/:commessaId', (req, res) => {
   // ---- attività recente (storico modifiche, ultime 8 su tutti i registri) ----
   const attivitaRecente = db.prepare('SELECT * FROM audit_log WHERE commessa_id = ? ORDER BY created_at DESC LIMIT 8').all(commessaId);
 
-  res.json({ commessa, criticita, decisioni, lavorazioni, allert, attivita_recente: attivitaRecente });
+  // ---- milestone / montaggi ----
+  const limite7 = addDays(oggi, 7);
+  const milestoneRows = db.prepare('SELECT * FROM milestone WHERE commessa_id = ?').all(commessaId);
+  const milestoneAperte = milestoneRows.filter(m => m.stato !== 'completata');
+  const milestoneInRitardo = milestoneAperte.filter(m => m.data_fine < oggi);
+  const milestoneInScadenza = milestoneAperte.filter(m => m.data_fine >= oggi && m.data_fine <= limite7);
+  const milestone = {
+    totali: milestoneRows.length,
+    aperte: milestoneAperte.length,
+    in_ritardo: milestoneInRitardo.length,
+    in_scadenza_7gg: milestoneInScadenza.length,
+  };
+
+  // ---- scadenze della settimana (criticità urgenti + milestone, entro 7 giorni o già scadute) ----
+  const scadenzeSettimana = [
+    ...violaAperte
+      .filter(c => c.entro_quando <= limite7)
+      .map(c => ({ tipo: 'criticita', id: c.id, titolo: c.tema, data: c.entro_quando, giorni: daysBetween(oggi, c.entro_quando) })),
+    ...milestoneAperte
+      .filter(m => m.data_fine <= limite7)
+      .map(m => ({ tipo: 'milestone', id: m.id, titolo: m.titolo, data: m.data_fine, giorni: daysBetween(oggi, m.data_fine) })),
+  ].sort((a, b) => a.giorni - b.giorni);
+
+  res.json({ commessa, criticita, decisioni, lavorazioni, allert, milestone, attivita_recente: attivitaRecente, scadenze_settimana: scadenzeSettimana });
 });
 
 module.exports = router;

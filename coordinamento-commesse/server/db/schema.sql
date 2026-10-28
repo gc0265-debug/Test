@@ -143,6 +143,51 @@ CREATE TABLE IF NOT EXISTS documenti (
     titolo TEXT NOT NULL,
     tipo TEXT DEFAULT 'altro',
     url TEXT,
+    file_nome TEXT,
+    file_path TEXT,
+    file_mime TEXT,
+    file_size INTEGER,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Milestone / montaggi: date di inizio e fine per commessa, work package,
+-- piano e zona — alimenta la timeline a calendario (vista Settimane/Mesi)
+-- e gli alert di scadenza/ritardo sul Cruscotto.
+CREATE TABLE IF NOT EXISTS milestone (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    piano TEXT,
+    zona TEXT,
+    titolo TEXT NOT NULL,
+    data_inizio TEXT NOT NULL,
+    data_fine TEXT NOT NULL,
+    stato TEXT NOT NULL DEFAULT 'pianificata'
+          CHECK(stato IN ('pianificata','in-corso','completata')),
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Lezioni Apprese: raccolte dalle altre sezioni (criticità, decisioni,
+-- allert) tramite collegamento opzionale, per non ripetere gli stessi
+-- errori sulla prossima commessa.
+CREATE TABLE IF NOT EXISTS lezioni_apprese (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    data TEXT NOT NULL DEFAULT (date('now')),
+    titolo TEXT NOT NULL,
+    cosa_e_successo TEXT,
+    cosa_abbiamo_imparato TEXT,
+    azione_futura TEXT,
+    categoria TEXT NOT NULL DEFAULT 'generale'
+              CHECK(categoria IN ('generale','progettazione','logistica','sicurezza','fornitori','coordinamento')),
+    rif_criticita_id INTEGER REFERENCES criticita(id) ON DELETE SET NULL,
+    rif_decisione_id INTEGER REFERENCES decisioni(id) ON DELETE SET NULL,
+    rif_allert_id INTEGER REFERENCES allert(id) ON DELETE SET NULL,
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
@@ -214,3 +259,5 @@ CREATE INDEX IF NOT EXISTS idx_documenti_commessa ON documenti(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_allert_commessa ON allert(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_log(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_audit_commessa ON audit_log(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_milestone_commessa ON milestone(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_lezioni_commessa ON lezioni_apprese(commessa_id);

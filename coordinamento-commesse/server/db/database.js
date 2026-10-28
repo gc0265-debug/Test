@@ -14,4 +14,21 @@ db.pragma('foreign_keys = ON');
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 db.exec(schema);
 
+// Migrazione leggera: CREATE TABLE IF NOT EXISTS non modifica una tabella
+// già esistente, quindi un database creato prima dell'introduzione
+// dell'allegato file nei Documenti va aggiornato esplicitamente.
+function ensureColumns(table, columns) {
+  const existing = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+  columns.forEach(({ name, def }) => {
+    if (!existing.includes(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+  });
+}
+
+ensureColumns('documenti', [
+  { name: 'file_nome', def: 'TEXT' },
+  { name: 'file_path', def: 'TEXT' },
+  { name: 'file_mime', def: 'TEXT' },
+  { name: 'file_size', def: 'INTEGER' },
+]);
+
 module.exports = db;

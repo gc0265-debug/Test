@@ -11,4 +11,11 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-module.exports = { daysBetween, todayStr };
+// Somma (o sottrae, con n negativo) n giorni a una data YYYY-MM-DD.
+function addDays(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+module.exports = { daysBetween, todayStr, addDays };

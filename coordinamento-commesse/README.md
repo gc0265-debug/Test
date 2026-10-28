@@ -28,8 +28,16 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   tutela, collegabile a una criticità o decisione che lo ha originato.
   Struttura generica ispirata alla funzione di presidio GC, non una
   sincronizzazione automatica con il relativo fascicolo.
+- **Timeline Montaggi** — Gantt per settimane o mesi sulle milestone
+  (date di inizio/fine montaggio per commessa, work package, piano e
+  zona), con evidenza visiva di ciò che è in ritardo.
+- **Lezioni Apprese** — raccolte dalle altre sezioni (criticità,
+  decisioni, allert) tramite collegamento opzionale, per non ripetere
+  gli stessi errori sulla prossima commessa.
 - **Diario di Cantiere, Lavorazioni, Maestranze, Documenti** — la
-  gestione commessa di base, sullo stesso modello di Board.
+  gestione commessa di base, sullo stesso modello di Board. I
+  Documenti accettano sia un link esterno sia un file caricato dal
+  browser (anche entrambi sulla stessa riga).
 
 Inoltre:
 
@@ -45,7 +53,11 @@ Inoltre:
   mostra anche le ultime attività su tutta la commessa.
 - **Promemoria scadenze** sul Cruscotto: le criticità urgenti (viola)
   in scadenza entro 3 giorni o già scadute, elencate ed evidenziate
-  anche nella tabella del registro.
+  anche nella tabella del registro. Un riquadro separato, "Scadenze
+  della settimana", aggrega criticità urgenti e milestone in scadenza
+  nei prossimi 7 giorni, stampabile come report formattato dal
+  pulsante "Stampa report" (così come l'elenco milestone dalla
+  Timeline, pulsante "Stampa elenco").
 - **Esportazione in Excel** del Registro Criticità, del Registro
   Decisioni e del Registro Allert, dal pulsante "Esporta Excel" di
   ciascuna pagina — stesso formato con cui oggi si condividono questi
@@ -111,4 +123,6 @@ Deploy: nessuna configurazione Railway/Render ancora inclusa, a
 differenza di Board — va aggiunta quando si decide dove ospitarlo. Le
 sessioni di accesso sono in memoria (si perdono ad ogni riavvio del
 server) e non c'è invio di promemoria via email: le scadenze sono
-visibili solo aprendo l'app.
+visibili solo aprendo l'app. I file caricati nei Documenti restano
+sul disco del server che fa girare l'app (`server/uploads/`, escluso
+da git): se l'app gira solo sul tuo Mac, i file restano lì.

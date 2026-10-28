@@ -240,6 +240,39 @@ td.actions{white-space:nowrap;text-align:right;}
 
 .row-warn{background:var(--ambra-wash);}
 
+/* ---------- timeline / gantt ---------- */
+.gantt{border:1px solid var(--rule);overflow-x:auto;}
+.gantt__chart{position:relative;min-width:720px;}
+.gantt__row{display:flex;border-bottom:1px solid var(--rule-2);}
+.gantt__row:last-child{border-bottom:0;}
+.gantt__row--head{background:var(--paper-2);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:1;}
+.gantt__label{width:220px;flex:none;padding:10px 12px;}
+.gantt__label--head{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:center;}
+.gantt__label-titolo{font-size:12px;font-weight:600;}
+.gantt__label-meta{font-size:10.5px;color:var(--ink-3);margin-top:2px;}
+.gantt__axis{flex:1;position:relative;height:40px;}
+.gantt__col{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule-2);padding:6px 8px;overflow:hidden;}
+.gantt__col-label{font-size:10px;font-weight:600;color:var(--ink-2);white-space:nowrap;}
+.gantt__col-sub{font-size:9px;color:var(--ink-3);white-space:nowrap;}
+.gantt__track{flex:1;position:relative;min-height:46px;}
+.gantt__bar{
+  position:absolute;top:9px;bottom:9px;border-radius:2px;cursor:pointer;
+  display:flex;align-items:center;justify-content:flex-end;padding-right:5px;
+  color:#fff;font-size:10px;min-width:6px;
+}
+.gantt__bar--pianificata{background:var(--ink-3);}
+.gantt__bar--in-corso{background:var(--ambra);}
+.gantt__bar--completata{background:var(--verde);}
+.gantt__bar--ritardo{background:var(--red);}
+.gantt__today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);opacity:.55;z-index:2;pointer-events:none;}
+.gantt__legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;}
+.gantt__legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2);}
+.gantt__legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.gantt__legend-dot--pianificata{background:var(--ink-3);}
+.gantt__legend-dot--in-corso{background:var(--ambra);}
+.gantt__legend-dot--completata{background:var(--verde);}
+.gantt__legend-dot--ritardo{background:var(--red);}
+
 @media print{
   .side, .topbar, .modal-layer, .toast-layer{display:none !important;}
   .content{padding:0;}

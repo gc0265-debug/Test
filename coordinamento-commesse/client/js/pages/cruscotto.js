@@ -1,12 +1,13 @@
 import { api } from '../api.js';
 import { state, currentCommessa } from '../state.js';
-import { el, formatDateTime } from '../components/ui.js';
+import { el, formatDate, formatDateTime } from '../components/ui.js';
+import { printReport } from '../components/report.js';
 
 const AZIONE_LABEL = {
   creata: 'Creata', modificata: 'Modificata', chiusa: 'Chiusa',
   riaperta: 'Riaperta', eliminata: 'Eliminata', rilancio: 'Rilanciata',
 };
-const ENTITY_LABEL = { criticita: 'Criticità', decisioni: 'Decisione', allert: 'Allert' };
+const ENTITY_LABEL = { criticita: 'Criticità', decisioni: 'Decisione', allert: 'Allert', milestone: 'Milestone', lezioni_apprese: 'Lezione appresa' };
 
 function tile(label, value, cls, sub) {
   return el('div', { class: 'tile' }, [
@@ -31,6 +32,32 @@ export async function renderCruscotto(container) {
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [
+    el('div', { class: 'section__head' }, [
+      el('div', { class: 'eyebrow' }, 'Scadenze della settimana'),
+      el('button', {
+        class: 'btn btn--sm',
+        onclick: () => printReport('Scadenze della settimana', commessa, [{
+          heading: 'Prossimi 7 giorni',
+          columns: ['Tipo', 'Voce', 'Data', 'Giorni'],
+          rows: dash.scadenze_settimana.map((s) => [
+            s.tipo === 'milestone' ? 'Milestone' : 'Criticità', s.titolo, formatDate(s.data),
+            s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `${s.giorni} gg`,
+          ]),
+        }]),
+      }, 'Stampa report'),
+    ]),
+    dash.scadenze_settimana.length
+      ? el('div', { class: 'reminder-list' }, dash.scadenze_settimana.map((s) => el('a', {
+          href: s.tipo === 'milestone' ? '#/timeline' : '#/criticita',
+          class: 'reminder-item' + (s.giorni < 0 ? ' alert' : ''),
+        }, [
+          el('span', {}, `${s.tipo === 'milestone' ? '◈' : '▲'} ${s.titolo}`),
+          el('span', { class: 'reminder-item__gg' }, s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `${s.giorni} gg`),
+        ])))
+      : el('p', { class: 'muted' }, 'Nessuna scadenza nei prossimi 7 giorni.'),
+  ]));
+
+  container.appendChild(el('div', { class: 'section' }, [
     el('div', { class: 'eyebrow' }, 'Registro Criticità'),
     el('div', { class: 'tiles' }, [
       tile('Criticità aperte', dash.criticita.aperte),
@@ -49,6 +76,16 @@ export async function renderCruscotto(container) {
       ]))
     ) : null,
     el('a', { href: '#/criticita', class: 'btn btn--sm', style: 'margin-top:8px' }, 'Apri il registro →'),
+  ]));
+
+  container.appendChild(el('div', { class: 'section' }, [
+    el('div', { class: 'eyebrow' }, 'Milestone / Montaggi'),
+    el('div', { class: 'tiles' }, [
+      tile('Aperte', dash.milestone.aperte),
+      tile('In scadenza (≤7gg)', dash.milestone.in_scadenza_7gg, dash.milestone.in_scadenza_7gg > 0 ? 'warn' : ''),
+      tile('In ritardo', dash.milestone.in_ritardo, dash.milestone.in_ritardo > 0 ? 'alert' : ''),
+    ]),
+    el('a', { href: '#/timeline', class: 'btn btn--sm', style: 'margin-top:8px' }, 'Apri la timeline →'),
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [

@@ -22,6 +22,8 @@ const dashboardRouter = require('./routes/dashboard');
 const allertRouter = require('./routes/allert');
 const auditRouter = require('./routes/audit');
 const exportRouter = require('./routes/export');
+const milestoneRouter = require('./routes/milestone');
+const lezioniApprese = require('./routes/lezioniApprese');
 
 const app = express();
 app.use(cors());
@@ -49,6 +51,8 @@ app.use('/api/dashboard', requireAuth, dashboardRouter);
 app.use('/api/allert', requireAuth, allertRouter);
 app.use('/api/audit', requireAuth, auditRouter);
 app.use('/api/export', requireAuth, exportRouter);
+app.use('/api/milestone', requireAuth, milestoneRouter);
+app.use('/api/lezioni-apprese', requireAuth, lezioniApprese);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));
