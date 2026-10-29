@@ -138,6 +138,10 @@ function seedCategorie() {
       ['progettazione', 'Progettazione'], ['approvvigionamento', 'Approvvigionamento'],
       ['montaggio', 'Montaggio'], ['collaudo', 'Collaudo'],
     ],
+    documenti_tipo: [
+      ['capitolato', 'Capitolato'], ['elaborato', 'Elaborato'], ['verbale', 'Verbale'],
+      ['contratto', 'Contratto'], ['sicurezza', 'Sicurezza'], ['altro', 'Altro'],
+    ],
   };
   Object.entries(liste).forEach(([lista, voci]) => {
     const count = db.prepare('SELECT COUNT(*) AS n FROM categorie WHERE lista = ?').get(lista).n;

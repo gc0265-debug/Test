@@ -51,6 +51,28 @@ function formatShort(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return `${d}/${m}`;
 }
+// Larghezza della colonna Attività adattata al testo più lungo (titolo +
+// tag Milestone/Lavorazione), così i nomi lunghi non vengono tagliati né
+// lasciano troppo spazio vuoto quando sono corti.
+let measureCanvas;
+function textWidth(text, font) {
+  if (!measureCanvas) measureCanvas = document.createElement('canvas');
+  const ctx = measureCanvas.getContext('2d');
+  ctx.font = font;
+  return ctx.measureText(text).width;
+}
+function computeNomeWidth(items) {
+  const titleFont = '600 12px Montserrat, sans-serif';
+  const tagFont = '600 8.5px Montserrat, sans-serif';
+  let max = textWidth('Attività', titleFont);
+  items.forEach((it) => {
+    const tagText = (it.type === 'lavorazione' ? 'LAVORAZIONE' : 'MILESTONE');
+    const w = textWidth(it.titolo, titleFont) + 6 + textWidth(tagText, tagFont);
+    if (w > max) max = w;
+  });
+  return Math.min(420, Math.max(160, Math.ceil(max) + 24));
+}
+
 function isoWeek(dateStr) {
   const d = new Date(dateStr + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -203,6 +225,7 @@ export async function renderTimeline(container) {
       el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
       zoomSlider,
       el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa elenco'),
+      el('button', { class: 'btn btn--sm', onclick: () => stampaVistaGantt() }, 'Stampa vista Gantt'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova milestone'),
       settingsGear(),
     ]),
@@ -221,8 +244,14 @@ export async function renderTimeline(container) {
   }
   drawGranularityButtons();
 
-  const ganttHost = el('div');
+  const ganttHost = el('div', { class: 'gantt-print-area' });
   container.appendChild(ganttHost);
+
+  function stampaVistaGantt() {
+    document.body.classList.add('printing-gantt');
+    window.addEventListener('afterprint', () => document.body.classList.remove('printing-gantt'), { once: true });
+    window.print();
+  }
 
   async function refresh() {
     const [milestoneRes, lavorazioniRes] = await Promise.all([
@@ -265,6 +294,7 @@ export async function renderTimeline(container) {
     const todayOffsetPx = Math.max(0, daysBetween(rangeStart, oggi)) * ppd;
 
     const axis = buildAxis(rangeStart, rangeEnd, granularity, zoom);
+    const nomeWidth = computeNomeWidth(items);
 
     const labelCols = (nome, meta, inizio, fine, onEdit) => el('div', {
       class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : ''),
@@ -324,7 +354,7 @@ export async function renderTimeline(container) {
 
       return el('div', { class: 'gantt__row' + (it.ha_scostamento ? ' gantt__row--scostamento' : '') + (isLavorazione ? ' gantt__row--lavorazione' : '') }, [
         labelCols(
-          [isLavorazione ? el('span', { class: 'gantt__type-tag' }, 'Lavorazione') : null, it.titolo,
+          [it.titolo, el('span', { class: 'gantt__type-tag' }, isLavorazione ? 'Lavorazione' : 'Milestone'),
             it.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null],
           metaParts.join(' · ') || '—',
           formatDate(it.data_inizio), formatDate(it.data_fine),
@@ -341,7 +371,7 @@ export async function renderTimeline(container) {
     ]);
 
     ganttHost.innerHTML = '';
-    ganttHost.appendChild(el('div', { class: 'gantt' }, chart));
+    ganttHost.appendChild(el('div', { class: 'gantt', style: `--gantt-nome-w:${nomeWidth}px;--gantt-label-w:${nomeWidth + 170}px` }, chart));
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),

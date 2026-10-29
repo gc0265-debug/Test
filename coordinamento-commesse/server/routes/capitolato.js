@@ -12,8 +12,10 @@ const router = express.Router();
 router.get('/', (req, res) => {
   const { commessa_id } = req.query;
   let sql = `
-    SELECT c.*, (SELECT COUNT(*) FROM requisiti r WHERE r.rif_capitolato_voce_id = c.id) AS n_requisiti
+    SELECT c.*, (SELECT COUNT(*) FROM requisiti r WHERE r.rif_capitolato_voce_id = c.id) AS n_requisiti,
+           ct.titolo AS contratto_titolo, ct.controparte AS contratto_controparte
     FROM capitolato_voci c
+    LEFT JOIN contratti ct ON c.contratto_id = ct.id
     WHERE 1=1
   `;
   const params = [];
@@ -23,14 +25,14 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { commessa_id, codice_wbs, titolo, descrizione, note } = req.body;
+  const { commessa_id, codice_wbs, titolo, data, contratto_id, descrizione, note } = req.body;
   if (!commessa_id || !codice_wbs || !titolo) {
     return res.status(400).json({ error: 'commessa_id, codice_wbs e titolo sono obbligatori' });
   }
   const result = db.prepare(`
-    INSERT INTO capitolato_voci (commessa_id, codice_wbs, titolo, descrizione, note)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(commessa_id, codice_wbs, titolo, descrizione || null, note || null);
+    INSERT INTO capitolato_voci (commessa_id, codice_wbs, titolo, data, contratto_id, descrizione, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(commessa_id, codice_wbs, titolo, data || null, contratto_id || null, descrizione || null, note || null);
   const row = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(result.lastInsertRowid);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'capitolato_voci', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: `${codice_wbs} — ${titolo}` });
   res.status(201).json(row);
@@ -41,8 +43,8 @@ router.put('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'voce di capitolato non trovata' });
   const next = { ...existing, ...req.body };
   db.prepare(`
-    UPDATE capitolato_voci SET codice_wbs=?, titolo=?, descrizione=?, note=?, updated_at=unixepoch() WHERE id=?
-  `).run(next.codice_wbs, next.titolo, next.descrizione || null, next.note || null, req.params.id);
+    UPDATE capitolato_voci SET codice_wbs=?, titolo=?, data=?, contratto_id=?, descrizione=?, note=?, updated_at=unixepoch() WHERE id=?
+  `).run(next.codice_wbs, next.titolo, next.data || null, next.contratto_id || null, next.descrizione || null, next.note || null, req.params.id);
   const row = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(req.params.id);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'capitolato_voci', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: 'aggiornata' });
   res.json(row);

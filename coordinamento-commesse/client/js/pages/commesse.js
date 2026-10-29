@@ -43,6 +43,11 @@ function openCommessaForm(existing, onSaved) {
 
 function openWpForm(commessaId, existing, onSaved) {
   const form = el('form', {});
+  if (existing) {
+    const commessaOptions = state.commesse.map((c) => [c.id, `${c.codice} — ${c.nome}`]);
+    form.appendChild(field('Commessa', select('commessa_id', commessaOptions, existing.commessa_id),
+      'Sposta il work package su un\'altra commessa, se serve.'));
+  }
   form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. WP1' })));
   form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. FOH' })));
   form.appendChild(field('PM responsabile', textInput('pm_responsabile', existing?.pm_responsabile ?? '')));

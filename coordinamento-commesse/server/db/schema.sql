@@ -249,6 +249,8 @@ CREATE TABLE IF NOT EXISTS capitolato_voci (
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
     codice_wbs TEXT NOT NULL,
     titolo TEXT NOT NULL,
+    data TEXT,
+    contratto_id INTEGER,                      -- REFERENCES contratti(id); aggiunta via ensureColumns per rispettare l'ordine di creazione tabelle
     descrizione TEXT,
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),

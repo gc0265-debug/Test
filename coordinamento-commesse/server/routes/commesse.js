@@ -89,8 +89,8 @@ router.put('/wp/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'work package non trovato' });
   const next = { ...existing, ...req.body };
   db.prepare(`
-    UPDATE work_packages SET codice=?, nome=?, pm_responsabile=?, ordine=?, updated_at=unixepoch() WHERE id=?
-  `).run(next.codice, next.nome, next.pm_responsabile, next.ordine, req.params.id);
+    UPDATE work_packages SET commessa_id=?, codice=?, nome=?, pm_responsabile=?, ordine=?, updated_at=unixepoch() WHERE id=?
+  `).run(next.commessa_id, next.codice, next.nome, next.pm_responsabile, next.ordine, req.params.id);
   res.json(db.prepare('SELECT * FROM work_packages WHERE id = ?').get(req.params.id));
 });
 

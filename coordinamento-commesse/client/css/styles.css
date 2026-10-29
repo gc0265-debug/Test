@@ -304,7 +304,7 @@ td.select input{cursor:pointer;}
 }
 .gantt__row--head .gantt__label{background:var(--paper-2);z-index:4;border-bottom:1px solid var(--rule);}
 .gantt__label-col{flex:none;padding:9px 10px;overflow:hidden;}
-.gantt__label-col--nome{width:180px;display:flex;flex-direction:column;justify-content:center;gap:2px;}
+.gantt__label-col--nome{width:var(--gantt-nome-w, 180px);display:flex;flex-direction:column;justify-content:center;gap:2px;}
 .gantt__label-col--data{width:85px;display:flex;align-items:center;font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;border-left:1px solid var(--rule-2);white-space:nowrap;}
 .gantt__row--head .gantt__label-col--nome, .gantt__row--head .gantt__label-col--data{
   font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;
@@ -335,7 +335,10 @@ td.select input{cursor:pointer;}
 .gantt__bar--thin{height:7px;opacity:.78;}
 .gantt__row--lavorazione{background:var(--paper-2);}
 .gantt__row--lavorazione .gantt__label-titolo{font-weight:500;}
-.gantt__type-tag{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-right:5px;}
+.gantt__type-tag{
+  font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  margin-left:6px;font-weight:600;white-space:nowrap;
+}
 .gantt__label--clickable{cursor:pointer;}
 .gantt__label--clickable:hover{background:var(--paper-2);}
 
@@ -380,6 +383,17 @@ td.select input{cursor:pointer;}
 @media print{
   .side, .topbar, .modal-layer, .toast-layer{display:none !important;}
   .content{padding:0;}
+}
+
+/* Stampa vista Gantt: attivata da un pulsante dedicato in Timeline, che
+   aggiunge questa classe al body solo per la durata della stampa, per
+   nascondere il resto della pagina e lasciare solo il grafico. */
+@media print{
+  body.printing-gantt .content > *:not(.gantt-print-area){display:none !important;}
+  body.printing-gantt .gantt-print-area > *:not(.gantt):not(.gantt__legend){display:none !important;}
+  body.printing-gantt .gantt{overflow:visible;border:none;}
+  body.printing-gantt .gantt__chart{box-shadow:none;}
+  @page{size:landscape;margin:10mm;}
 }
 
 @media (max-width:860px){

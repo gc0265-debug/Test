@@ -14,6 +14,7 @@ const LISTE = [
   { lista: 'allert_perimetro', titolo: 'Registro Allert — Perimetro' },
   { lista: 'comunicazione_frequenza', titolo: 'Piano Comunicazioni — Frequenza' },
   { lista: 'requisiti_fase', titolo: 'Requisiti — Fase di esecuzione' },
+  { lista: 'documenti_tipo', titolo: 'Documenti — Tipo' },
 ];
 
 function openOptionForm(lista, existing, onSaved) {

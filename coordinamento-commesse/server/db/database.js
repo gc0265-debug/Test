@@ -57,6 +57,10 @@ db.exec(`UPDATE lavorazioni SET data_fine = scadenza WHERE data_fine IS NULL AND
 
 ensureColumns('maestranze', [{ name: 'wp_id', def: 'INTEGER REFERENCES work_packages(id) ON DELETE SET NULL' }]);
 ensureColumns('processi_comunicazione', [{ name: 'ruolo_responsabile', def: 'TEXT' }]);
+ensureColumns('capitolato_voci', [
+  { name: 'data', def: 'TEXT' },
+  { name: 'contratto_id', def: 'INTEGER REFERENCES contratti(id) ON DELETE SET NULL' },
+]);
 
 // Migrazione più invasiva: alcune colonne erano vincolate con CHECK a un
 // elenco fisso di valori, ma devono poter accettare le liste configurabili

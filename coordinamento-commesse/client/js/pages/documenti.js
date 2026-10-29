@@ -3,10 +3,9 @@
 
 import { api } from '../api.js';
 import { state } from '../state.js';
-import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
+import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
-
-const TIPO = { capitolato: 'Capitolato', elaborato: 'Elaborato', verbale: 'Verbale', contratto: 'Contratto', sicurezza: 'Sicurezza', altro: 'Altro' };
+import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
 function formatSize(bytes) {
   if (!bytes) return '';
@@ -14,10 +13,12 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  const tipoOptions = toOptions(await getCategoria('documenti_tipo'));
+
   const form = el('form', {});
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
-  form.appendChild(field('Tipo', select('tipo', Object.entries(TIPO).map(([k, v]) => [k, v]), existing?.tipo ?? 'altro')));
+  form.appendChild(field('Tipo', select('tipo', tipoOptions, existing?.tipo ?? 'altro')));
   form.appendChild(field('Link (URL)', textInput('url', existing?.url ?? '', { placeholder: 'https://…' })));
 
   const fileInput = el('input', { type: 'file', name: 'file' });
@@ -62,15 +63,21 @@ export async function renderDocumenti(container) {
   }
 
   let lastRows = [];
+  let tipoMap = {};
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Documenti', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Elenco documenti',
-        columns: ['Titolo', 'Tipo', 'Link', 'File', 'Note'],
-        rows: lastRows.map((r) => [r.titolo, TIPO[r.tipo] || r.tipo, r.url || '—', r.file_nome || '—', r.note || '—']),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Documenti', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Elenco documenti',
+          columns: ['Titolo', 'Tipo', 'Link', 'File', 'Note'],
+          rows: rows.map((r) => [r.titolo, tipoMap[r.tipo] || r.tipo, r.url || '—', r.file_nome || '—', r.note || '—']),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo documento'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -78,7 +85,12 @@ export async function renderDocumenti(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/documenti?commessa_id=${state.commessaId}`);
+    const [res, tipoList] = await Promise.all([
+      api.get(`/documenti?commessa_id=${state.commessaId}`),
+      getCategoria('documenti_tipo'),
+    ]);
+    tipoMap = toMap(tipoList);
+    const TIPO = tipoMap;
     lastRows = res.data;
     renderTable(tableHost, [
       { key: 'titolo', label: 'Titolo' },
@@ -101,7 +113,11 @@ export async function renderDocumenti(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessun documento registrato per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessun documento registrato per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();
