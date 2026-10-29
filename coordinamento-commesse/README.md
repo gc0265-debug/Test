@@ -160,6 +160,11 @@ mai dati esistenti. Per sviluppo con riavvio automatico: `npm run dev`.
 Il client è servito direttamente dal server Express su `/`; le API
 REST sono sotto `/api`. Non serve altro.
 
+Per tenere l'app sempre accesa sul Mac senza aprire il terminale (avvio
+automatico all'accesso) e per il processo di aggiornamento, vedi
+[`GUIDA_AGGIORNAMENTI.md`](GUIDA_AGGIORNAMENTI.md) e gli script in
+`deploy/macos/`.
+
 ## Struttura
 
 ```
