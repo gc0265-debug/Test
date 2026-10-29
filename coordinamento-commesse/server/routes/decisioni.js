@@ -1,9 +1,22 @@
 const express = require('express');
+const multer = require('multer');
+const ExcelJS = require('exceljs');
 const db = require('../db/database');
 const { daysBetween, todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+function excelDateToISO(v) {
+  if (!v) return null;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  const s = String(v).trim();
+  const eu = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (eu) return `${eu[3]}-${eu[2].padStart(2, '0')}-${eu[1].padStart(2, '0')}`;
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  return null;
+}
 
 const TRACKED = [
   { key: 'tema', label: 'Tema' },
@@ -69,6 +82,88 @@ router.post('/', (req, res) => {
   const row = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(result.lastInsertRowid);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'decisioni', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: tema });
   res.status(201).json(arricchisci(row));
+});
+
+// Import da elenco decisioni in Excel: riga 1 = intestazioni (qualsiasi
+// ordine, case-insensitive), dalla riga 2 in poi una decisione per riga.
+// A differenza di Approvazioni Drawings, qui la commessa non è fissata
+// dalla pagina da cui si importa: ogni riga indica il proprio codice
+// commessa (e, a scelta, il codice WP), per poter popolare in un colpo
+// solo un archivio che copre più commesse insieme.
+router.post('/import', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'nessun file caricato' });
+
+  const wb = new ExcelJS.Workbook();
+  try {
+    await wb.xlsx.load(req.file.buffer);
+  } catch (err) {
+    return res.status(400).json({ error: 'file Excel non leggibile' });
+  }
+  const sheet = wb.worksheets[0];
+  if (!sheet) return res.status(400).json({ error: 'il file non contiene fogli' });
+
+  const colIndex = {};
+  sheet.getRow(1).eachCell((cell, colNumber) => {
+    colIndex[String(cell.value || '').trim().toLowerCase()] = colNumber;
+  });
+  const get = (row, ...names) => {
+    for (const n of names) {
+      const idx = colIndex[n];
+      if (idx) {
+        const v = row.getCell(idx).value;
+        if (v !== null && v !== undefined && v !== '') return v;
+      }
+    }
+    return null;
+  };
+
+  const commesseRows = db.prepare('SELECT id, codice FROM commesse').all();
+  const commessaByCodice = new Map(commesseRows.map((c) => [c.codice.toLowerCase(), c.id]));
+
+  const insert = db.prepare(`
+    INSERT INTO decisioni (commessa_id, wp_id, tema, domanda_chiusa, a_chi, data_prima_richiesta,
+      esito_ultima_riunione, data_decisione, stato, conferma_scritta, rif_conferma, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'decisa', 1, ?, ?)
+  `);
+
+  let imported = 0;
+  const skippedMotivi = [];
+  db.transaction(() => {
+    for (let r = 2; r <= sheet.rowCount; r++) {
+      const row = sheet.getRow(r);
+      const commessaCodice = get(row, 'commessa', 'codice commessa');
+      const tema = get(row, 'tema', 'argomento');
+      const domanda = get(row, 'domanda', 'domanda chiusa', 'domanda si/no');
+      if (!commessaCodice || !tema || !domanda) { skippedMotivi.push(`riga ${r}: commessa, tema o domanda mancanti`); continue; }
+      const commessaId = commessaByCodice.get(String(commessaCodice).trim().toLowerCase());
+      if (!commessaId) { skippedMotivi.push(`riga ${r}: commessa "${commessaCodice}" non trovata`); continue; }
+
+      const wpCodice = get(row, 'wp', 'work package');
+      let wpId = null;
+      if (wpCodice) {
+        const wp = db.prepare('SELECT id FROM work_packages WHERE commessa_id = ? AND LOWER(codice) = ?')
+          .get(commessaId, String(wpCodice).trim().toLowerCase());
+        wpId = wp ? wp.id : null;
+      }
+
+      const dataDecisione = excelDateToISO(get(row, 'data decisione', 'data')) || todayStr();
+      const aChi = get(row, 'a chi', 'chi ha confermato', 'confermato da');
+      const esito = get(row, 'decisione', 'esito', 'risposta');
+      const rifConferma = get(row, 'riferimento', 'riferimento email', 'rif conferma');
+      const note = get(row, 'note');
+
+      const result = insert.run(
+        commessaId, wpId, String(tema).trim(), String(domanda).trim(),
+        aChi ? String(aChi).trim() : null, dataDecisione,
+        esito ? String(esito).trim() : null, dataDecisione,
+        rifConferma ? String(rifConferma).trim() : null, note ? String(note).trim() : null
+      );
+      logAudit({ commessa_id: commessaId, entity_type: 'decisioni', entity_id: result.lastInsertRowid, azione: 'creata', utente: req.user?.nome, dettaglio: `${tema} (import)` });
+      imported++;
+    }
+  })();
+
+  res.status(201).json({ imported, skipped: skippedMotivi.length, dettaglioScarti: skippedMotivi.slice(0, 20) });
 });
 
 router.put('/:id', (req, res) => {

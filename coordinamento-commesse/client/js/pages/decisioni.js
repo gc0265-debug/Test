@@ -79,16 +79,36 @@ export async function renderDecisioni(container) {
 
   let lastRows = [];
   let selectedId = null;
+
+  const fileInput = el('input', { type: 'file', accept: '.xlsx,.xls', style: 'display:none' });
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await api.postForm('/decisioni/import', fd);
+      toast(`Importate ${res.imported} decisioni${res.skipped ? ` (${res.skipped} righe saltate: commessa non trovata o campi mancanti)` : ''}.`);
+      await refresh();
+    } catch (err) {
+      toast(err.message, { error: true });
+    } finally {
+      fileInput.value = '';
+    }
+  });
+
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => stampaDecisioni() }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
+      el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(fileInput);
 
   const tableHost = el('div');
   container.appendChild(tableHost);
