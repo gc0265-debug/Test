@@ -8,12 +8,13 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
 
 const STATO = { richiesta: ['Richiesta', 'outline'], parziale: ['Parziale', 'ambra'], decisa: ['Decisa', 'verde'] };
+const AZIONE_LABEL = { creata: 'Creata', modificata: 'Modificata', chiusa: 'Chiusa', riaperta: 'Riaperta', eliminata: 'Eliminata', rilancio: 'Rilanciata' };
 
 async function openForm(existing, onSaved) {
   const requisitiRes = await api.get(`/requisiti?commessa_id=${state.commessaId}`);
@@ -75,22 +76,38 @@ export async function renderDecisioni(container) {
   container.appendChild(dashHost);
 
   let lastRows = [];
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Decisioni', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Decisioni',
-        columns: ['Tema', 'A chi', 'Prima richiesta', 'Anzianità', 'Stato', 'Per iscritto'],
-        rows: lastRows.map((r) => [r.tema, r.a_chi || '—', formatDate(r.data_prima_richiesta), `${r.anzianita_giorni} gg`, STATO[r.stato][0], r.conferma_scritta ? 'Sì' : 'No']),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => stampaDecisioni() }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
 
   const tableHost = el('div');
   container.appendChild(tableHost);
+
+  async function stampaDecisioni() {
+    const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+    const storici = await Promise.all(rows.map((r) => api.get(`/audit?entity_type=decisioni&entity_id=${r.id}`).then((res) => res.data)));
+    const righe = [];
+    rows.forEach((r, i) => {
+      righe.push([`<b>${r.tema}</b>`, r.a_chi || '—', formatDate(r.data_prima_richiesta), `${r.anzianita_giorni} gg`, STATO[r.stato][0], r.conferma_scritta ? 'Sì' : 'No']);
+      storici[i].forEach((h) => {
+        const quando = new Date(h.created_at * 1000).toLocaleDateString('it-IT');
+        righe.push([`<span style="padding-left:22px;color:#666;font-size:11px">↳ ${AZIONE_LABEL[h.azione] || h.azione}${h.dettaglio ? ' — ' + h.dettaglio : ''} · ${quando} · ${h.utente || 'utente non registrato'}</span>`, '', '', '', '', '']);
+      });
+    });
+    printReport('Registro Decisioni', state.commesse.find(c => c.id === state.commessaId), [{
+      heading: 'Decisioni',
+      columns: ['Tema', 'A chi', 'Prima richiesta', 'Anzianità', 'Stato', 'Per iscritto'],
+      rows: righe,
+    }]);
+  }
 
   async function refresh() {
     const [dash, list] = await Promise.all([
@@ -142,7 +159,11 @@ export async function renderDecisioni(container) {
           }, 'Elimina'),
         ]),
       },
-    ], list.data, { emptyLabel: 'Nessuna decisione registrata per questa commessa.' });
+    ], list.data, {
+      emptyLabel: 'Nessuna decisione registrata per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

@@ -18,12 +18,12 @@ router.get('/processi', (req, res) => {
 });
 
 router.post('/processi', (req, res) => {
-  const { commessa_id, nome, scopo, frequenza, canale, output, note } = req.body;
+  const { commessa_id, nome, scopo, frequenza, canale, output, ruolo_responsabile, note } = req.body;
   if (!commessa_id || !nome) return res.status(400).json({ error: 'commessa_id e nome sono obbligatori' });
   const result = db.prepare(`
-    INSERT INTO processi_comunicazione (commessa_id, nome, scopo, frequenza, canale, output, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(commessa_id, nome, scopo || null, frequenza || 'settimanale', canale || null, output || null, note || null);
+    INSERT INTO processi_comunicazione (commessa_id, nome, scopo, frequenza, canale, output, ruolo_responsabile, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(commessa_id, nome, scopo || null, frequenza || 'settimanale', canale || null, output || null, ruolo_responsabile || null, note || null);
   const row = db.prepare('SELECT * FROM processi_comunicazione WHERE id = ?').get(result.lastInsertRowid);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'processi_comunicazione', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: nome });
   res.status(201).json(row);
@@ -34,9 +34,9 @@ router.put('/processi/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'processo non trovato' });
   const next = { ...existing, ...req.body };
   db.prepare(`
-    UPDATE processi_comunicazione SET nome=?, scopo=?, frequenza=?, canale=?, output=?, note=?, updated_at=unixepoch()
+    UPDATE processi_comunicazione SET nome=?, scopo=?, frequenza=?, canale=?, output=?, ruolo_responsabile=?, note=?, updated_at=unixepoch()
     WHERE id=?
-  `).run(next.nome, next.scopo || null, next.frequenza, next.canale || null, next.output || null, next.note || null, req.params.id);
+  `).run(next.nome, next.scopo || null, next.frequenza, next.canale || null, next.output || null, next.ruolo_responsabile || null, next.note || null, req.params.id);
   const row = db.prepare('SELECT * FROM processi_comunicazione WHERE id = ?').get(req.params.id);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'processi_comunicazione', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: 'aggiornato' });
   res.json(row);

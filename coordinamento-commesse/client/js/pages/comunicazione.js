@@ -4,7 +4,7 @@
 
 import { api } from '../api.js';
 import { state } from '../state.js';
-import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
+import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
@@ -19,6 +19,7 @@ async function openForm(existing, onSaved) {
   form.appendChild(field('Frequenza', select('frequenza', frequenzaOptions, existing?.frequenza ?? 'settimanale')));
   form.appendChild(field('Canale', textInput('canale', existing?.canale ?? '', { placeholder: 'es. Riunione, email, PEC, piattaforma condivisa' })));
   form.appendChild(field('Output atteso', textInput('output', existing?.output ?? '', { placeholder: 'es. Verbale, Nota di Coordinamento, registro aggiornato' })));
+  form.appendChild(field('Ruolo responsabile', textInput('ruolo_responsabile', existing?.ruolo_responsabile ?? '', { placeholder: 'es. Direttore di Cantiere' })));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
@@ -91,15 +92,20 @@ export async function renderComunicazione(container) {
 
   let lastRows = [];
   let frequenzaMap = {};
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Piano Comunicazioni', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Processi di comunicazione',
-        columns: ['Processo', 'Frequenza', 'Canale', 'Output atteso'],
-        rows: lastRows.map((r) => [r.nome, frequenzaMap[r.frequenza] || r.frequenza, r.canale || '—', r.output || '—']),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Piano Comunicazioni', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Processi di comunicazione',
+          columns: ['Processo', 'Frequenza', 'Canale', 'Output atteso', 'Ruolo responsabile'],
+          rows: rows.map((r) => [r.nome, frequenzaMap[r.frequenza] || r.frequenza, r.canale || '—', r.output || '—', r.ruolo_responsabile || '—']),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo processo'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -122,6 +128,7 @@ export async function renderComunicazione(container) {
       { key: 'frequenza', label: 'Frequenza', render: (r) => FREQUENZA[r.frequenza] || r.frequenza },
       { key: 'canale', label: 'Canale' },
       { key: 'output', label: 'Output atteso' },
+      { key: 'ruolo_responsabile', label: 'Ruolo responsabile' },
       {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
@@ -138,7 +145,11 @@ export async function renderComunicazione(container) {
           }, 'Elimina'),
         ]),
       },
-    ], processiRes.data, { emptyLabel: 'Nessun processo di comunicazione registrato per questa commessa.' });
+    ], processiRes.data, {
+      emptyLabel: 'Nessun processo di comunicazione registrato per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

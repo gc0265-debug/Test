@@ -28,20 +28,29 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   tutela, collegabile a una criticità o decisione che lo ha originato.
   Struttura generica ispirata alla funzione di presidio GC, non una
   sincronizzazione automatica con il relativo fascicolo.
-- **Timeline Montaggi** — tabella Gantt per settimane o mesi sulle
-  milestone (nome attività, data inizio, data fine, piano, zona, work
-  package), con le colonne ferme a sinistra e solo le barre che
-  scorrono in orizzontale. Ogni milestone congela una baseline alla
-  creazione: se le date si spostano, la barra originale resta visibile
-  in trasparenza accanto a quella attuale, a mostrare lo scostamento
-  — reimpostabile dalla scheda di modifica una volta gestito.
+- **Timeline Montaggi** — tabella Gantt per settimane o mesi su
+  milestone e Lavorazioni insieme (nome attività, data inizio, data
+  fine, piano, zona, work package), con le colonne ferme a sinistra e
+  solo le barre che scorrono in orizzontale; uno slider permette di
+  stringere o allargare in continuo la scala temporale. Ogni milestone
+  congela una baseline alla creazione: se le date si spostano, la
+  barra originale resta visibile in trasparenza accanto a quella
+  attuale, a mostrare lo scostamento — reimpostabile dalla scheda di
+  modifica una volta gestito. Le Lavorazioni (quando hanno data inizio
+  e fine) appaiono come righe più sottili, senza baseline: si
+  modificano dalla scheda Lavorazioni. "Stampa elenco" permette di
+  stampare tutto o solo un periodo scelto.
 - **Lezioni Apprese** — raccolte dalle altre sezioni (criticità,
   decisioni, allert) tramite collegamento opzionale, per non ripetere
   gli stessi errori sulla prossima commessa.
 - **Diario di Cantiere, Lavorazioni, Maestranze, Documenti** — la
   gestione commessa di base, sullo stesso modello di Board. I
   Documenti accettano sia un link esterno sia un file caricato dal
-  browser (anche entrambi sulla stessa riga).
+  browser (anche entrambi sulla stessa riga). Le Lavorazioni hanno
+  anche piano, zona (key plan), data inizio/fine e un'impresa
+  collegabile direttamente a un contratto registrato in Contratti
+  (invece di scriverla a mano); le Maestranze hanno un Work Package
+  di riferimento.
 - **Capitolato** — scrittura in stile tabella con codici WBS, a monte
   dei Requisiti: ogni voce mostra quanti requisiti di progetto vi sono
   collegati.
@@ -53,7 +62,7 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   progettazione. "Richiedi approvazione" crea una decisione collegata
   nel Registro Decisioni: le approvazioni confluiscono lì, non in un
   registro separato.
-- **Contratto** — il contratto stipulato, con la data di baseline del
+- **Contratti** — il contratto stipulato, con la data di baseline del
   capitolato e la procedura di change management concordata. Ogni
   versione di un requisito successiva alla baseline è segnalata come
   variazione da gestire, con un'azione rapida per registrarla nel
@@ -64,9 +73,9 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
 - **Registro Stakeholder** — con matrice interesse/influenza (prassi
   di project management) e **Piano Comunicazioni**: un processo di
   gestione per riga (riunione, aggiornamento registro, approvazione…)
-  con frequenza/canale/output atteso e una matrice RACI
-  (Responsible/Accountable/Consulted/Informed) verso gli stakeholder
-  registrati.
+  con frequenza/canale/output atteso, un ruolo responsabile e una
+  matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli
+  stakeholder registrati.
 
 Inoltre:
 
@@ -98,13 +107,29 @@ Inoltre:
 - **Dashboard Finanziaria** (solo amministratori) — l'unica vista
   dell'app che non è filtrata dalla commessa selezionata: valore
   contratti + atti aggiuntivi per ogni commessa e totale complessivo,
-  con pulsante Stampa.
+  con pulsante Stampa. Cliccando una riga si passa a quella commessa e
+  si apre la sua scheda Contratti; un contratto registrato per errore
+  sotto la commessa sbagliata si sposta dal campo "Commessa" nella
+  scheda di modifica del contratto stesso.
 - **Impostazioni** (solo amministratori) — editor delle liste a tendina
   configurabili senza intervento tecnico: categoria stakeholder,
   perimetro allert, frequenza del piano comunicazioni e fase dei
   requisiti. Non comprende gli "stato" delle varie schede, che restano
   fissi perché guidano direttamente la logica dell'app (cruscotti,
-  colori, workflow di approvazione).
+  colori, workflow di approvazione). Raggiungibile anche dall'icona a
+  rotella in alto a destra di ogni scheda principale.
+- **Righe cliccabili e stampa di una sola riga** — in tutti i registri
+  principali, cliccare una riga della tabella apre direttamente la
+  scheda di modifica (o l'anteprima, dove previsto, come nelle Note di
+  Coordinamento); selezionando il pallino su una riga, il pulsante
+  "Stampa" produce il report solo per quella riga invece che per
+  l'elenco intero.
+- **Cruscotto a box compatti** — ogni sezione del Cruscotto è un box
+  con solo i numeri chiave; il titolo del box è cliccabile e apre
+  l'elenco completo in una finestra, senza allungare la pagina.
+- **Barra laterale ridimensionabile** — si trascina il bordo destro del
+  menu per allargarlo o stringerlo; la larghezza scelta resta
+  memorizzata nel browser.
 
 L'app è multi-commessa: ogni commessa ha i propri Work Package (di
 default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B, la convenzione

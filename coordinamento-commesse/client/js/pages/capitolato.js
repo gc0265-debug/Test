@@ -3,7 +3,7 @@
 
 import { api } from '../api.js';
 import { state } from '../state.js';
-import { el, field, textInput, textarea, openModal, closeModal, toast, confirmDialog, renderTable, pill } from '../components/ui.js';
+import { el, field, textInput, textarea, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
 
@@ -44,15 +44,20 @@ export async function renderCapitolato(container) {
     'Il capitolato scritto in forma tabellare, con codice WBS: ogni voce può collegarsi a uno o più Requisiti di progetto.'));
 
   let lastRows = [];
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Capitolato', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Voci di capitolato',
-        columns: ['WBS', 'Titolo', 'Descrizione', 'Requisiti collegati'],
-        rows: lastRows.map((r) => [r.codice_wbs, r.titolo, r.descrizione || '—', r.n_requisiti]),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Capitolato', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Voci di capitolato',
+          columns: ['WBS', 'Titolo', 'Descrizione', 'Requisiti collegati'],
+          rows: rows.map((r) => [r.codice_wbs, r.titolo, r.descrizione || '—', r.n_requisiti]),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova voce'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -85,7 +90,11 @@ export async function renderCapitolato(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessuna voce di capitolato registrata per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessuna voce di capitolato registrata per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

@@ -5,7 +5,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { barChart, pieChart } from '../components/charts.js';
@@ -13,16 +13,29 @@ import { barChart, pieChart } from '../components/charts.js';
 const STATO = { 'da-fare': ['Da fare', 'outline', 'var(--ink-3)'], 'in-corso': ['In corso', 'ambra', 'var(--ambra)'], completata: ['Completata', 'verde', 'var(--verde)'], bloccata: ['Bloccata', 'rosso', 'var(--red)'] };
 const PRIORITA = { alta: ['Alta', 'rosso'], media: ['Media', 'ambra'], bassa: ['Bassa', 'outline'] };
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  const contrattiRes = await api.get(`/contratti?commessa_id=${state.commessaId}`);
+  const contrattoOptions = [['', '— nessuna (testo libero sotto)'], ...contrattiRes.data.map((c) => [c.id, `${c.controparte || c.titolo}`])];
+
   const form = el('form', {});
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
+  form.appendChild(el('div', { class: 'field--row' }, [
+    field('Piano', textInput('piano', existing?.piano ?? '', { placeholder: 'es. P+5' })),
+    field('Zona (Key Plan)', textInput('zona', existing?.zona ?? '', { placeholder: 'es. 5.1' })),
+  ]));
   form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
   form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'da-fare')));
   form.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA).map(([k, v]) => [k, v[0]]), existing?.priorita ?? 'media')));
-  form.appendChild(field('Scadenza', dateInput('scadenza', existing?.scadenza ?? '')));
-  form.appendChild(field('Impresa / squadra', textInput('impresa', existing?.impresa ?? '')));
+  form.appendChild(el('div', { class: 'field--row' }, [
+    field('Data inizio', dateInput('data_inizio', existing?.data_inizio ?? '')),
+    field('Data fine', dateInput('data_fine', existing?.data_fine ?? '')),
+  ]));
+  form.appendChild(field('Impresa (collegata a un contratto)', select('contratto_id', contrattoOptions, existing?.contratto_id ?? ''),
+    'Se l\'impresa ha un contratto registrato in Contratti, collegalo qui invece di scriverlo a mano.'));
+  form.appendChild(field('Impresa / squadra (testo libero)', textInput('impresa', existing?.impresa ?? ''),
+    'Usato solo se non è collegato un contratto sopra.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -77,15 +90,20 @@ export async function renderLavorazioni(container) {
   container.appendChild(chartsHost);
 
   let lastRows = [];
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Lavorazioni', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Lavorazioni',
-        columns: ['Titolo', 'WP', 'Stato', 'Priorità', 'Scadenza', 'Impresa'],
-        rows: lastRows.map((r) => [r.titolo, r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—', STATO[r.stato][0], PRIORITA[r.priorita][0], formatDate(r.scadenza), r.impresa || '—']),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Lavorazioni', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Lavorazioni',
+          columns: ['Titolo', 'WP', 'Piano/Zona', 'Stato', 'Priorità', 'Inizio', 'Fine', 'Impresa'],
+          rows: rows.map((r) => [r.titolo, r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—', [r.piano, r.zona].filter(Boolean).join(' · ') || '—', STATO[r.stato][0], PRIORITA[r.priorita][0], formatDate(r.data_inizio), formatDate(r.data_fine), r.contratto_controparte || r.impresa || '—']),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lavorazione'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -101,10 +119,11 @@ export async function renderLavorazioni(container) {
     renderTable(tableHost, [
       { key: 'titolo', label: 'Titolo' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
+      { key: 'pianozona', label: 'Piano / Zona', render: (r) => [r.piano, r.zona].filter(Boolean).join(' · ') || '—' },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       { key: 'priorita', label: 'Priorità', render: (r) => pill(PRIORITA[r.priorita][0], PRIORITA[r.priorita][1]) },
-      { key: 'scadenza', label: 'Scadenza', render: (r) => formatDate(r.scadenza) },
-      { key: 'impresa', label: 'Impresa' },
+      { key: 'date', label: 'Inizio → Fine', render: (r) => (r.data_inizio || r.data_fine) ? `${formatDate(r.data_inizio)} → ${formatDate(r.data_fine)}` : '—' },
+      { key: 'impresa', label: 'Impresa', render: (r) => r.contratto_controparte || r.impresa || '—' },
       {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
@@ -120,7 +139,11 @@ export async function renderLavorazioni(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessuna lavorazione registrata per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessuna lavorazione registrata per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

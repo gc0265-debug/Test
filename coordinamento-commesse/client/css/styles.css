@@ -60,12 +60,19 @@ button{font:inherit;}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
 
 /* ---------- impianto ---------- */
-.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh;}
+:root{--side-w:232px;}
+.shell{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh;}
 .side{
   background:var(--paper-2);border-right:1px solid var(--rule);
   display:flex;flex-direction:column;padding:20px 0 16px;
   position:sticky;top:0;height:100vh;overflow-y:auto;
+  position:relative;
 }
+.side__resize{
+  position:fixed;top:0;bottom:0;left:var(--side-w);width:6px;margin-left:-3px;
+  cursor:col-resize;z-index:40;
+}
+.side__resize:hover,.side__resize.active{background:var(--red-wash);}
 .side__brand{padding:0 20px 18px;border-bottom:1px solid var(--rule);margin-bottom:16px;}
 .side__logo{font-weight:700;font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;display:flex;gap:.45em;}
 .side__logo .p{color:var(--red);}
@@ -112,6 +119,22 @@ h2{font-size:14px;font-weight:700;letter-spacing:.02em;margin:0 0 4px;}
 
 /* ---------- box con bordo (es. scheda Contratto) ---------- */
 .card{border:1px solid var(--rule);background:var(--paper);padding:20px 22px;}
+.card--compact{padding:14px 16px;}
+.card--compact .section__head{margin-bottom:8px;}
+.card--compact .tiles{margin-bottom:8px;}
+.card--compact .tile{padding:10px 12px;}
+.card--compact .tile__value{font-size:18px;}
+.card--compact p{margin:4px 0;font-size:12.5px;}
+
+.cruscotto-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:30px;}
+.cruscotto-box .tiles{grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin-bottom:0;}
+.cruscotto-box__title{
+  all:unset;cursor:pointer;display:block;font-size:14px;font-weight:700;color:var(--ink);
+  margin-bottom:10px;box-sizing:border-box;
+}
+.cruscotto-box__title:hover{color:var(--red);text-decoration:underline;}
+.cruscotto-box__title--static{cursor:default;}
+.cruscotto-box__title--static:hover{color:var(--ink);text-decoration:none;}
 
 /* ---------- testo limitato a 2 righe (es. Diario di Cantiere) ---------- */
 .text-2lines{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:260px;line-height:1.4;}
@@ -139,6 +162,7 @@ h2{font-size:14px;font-weight:700;letter-spacing:.02em;margin:0 0 4px;}
 .btn--ghost{border-color:transparent;background:transparent;}
 .btn--ghost:hover{background:var(--paper-3);}
 .btn--sm{padding:5px 10px;font-size:11px;}
+.btn--icon{padding:5px 8px;font-size:14px;line-height:1;}
 .btn:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
 
 /* ---------- cruscotto: tile ---------- */
@@ -165,6 +189,9 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
 td.actions{white-space:nowrap;text-align:right;}
 .row-scaduta{background:var(--red-wash);}
 .empty-row td{padding:28px 12px;text-align:center;color:var(--ink-3);}
+td.tw-clickable{cursor:pointer;}
+td.select{white-space:nowrap;width:1%;}
+td.select input{cursor:pointer;}
 
 /* ---------- badge / pill ---------- */
 .pill{
@@ -305,6 +332,10 @@ td.actions{white-space:nowrap;text-align:right;}
 .gantt__bar--in-corso{background:var(--blue);}
 .gantt__bar--completata{background:var(--verde);}
 .gantt__bar--ritardo{background:var(--red);}
+.gantt__bar--thin{height:7px;opacity:.78;}
+.gantt__row--lavorazione{background:var(--paper-2);}
+.gantt__row--lavorazione .gantt__label-titolo{font-weight:500;}
+.gantt__type-tag{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-right:5px;}
 .gantt__label--clickable{cursor:pointer;}
 .gantt__label--clickable:hover{background:var(--paper-2);}
 
@@ -323,6 +354,7 @@ td.actions{white-space:nowrap;text-align:right;}
 .gantt__legend-dot--completata{background:var(--verde);}
 .gantt__legend-dot--ritardo{background:var(--red);}
 .gantt__legend-dot--baseline{background:var(--ink-3);opacity:.3;border:1px dashed var(--ink-2);border-radius:2px;}
+.gantt__zoom{width:110px;vertical-align:middle;}
 
 /* ---------- matrice interesse/influenza (stakeholder) ---------- */
 .matrix__axis{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;}

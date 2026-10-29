@@ -79,7 +79,10 @@ export async function renderUtenti(container) {
           }, 'Elimina') : null,
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessun utente.' });
+    ], res.data, {
+      emptyLabel: 'Nessun utente.',
+      onRowClick: (row) => openForm(row, refresh),
+    });
   }
 
   await refresh();

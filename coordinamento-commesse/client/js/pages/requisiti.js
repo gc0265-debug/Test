@@ -8,7 +8,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, formatDateTime,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, formatDateTime, settingsGear,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -105,15 +105,20 @@ export async function renderRequisiti(container) {
   let filtroFase = '';
   let lastRows = [];
   let faseMap = {};
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Requisiti', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Elenco requisiti',
-        columns: ['WBS', 'Titolo', 'Fase', 'Versione', 'Stato'],
-        rows: lastRows.map((r) => [r.codice_wbs, r.titolo, faseMap[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Requisiti', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Elenco requisiti',
+          columns: ['WBS', 'Titolo', 'Fase', 'Versione', 'Stato'],
+          rows: rows.map((r) => [r.codice_wbs, r.titolo, faseMap[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -171,7 +176,11 @@ export async function renderRequisiti(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessun requisito registrato per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessun requisito registrato per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

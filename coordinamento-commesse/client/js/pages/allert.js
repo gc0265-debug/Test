@@ -7,7 +7,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -74,16 +74,21 @@ export async function renderAllert(container) {
 
   let lastRows = [];
   let perimetroMap = {};
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Allert', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Allert',
-        columns: ['Data', 'Descrizione', 'Perimetro', 'Classificazione', 'Stato'],
-        rows: lastRows.map((r) => [formatDate(r.data), r.descrizione, perimetroMap[r.perimetro] || r.perimetro, CLASSIFICAZIONE[r.classificazione][0], STATO[r.stato][0]]),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Registro Allert', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Allert',
+          columns: ['Data', 'Descrizione', 'Perimetro', 'Classificazione', 'Stato'],
+          rows: rows.map((r) => [formatDate(r.data), r.descrizione, perimetroMap[r.perimetro] || r.perimetro, CLASSIFICAZIONE[r.classificazione][0], STATO[r.stato][0]]),
+        }]);
+      } }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/allert/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo allert'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -126,6 +131,8 @@ export async function renderAllert(container) {
     ], res.data, {
       rowClass: (r) => (r.classificazione === 'critico' && r.stato !== 'chiuso') ? 'row-scaduta' : '',
       emptyLabel: 'Nessun allert registrato per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }
 

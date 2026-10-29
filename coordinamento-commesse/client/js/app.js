@@ -32,7 +32,7 @@ route('timeline', { title: 'Timeline Montaggi', render: renderTimeline });
 route('lezioni', { title: 'Lezioni Apprese', render: renderLezioniApprese });
 route('requisiti', { title: 'Requisiti', render: renderRequisiti });
 route('capitolato', { title: 'Capitolato', render: renderCapitolato });
-route('contratto', { title: 'Contratto', render: renderContratto });
+route('contratto', { title: 'Contratti', render: renderContratto });
 route('stakeholder', { title: 'Registro Stakeholder', render: renderStakeholder });
 route('comunicazione', { title: 'Piano Comunicazioni', render: renderComunicazione });
 route('note', { title: 'Note di Coordinamento', render: renderNote });
@@ -44,6 +44,31 @@ route('commesse', { title: 'Commesse', render: renderCommesse });
 route('utenti', { title: 'Utenti', render: renderUtenti });
 route('impostazioni', { title: 'Impostazioni', render: renderImpostazioni });
 route('finanziaria', { title: 'Dashboard Finanziaria', render: renderFinanziaria });
+
+function setupSidebarResize() {
+  const handle = document.getElementById('sideResize');
+  if (!handle) return;
+  const MIN = 180, MAX = 420;
+  try {
+    const saved = Number(localStorage.getItem('side-w'));
+    if (saved >= MIN && saved <= MAX) document.documentElement.style.setProperty('--side-w', `${saved}px`);
+  } catch (_) { /* privacy mode: niente ricordo tra sessioni, nessun problema */ }
+
+  let dragging = false;
+  handle.addEventListener('mousedown', () => { dragging = true; handle.classList.add('active'); document.body.style.userSelect = 'none'; });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const w = Math.min(MAX, Math.max(MIN, e.clientX));
+    document.documentElement.style.setProperty('--side-w', `${w}px`);
+  });
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('active');
+    document.body.style.userSelect = '';
+    try { localStorage.setItem('side-w', parseInt(getComputedStyle(document.documentElement).getPropertyValue('--side-w'), 10)); } catch (_) { /* vedi sopra */ }
+  });
+}
 
 function renderCommessaSelect() {
   const select = document.getElementById('commessaSelect');
@@ -86,6 +111,7 @@ async function main() {
   await loadCommesse();
   renderCommessaSelect();
   subscribe(renderCommessaSelect);
+  setupSidebarResize();
   startRouter();
 }
 

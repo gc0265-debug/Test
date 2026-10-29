@@ -4,7 +4,7 @@
 
 import { api } from '../api.js';
 import { state } from '../state.js';
-import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill } from '../components/ui.js';
+import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
@@ -90,15 +90,20 @@ export async function renderStakeholder(container) {
 
   let lastRows = [];
   let categoriaMap = {};
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Stakeholder', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Stakeholder',
-        columns: ['Nome', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Stato'],
-        rows: lastRows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, r.stato === 'attivo' ? 'Attivo' : 'Non attivo']),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Registro Stakeholder', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Stakeholder',
+          columns: ['Nome', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Stato'],
+          rows: rows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, r.stato === 'attivo' ? 'Attivo' : 'Non attivo']),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -139,7 +144,11 @@ export async function renderStakeholder(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessuno stakeholder registrato per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessuno stakeholder registrato per questa commessa.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

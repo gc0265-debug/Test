@@ -6,7 +6,7 @@
 import { api } from '../api.js';
 import { state } from '../state.js';
 import {
-  el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate,
+  el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
@@ -54,6 +54,11 @@ function openAttoForm(contrattoId, existing, onSaved) {
 
 function openForm(existing, onSaved) {
   const form = el('form', {});
+  if (existing) {
+    const commessaOptions = state.commesse.map((c) => [c.id, `${c.codice} — ${c.nome}`]);
+    form.appendChild(field('Commessa', select('commessa_id', commessaOptions, existing.commessa_id),
+      'Sposta il contratto su un\'altra commessa se è stato registrato per errore su quella sbagliata.'));
+  }
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Contratto di appalto montaggio' })));
   form.appendChild(field('Controparte', textInput('controparte', existing?.controparte ?? '')));
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -89,7 +94,7 @@ function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form);
-    fd.set('commessa_id', state.commessaId);
+    if (!existing) fd.set('commessa_id', state.commessaId);
     if (fd.get('rimuovi_file') === 'on') fd.set('rimuovi_file', '1');
     if (!fileInput.files.length) fd.delete('file');
     try {
@@ -133,7 +138,7 @@ async function renderContrattoCard(c, refreshAll) {
   const valoreAtti = atti.reduce((sum, a) => sum + (a.valore || 0), 0);
   const valoreTotale = (c.valore || 0) + valoreAtti;
 
-  return el('div', { class: 'section card' }, [
+  return el('div', { class: 'section card card--compact' }, [
     el('div', { class: 'section__head' }, [
       el('div', {}, [
         el('h2', {}, c.titolo),
@@ -209,12 +214,13 @@ export async function renderContratto(container) {
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Contratto', state.commesse.find(c => c.id === state.commessaId), [{
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Contratti', state.commesse.find(c => c.id === state.commessaId), [{
         heading: 'Contratti',
         columns: ['Titolo', 'Controparte', 'Data stipula', 'Valore', 'Baseline capitolato', 'Stato'],
         rows: lastRows.map((r) => [r.titolo, r.controparte || '—', formatDate(r.data_stipula), formatValore(r.valore), r.capitolato_baseline_data ? formatDate(r.capitolato_baseline_data) : '—', STATO[r.stato]]),
       }]) }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo contratto'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);

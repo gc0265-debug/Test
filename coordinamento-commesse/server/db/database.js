@@ -44,6 +44,20 @@ db.exec(`
   WHERE baseline_data_inizio IS NULL
 `);
 
+ensureColumns('lavorazioni', [
+  { name: 'piano', def: 'TEXT' },
+  { name: 'zona', def: 'TEXT' },
+  { name: 'data_inizio', def: 'TEXT' },
+  { name: 'data_fine', def: 'TEXT' },
+  { name: 'contratto_id', def: 'INTEGER REFERENCES contratti(id) ON DELETE SET NULL' },
+]);
+// scadenza era l'unica data prima dell'introduzione di data_inizio/data_fine:
+// la si riporta come data_fine così le lavorazioni esistenti non perdono la scadenza già registrata.
+db.exec(`UPDATE lavorazioni SET data_fine = scadenza WHERE data_fine IS NULL AND scadenza IS NOT NULL`);
+
+ensureColumns('maestranze', [{ name: 'wp_id', def: 'INTEGER REFERENCES work_packages(id) ON DELETE SET NULL' }]);
+ensureColumns('processi_comunicazione', [{ name: 'ruolo_responsabile', def: 'TEXT' }]);
+
 // Migrazione più invasiva: alcune colonne erano vincolate con CHECK a un
 // elenco fisso di valori, ma devono poter accettare le liste configurabili
 // dalla pagina Impostazioni (tabella categorie). SQLite non supporta
@@ -121,6 +135,7 @@ dropColumnCheck('processi_comunicazione', "CHECK(frequenza IN", `
     frequenza TEXT NOT NULL DEFAULT 'settimanale',
     canale TEXT,
     output TEXT,
+    ruolo_responsabile TEXT,
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())

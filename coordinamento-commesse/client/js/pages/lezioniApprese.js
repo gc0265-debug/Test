@@ -6,7 +6,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, renderTable, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 
@@ -60,6 +60,33 @@ async function openForm(existing, onSaved) {
   openModal(existing ? 'Modifica lezione appresa' : 'Nuova lezione appresa', form);
 }
 
+function openDettaglio(l, numero, onSaved) {
+  const collegata = l.criticita_tema || l.decisione_tema || l.allert_descrizione;
+  const body = el('div', {}, [
+    el('div', { class: 'muted', style: 'margin-bottom:14px' },
+      `${formatDate(l.data)} · ${CATEGORIA[l.categoria] || l.categoria}${collegata ? ' · collegata a: ' + collegata : ''}`),
+    l.cosa_e_successo ? el('p', {}, [el('b', {}, 'Cosa è successo: '), l.cosa_e_successo]) : null,
+    l.cosa_abbiamo_imparato ? el('p', {}, [el('b', {}, 'Cosa abbiamo imparato: '), l.cosa_abbiamo_imparato]) : null,
+    l.azione_futura ? el('p', {}, [el('b', {}, 'Azione per il futuro: '), l.azione_futura]) : null,
+    l.note ? el('p', {}, [el('b', {}, 'Note: '), l.note]) : null,
+    el('div', { class: 'modal__actions' }, [
+      el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('lezioni_apprese', l.id, l.titolo) }, 'Storico'),
+      el('button', { class: 'btn', onclick: () => { closeModal(); openForm(l, onSaved); } }, 'Modifica'),
+      el('button', {
+        class: 'btn btn--danger',
+        onclick: async () => {
+          if (!confirmDialog('Eliminare questa lezione?')) return;
+          await api.del(`/lezioni-apprese/${l.id}`);
+          toast('Eliminata.');
+          closeModal();
+          onSaved();
+        },
+      }, 'Elimina'),
+    ]),
+  ]);
+  openModal(`Lezione ${numero} — ${l.titolo}`, body);
+}
+
 export async function renderLezioniApprese(container) {
   if (!state.commessaId) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
@@ -70,45 +97,39 @@ export async function renderLezioniApprese(container) {
 
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
-    el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lezione'),
+    el('div', { style: 'display:flex;gap:8px' }, [
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lezione'),
+      settingsGear(),
+    ]),
   ]);
   container.appendChild(toolbar);
-  const listHost = el('div');
-  container.appendChild(listHost);
+  const tableHost = el('div');
+  container.appendChild(tableHost);
 
   async function refresh() {
     const res = await api.get(`/lezioni-apprese?commessa_id=${state.commessaId}`);
-    listHost.innerHTML = '';
-    if (!res.data.length) {
-      listHost.appendChild(el('p', { class: 'muted' }, 'Nessuna lezione appresa registrata.'));
-      return;
-    }
-    res.data.forEach((l) => {
-      const collegata = l.criticita_tema || l.decisione_tema || l.allert_descrizione;
-      listHost.appendChild(el('div', { class: 'section' }, [
-        el('div', { class: 'section__head' }, [
-          el('div', {}, [
-            el('h2', {}, l.titolo),
-            el('div', { class: 'muted' }, `${formatDate(l.data)} · ${CATEGORIA[l.categoria] || l.categoria}${collegata ? ' · collegata a: ' + collegata : ''}`),
-          ]),
-          el('div', { style: 'display:flex;gap:6px' }, [
-            el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('lezioni_apprese', l.id, l.titolo) }, 'Storico'),
-            el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(l, refresh) }, 'Modifica'),
-            el('button', {
-              class: 'btn btn--sm btn--ghost btn--danger',
-              onclick: async () => {
-                if (!confirmDialog('Eliminare questa lezione?')) return;
-                await api.del(`/lezioni-apprese/${l.id}`);
-                toast('Eliminata.');
-                refresh();
-              },
-            }, 'Elimina'),
-          ]),
+    const rows = [...res.data].sort((a, b) => a.id - b.id).map((l, i) => ({ ...l, numero: i + 1 }));
+    renderTable(tableHost, [
+      { key: 'numero', label: 'N.', numeric: true },
+      { key: 'data', label: 'Data', render: (l) => formatDate(l.data) },
+      { key: 'titolo', label: 'Descrizione' },
+      {
+        key: 'actions', label: '', className: 'actions',
+        render: (l) => el('div', {}, [
+          el('button', {
+            class: 'btn btn--sm btn--ghost btn--danger',
+            onclick: async () => {
+              if (!confirmDialog('Eliminare questa lezione?')) return;
+              await api.del(`/lezioni-apprese/${l.id}`);
+              toast('Eliminata.');
+              refresh();
+            },
+          }, 'Elimina'),
         ]),
-        l.cosa_e_successo ? el('p', {}, [el('b', {}, 'Cosa è successo: '), l.cosa_e_successo]) : null,
-        l.cosa_abbiamo_imparato ? el('p', {}, [el('b', {}, 'Cosa abbiamo imparato: '), l.cosa_abbiamo_imparato]) : null,
-        l.azione_futura ? el('p', {}, [el('b', {}, 'Azione per il futuro: '), l.azione_futura]) : null,
-      ]));
+      },
+    ], rows, {
+      emptyLabel: 'Nessuna lezione appresa registrata.',
+      onRowClick: (l) => openDettaglio(l, l.numero, refresh),
     });
   }
 

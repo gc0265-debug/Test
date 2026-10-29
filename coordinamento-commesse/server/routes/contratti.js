@@ -84,6 +84,7 @@ router.put('/:id', upload.single('file'), (req, res) => {
   if ((file || b.rimuovi_file === '1') && existing.file_path) fs.unlink(path.join(uploadDir, existing.file_path), () => {});
 
   const next = {
+    commessa_id: b.commessa_id || existing.commessa_id,
     titolo: b.titolo ?? existing.titolo,
     controparte: b.controparte !== undefined ? (b.controparte || null) : existing.controparte,
     data_stipula: b.data_stipula !== undefined ? (b.data_stipula || null) : existing.data_stipula,
@@ -101,12 +102,12 @@ router.put('/:id', upload.single('file'), (req, res) => {
   };
 
   db.prepare(`
-    UPDATE contratti SET titolo=?, controparte=?, data_stipula=?, valore=?, riferimento_capitolato=?,
+    UPDATE contratti SET commessa_id=?, titolo=?, controparte=?, data_stipula=?, valore=?, riferimento_capitolato=?,
       capitolato_baseline_data=?, procedura_change_management=?, stato=?, url=?, note=?,
       file_nome=?, file_path=?, file_mime=?, file_size=?, updated_at=unixepoch()
     WHERE id=?
   `).run(
-    next.titolo, next.controparte, next.data_stipula, next.valore, next.riferimento_capitolato,
+    next.commessa_id, next.titolo, next.controparte, next.data_stipula, next.valore, next.riferimento_capitolato,
     next.capitolato_baseline_data, next.procedura_change_management, next.stato, next.url, next.note,
     next.file_nome, next.file_path, next.file_mime, next.file_size, req.params.id
   );

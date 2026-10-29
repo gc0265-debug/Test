@@ -118,8 +118,13 @@ CREATE TABLE IF NOT EXISTS lavorazioni (
           CHECK(stato IN ('da-fare','in-corso','completata','bloccata')),
     priorita TEXT NOT NULL DEFAULT 'media'
              CHECK(priorita IN ('alta','media','bassa')),
-    scadenza TEXT,
+    scadenza TEXT,                             -- legacy, sostituita da data_inizio/data_fine; non più mostrata in UI
+    piano TEXT,
+    zona TEXT,
+    data_inizio TEXT,
+    data_fine TEXT,
     impresa TEXT,
+    contratto_id INTEGER,                      -- REFERENCES contratti(id); aggiunta via ensureColumns per rispettare l'ordine di creazione tabelle
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -131,6 +136,7 @@ CREATE TABLE IF NOT EXISTS maestranze (
     ruolo TEXT,
     azienda TEXT,
     telefono TEXT,
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
     stato TEXT NOT NULL DEFAULT 'attivo'
           CHECK(stato IN ('attivo','non-attivo')),
     qualifiche TEXT,
@@ -340,6 +346,7 @@ CREATE TABLE IF NOT EXISTS processi_comunicazione (
     frequenza TEXT NOT NULL DEFAULT 'settimanale',  -- lista configurabile, vedi tabella categorie ('comunicazione_frequenza')
     canale TEXT,
     output TEXT,
+    ruolo_responsabile TEXT,
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())

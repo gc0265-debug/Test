@@ -1,19 +1,24 @@
-// Timeline Montaggi — tabella Gantt per settimane/mesi sulle milestone.
-// Le colonne Attività/Inizio/Fine restano ferme (sticky a sinistra della
-// finestra di scroll); solo la parte con le barre scorre in orizzontale.
-// Ogni milestone congela una baseline alla creazione: se le date correnti
-// si spostano, la barra originale resta visibile in trasparenza accanto
-// a quella attuale, a mostrare lo scostamento.
+// Timeline Montaggi — tabella Gantt per settimane/mesi su milestone e
+// lavorazioni insieme. Le colonne Attività/Inizio/Fine restano ferme
+// (sticky a sinistra della finestra di scroll); solo la parte con le
+// barre scorre in orizzontale. Ogni milestone congela una baseline alla
+// creazione: se le date correnti si spostano, la barra originale resta
+// visibile in trasparenza accanto a quella attuale, a mostrare lo
+// scostamento. Le lavorazioni (con data inizio/fine valorizzate) appaiono
+// come righe più sottili nello stesso grafico, senza baseline: per
+// modificarle si passa dalla scheda Lavorazioni.
 
 import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
 const STATO = { pianificata: ['Pianificata', 'outline'], 'in-corso': ['In corso', 'ambra'], completata: ['Completata', 'verde'] };
+const STATO_LAVORAZIONE_CLS = { 'da-fare': 'pianificata', 'in-corso': 'in-corso', completata: 'completata', bloccata: 'ritardo' };
+const STATO_LAVORAZIONE_LABEL = { 'da-fare': 'Da fare', 'in-corso': 'In corso', completata: 'Completata', bloccata: 'Bloccata' };
 
 function daysBetween(a, b) {
   return Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
@@ -56,13 +61,13 @@ function isoWeek(dateStr) {
 // px/giorno per granularità: scelto perché ogni colonna (settimana ~90px,
 // mese ~150px) resti leggibile anche su commesse che coprono molti mesi —
 // il grafico cresce in larghezza (scroll orizzontale) invece di schiacciare
-// le colonne, a differenza del vecchio layout a percentuale.
-function pxPerDay(granularity) {
-  return granularity === 'week' ? 90 / 7 : 150 / 30.44;
+// le colonne. zoom è un moltiplicatore continuo (slider) sopra questa base.
+function pxPerDay(granularity, zoom) {
+  return (granularity === 'week' ? 90 / 7 : 150 / 30.44) * zoom;
 }
 
-function buildAxis(rangeStart, rangeEnd, granularity) {
-  const ppd = pxPerDay(granularity);
+function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
+  const ppd = pxPerDay(granularity, zoom);
   const segments = [];
   if (granularity === 'week') {
     let cursor = mondayOnOrBefore(rangeStart);
@@ -144,6 +149,39 @@ function openForm(existing, onSaved) {
   openModal(existing ? 'Modifica milestone' : 'Nuova milestone', form);
 }
 
+function openStampaModal(items, commessa) {
+  const form = el('form', {});
+  form.appendChild(el('p', { class: 'muted', style: 'margin-top:0' }, 'Lascia vuoto per stampare l\'elenco completo, oppure indica un periodo per stampare solo le attività che vi ricadono.'));
+  form.appendChild(el('div', { class: 'field--row' }, [
+    field('Da', dateInput('da', '')),
+    field('A', dateInput('a', '')),
+  ]));
+  form.appendChild(el('div', { class: 'modal__actions' }, [
+    el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
+    el('button', { type: 'submit', class: 'btn btn--primary' }, 'Stampa'),
+  ]));
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = formData(form);
+    const filtered = (data.da || data.a)
+      ? items.filter((it) => (!data.da || it.data_fine >= data.da) && (!data.a || it.data_inizio <= data.a))
+      : items;
+    closeModal();
+    printReport('Elenco Timeline', commessa, [{
+      heading: 'Milestone e lavorazioni',
+      columns: ['Tipo', 'Titolo', 'Piano', 'Zona', 'WP', 'Inizio', 'Fine', 'Stato', 'Scostamento da baseline'],
+      rows: filtered.map((it) => [
+        it.type === 'milestone' ? 'Milestone' : 'Lavorazione',
+        it.titolo, it.piano || '—', it.zona || '—', it.wp_codice || '—',
+        formatDate(it.data_inizio), formatDate(it.data_fine),
+        it.in_ritardo ? 'In ritardo' : it.statoLabel,
+        it.ha_scostamento ? `era ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}` : '—',
+      ]),
+    }]);
+  });
+  openModal('Stampa elenco Timeline', form);
+}
+
 export async function renderTimeline(container) {
   if (!state.commessaId) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
@@ -151,13 +189,22 @@ export async function renderTimeline(container) {
   }
 
   let granularity = 'week';
-  let lastRows = [];
+  let zoom = 1;
+  let items = [];
+
+  const zoomSlider = el('input', {
+    type: 'range', min: '0.4', max: '3', step: '0.1', value: '1', class: 'gantt__zoom',
+    title: 'Zoom timeline', oninput: (e) => { zoom = Number(e.target.value); draw(); },
+  });
 
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div', { style: 'display:flex;gap:6px' }),
-    el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => stampaElenco() }, 'Stampa elenco'),
+    el('div', { style: 'display:flex;gap:10px;align-items:center' }),
+    el('div', { style: 'display:flex;gap:8px;align-items:center' }, [
+      el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
+      zoomSlider,
+      el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa elenco'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova milestone'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -168,50 +215,56 @@ export async function renderTimeline(container) {
     [['week', 'Settimane'], ['month', 'Mesi']].forEach(([value, label]) => {
       host.appendChild(el('button', {
         class: 'btn btn--sm' + (granularity === value ? ' btn--primary' : ''),
-        onclick: () => { granularity = value; refresh(); },
+        onclick: () => { granularity = value; drawGranularityButtons(); draw(); },
       }, label));
     });
   }
-
-  function stampaElenco() {
-    const commessa = state.commesse.find((c) => c.id === state.commessaId);
-    printReport('Elenco milestone', commessa, [{
-      heading: 'Milestone / montaggi',
-      columns: ['Titolo', 'Piano', 'Zona', 'WP', 'Inizio', 'Fine', 'Stato', 'Scostamento da baseline'],
-      rows: lastRows.map((m) => [
-        m.titolo, m.piano || '—', m.zona || '—', m.wp_codice || '—',
-        formatDate(m.data_inizio), formatDate(m.data_fine),
-        m.in_ritardo ? 'In ritardo' : STATO[m.stato][0],
-        m.ha_scostamento ? `era ${formatDate(m.baseline_data_inizio)} → ${formatDate(m.baseline_data_fine)}` : '—',
-      ]),
-    }]);
-  }
+  drawGranularityButtons();
 
   const ganttHost = el('div');
   container.appendChild(ganttHost);
 
   async function refresh() {
-    drawGranularityButtons();
-    const res = await api.get(`/milestone?commessa_id=${state.commessaId}`);
-    lastRows = res.data;
-    ganttHost.innerHTML = '';
+    const [milestoneRes, lavorazioniRes] = await Promise.all([
+      api.get(`/milestone?commessa_id=${state.commessaId}`),
+      api.get(`/lavorazioni?commessa_id=${state.commessaId}`),
+    ]);
+    const oggi = todayISO();
+    const milestoneItems = milestoneRes.data.map((m) => ({
+      ...m, type: 'milestone', statoLabel: STATO[m.stato][0],
+    }));
+    const lavorazioneItems = lavorazioniRes.data
+      .filter((l) => l.data_inizio && l.data_fine)
+      .map((l) => ({
+        ...l, type: 'lavorazione',
+        stato: STATO_LAVORAZIONE_CLS[l.stato] || 'pianificata',
+        statoLabel: STATO_LAVORAZIONE_LABEL[l.stato] || l.stato,
+        in_ritardo: l.stato !== 'completata' && l.data_fine < oggi,
+        ha_scostamento: false,
+        impresa_label: l.contratto_controparte || l.impresa || null,
+      }));
+    items = [...milestoneItems, ...lavorazioneItems].sort((a, b) => (a.data_inizio < b.data_inizio ? -1 : 1));
+    draw();
+  }
 
-    if (!res.data.length) {
-      ganttHost.appendChild(el('p', { class: 'muted' }, 'Nessuna milestone registrata. Aggiungine una per vedere la timeline.'));
+  function draw() {
+    if (!items.length) {
+      ganttHost.innerHTML = '';
+      ganttHost.appendChild(el('p', { class: 'muted' }, 'Nessuna milestone o lavorazione con date registrata. Aggiungine una per vedere la timeline.'));
       return;
     }
 
-    const minStart = res.data.reduce((m, r) => (r.data_inizio < m ? r.data_inizio : m), res.data[0].data_inizio);
-    const maxEnd = res.data.reduce((m, r) => (r.data_fine > m ? r.data_fine : m), res.data[0].data_fine);
+    const minStart = items.reduce((m, r) => (r.data_inizio < m ? r.data_inizio : m), items[0].data_inizio);
+    const maxEnd = items.reduce((m, r) => (r.data_fine > m ? r.data_fine : m), items[0].data_fine);
     const paddedStart = addDays(minStart, -3);
     const rangeStart = granularity === 'week' ? mondayOnOrBefore(paddedStart) : firstOfMonth(paddedStart);
     const rangeEnd = addDays(maxEnd, 7);
-    const ppd = pxPerDay(granularity);
+    const ppd = pxPerDay(granularity, zoom);
     const totalWidthPx = Math.max(1, daysBetween(rangeStart, rangeEnd)) * ppd;
     const oggi = todayISO();
     const todayOffsetPx = Math.max(0, daysBetween(rangeStart, oggi)) * ppd;
 
-    const axis = buildAxis(rangeStart, rangeEnd, granularity);
+    const axis = buildAxis(rangeStart, rangeEnd, granularity, zoom);
 
     const labelCols = (nome, meta, inizio, fine, onEdit) => el('div', {
       class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : ''),
@@ -248,27 +301,34 @@ export async function renderTimeline(container) {
       });
     }
 
-    const rows = res.data.map((m) => {
-      const cls = m.in_ritardo ? 'ritardo' : m.stato;
+    const rows = items.map((it) => {
+      const isLavorazione = it.type === 'lavorazione';
+      const cls = it.in_ritardo ? 'ritardo' : it.stato;
       const track = el('div', { class: 'gantt__track', style: `width:${totalWidthPx}px` });
-      if (m.ha_scostamento) {
+      if (it.ha_scostamento) {
         track.appendChild(bar(
-          m.baseline_data_inizio, m.baseline_data_fine, 'gantt__bar-baseline',
-          `Baseline: ${formatDate(m.baseline_data_inizio)} → ${formatDate(m.baseline_data_fine)}`
+          it.baseline_data_inizio, it.baseline_data_fine, 'gantt__bar-baseline',
+          `Baseline: ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}`
         ));
       }
+      const onEdit = isLavorazione ? (() => { location.hash = '#/lavorazioni'; }) : (() => openForm(it, refresh));
       track.appendChild(bar(
-        m.data_inizio, m.data_fine, `gantt__bar gantt__bar--${cls}`,
-        `${m.titolo} · ${formatDate(m.data_inizio)} → ${formatDate(m.data_fine)}${m.in_ritardo ? ' · IN RITARDO' : ''}${m.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,
-        () => openForm(m, refresh)
+        it.data_inizio, it.data_fine, `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}`,
+        `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,
+        onEdit
       ));
 
-      return el('div', { class: 'gantt__row' + (m.ha_scostamento ? ' gantt__row--scostamento' : '') }, [
+      const metaParts = isLavorazione
+        ? [it.piano, it.zona, it.wp_codice, it.impresa_label].filter(Boolean)
+        : [it.piano, it.zona, it.wp_codice].filter(Boolean);
+
+      return el('div', { class: 'gantt__row' + (it.ha_scostamento ? ' gantt__row--scostamento' : '') + (isLavorazione ? ' gantt__row--lavorazione' : '') }, [
         labelCols(
-          [m.titolo, m.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null],
-          [m.piano, m.zona, m.wp_codice].filter(Boolean).join(' · ') || '—',
-          formatDate(m.data_inizio), formatDate(m.data_fine),
-          () => openForm(m, refresh)
+          [isLavorazione ? el('span', { class: 'gantt__type-tag' }, 'Lavorazione') : null, it.titolo,
+            it.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null],
+          metaParts.join(' · ') || '—',
+          formatDate(it.data_inizio), formatDate(it.data_fine),
+          onEdit
         ),
         track,
       ]);
@@ -280,11 +340,13 @@ export async function renderTimeline(container) {
       el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + ${todayOffsetPx}px)` }),
     ]);
 
+    ganttHost.innerHTML = '';
     ganttHost.appendChild(el('div', { class: 'gantt' }, chart));
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dot gantt__legend-dot--baseline' }), 'Baseline (scostamento)']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__type-tag' }, 'Lavorazione'), 'riga più sottile = lavorazione, non milestone']),
     ]));
   }
 

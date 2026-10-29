@@ -6,7 +6,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
@@ -133,16 +133,21 @@ export async function renderNote(container) {
   }
 
   let lastRows = [];
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Note di Coordinamento', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Elenco note',
-        columns: ['Data', 'Oggetto', 'Destinatari', 'Punti', 'Stato'],
-        rows: lastRows.map((n) => [formatDate(n.data), n.oggetto, n.destinatari || '—', n.punti.length, n.stato === 'inviata' ? 'Inviata' : 'Bozza']),
-      }]) }, 'Stampa elenco'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((n) => String(n.id) === String(selectedId)) : lastRows;
+        printReport('Note di Coordinamento', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Elenco note',
+          columns: ['Data', 'Oggetto', 'Destinatari', 'Punti', 'Stato'],
+          rows: rows.map((n) => [formatDate(n.data), n.oggetto, n.destinatari || '—', n.punti.length, n.stato === 'inviata' ? 'Inviata' : 'Bozza']),
+        }]);
+      } }, 'Stampa elenco'),
       el('button', { class: 'btn', onclick: () => openGeneraBozza(refresh) }, 'Genera da criticità aperte'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nota vuota'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -175,7 +180,11 @@ export async function renderNote(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessuna nota di coordinamento per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessuna nota di coordinamento per questa commessa.',
+      onRowClick: (n) => openPreview(n),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
+    });
   }
 
   await refresh();

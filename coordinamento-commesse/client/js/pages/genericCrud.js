@@ -6,7 +6,7 @@
 
 import { api } from '../api.js';
 import { state } from '../state.js';
-import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
+import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
 function buildFieldNode(f, value) {
@@ -59,21 +59,26 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
     }
 
     let lastRows = [];
+    let selectedId = null;
     const toolbar = el('div', { class: 'section__head' }, [
       el('div'),
       el('div', { style: 'display:flex;gap:8px' }, [
         printColumns ? el('button', {
           class: 'btn btn--sm',
-          onclick: () => printReport(titleSingular + 'i', state.commesse.find((c) => c.id === state.commessaId), [{
-            heading: titleSingular + 'i',
-            columns: printColumns.map((p) => p.label),
-            rows: lastRows.map((row) => printColumns.map((p) => p.get(row))),
-          }]),
+          onclick: () => {
+            const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+            printReport(titleSingular + 'i', state.commesse.find((c) => c.id === state.commessaId), [{
+              heading: titleSingular + 'i',
+              columns: printColumns.map((p) => p.label),
+              rows: rows.map((row) => printColumns.map((p) => p.get(row))),
+            }]);
+          },
         }, 'Stampa') : null,
         el('button', {
           class: 'btn btn--primary',
           onclick: () => openForm(null, refresh),
         }, `+ Nuovo`),
+        settingsGear(),
       ]),
     ]);
     container.appendChild(toolbar);
@@ -101,7 +106,11 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
           ]),
         },
       ];
-      renderTable(tableHost, cols, rows, { emptyLabel });
+      renderTable(tableHost, cols, rows, {
+        emptyLabel,
+        onRowClick: (row) => openForm(row, refresh),
+        selection: printColumns ? { selectedId, onSelect: (id) => { selectedId = id; refresh(); } } : null,
+      });
     }
 
     await refresh();

@@ -7,7 +7,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -77,6 +77,7 @@ export async function renderCriticita(container) {
 
   let filtroStato = 'aperta';
   let lastRows = [];
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:6px' }, [
       pillFilter('aperta', 'Aperte'),
@@ -84,13 +85,17 @@ export async function renderCriticita(container) {
       pillFilter('chiusa', 'Chiuse'),
     ]),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Criticità', state.commesse.find(c => c.id === state.commessaId), [{
-        heading: 'Criticità',
-        columns: ['Tema', 'WP', 'Destinatario', 'Urgenza', 'Stato', 'Aperta il'],
-        rows: lastRows.map((r) => [r.tema, r.wp_codice || '—', r.destinatario || '—', URGENZA[r.urgenza][0], STATO[r.stato][0], formatDate(r.data_apertura)]),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
+        printReport('Registro Criticità', state.commesse.find(c => c.id === state.commessaId), [{
+          heading: 'Criticità',
+          columns: ['Tema', 'WP', 'Destinatario', 'Urgenza', 'Stato', 'Aperta il'],
+          rows: rows.map((r) => [r.tema, r.wp_codice || '—', r.destinatario || '—', URGENZA[r.urgenza][0], STATO[r.stato][0], formatDate(r.data_apertura)]),
+        }]);
+      } }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -160,6 +165,8 @@ export async function renderCriticita(container) {
     ], res.data, {
       rowClass: (r) => r.scaduta ? 'row-scaduta' : (r.urgenza === 'viola' && r.stato !== 'chiusa' && r.giorni_rimanenti !== null && r.giorni_rimanenti <= 3 ? 'row-warn' : ''),
       emptyLabel: 'Nessuna criticità in questo filtro.',
+      onRowClick: (row) => openForm(row, refresh),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
 
     // ridisegna i filtri per riflettere la selezione corrente

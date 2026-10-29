@@ -6,6 +6,7 @@
 import { api } from '../api.js';
 import { el, renderTable } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { setCommessa } from '../state.js';
 
 function formatValore(v) {
   return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v || 0);
@@ -62,5 +63,8 @@ export async function renderFinanziaria(container) {
     { key: 'n_atti', label: 'N. atti aggiuntivi', numeric: true },
     { key: 'valore_atti', label: 'Valore atti aggiuntivi', numeric: true, render: (r) => formatValore(r.valore_atti) },
     { key: 'valore_totale', label: 'Totale', numeric: true, render: (r) => el('b', {}, formatValore(r.valore_totale)) },
-  ], commesse, { emptyLabel: 'Nessuna commessa registrata.' });
+  ], commesse, {
+    emptyLabel: 'Nessuna commessa registrata.',
+    onRowClick: async (row) => { await setCommessa(row.commessa_id); location.hash = '#/contratto'; },
+  });
 }

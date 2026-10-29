@@ -4,7 +4,7 @@
 
 import { api } from '../api.js';
 import { state, loadCommesse, setCommessa } from '../state.js';
-import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill } from '../components/ui.js';
+import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
 function openCommessaForm(existing, onSaved) {
@@ -70,15 +70,20 @@ function openWpForm(commessaId, existing, onSaved) {
 
 export async function renderCommesse(container) {
   let lastCommesse = [];
+  let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('h2', {}, 'Commesse'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Commesse', null, [{
-        heading: 'Elenco commesse',
-        columns: ['Codice', 'Nome', 'Cliente', 'Stato'],
-        rows: lastCommesse.map((r) => [r.codice, r.nome, r.cliente || '—', r.stato]),
-      }]) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => {
+        const rows = selectedId ? lastCommesse.filter((r) => String(r.id) === String(selectedId)) : lastCommesse;
+        printReport('Commesse', null, [{
+          heading: 'Elenco commesse',
+          columns: ['Codice', 'Nome', 'Cliente', 'Stato'],
+          rows: rows.map((r) => [r.codice, r.nome, r.cliente || '—', r.stato]),
+        }]);
+      } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openCommessaForm(null, refreshCommesse) }, '+ Nuova commessa'),
+      settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
@@ -117,7 +122,11 @@ export async function renderCommesse(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessuna commessa. Creane una per iniziare.' });
+    ], res.data, {
+      emptyLabel: 'Nessuna commessa. Creane una per iniziare.',
+      onRowClick: (row) => openCommessaForm(row, refreshCommesse),
+      selection: { selectedId, onSelect: (id) => { selectedId = id; refreshCommesse(); } },
+    });
   }
 
   async function refreshWp() {
@@ -148,7 +157,10 @@ export async function renderCommesse(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, { emptyLabel: 'Nessun work package per questa commessa.' });
+    ], res.data, {
+      emptyLabel: 'Nessun work package per questa commessa.',
+      onRowClick: (row) => openWpForm(state.commessaId, row, refreshWp),
+    });
   }
 
   await refreshCommesse();

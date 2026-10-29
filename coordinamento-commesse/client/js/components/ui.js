@@ -118,21 +118,37 @@ export function formData(form) {
 
 // ---------- tabella ----------
 // columns: [{ key, label, render?: (row) => Node|string, numeric?: bool }]
-export function renderTable(container, columns, rows, { rowClass, emptyLabel = 'Nessun elemento.' } = {}) {
+// onRowClick(row): se presente, rende cliccabili le celle non-azioni/non-selezione
+// (apre tipicamente il form di modifica). selection: { selectedId, onSelect(id|null) }
+// aggiunge una colonna con radio button, per stampare una sola riga alla volta.
+export function renderTable(container, columns, rows, { rowClass, emptyLabel = 'Nessun elemento.', onRowClick, selection } = {}) {
   container.innerHTML = '';
   const wrap = el('div', { class: 'tw' });
   const table = el('table');
-  const thead = el('thead', {}, el('tr', {}, columns.map((c) => el('th', {}, c.label))));
+  const headCells = [
+    selection ? el('th', {}, '') : null,
+    ...columns.map((c) => el('th', {}, c.label)),
+  ].filter(Boolean);
+  const thead = el('thead', {}, el('tr', {}, headCells));
   const tbody = el('tbody');
 
   if (!rows.length) {
-    tbody.appendChild(el('tr', { class: 'empty-row' }, el('td', { colspan: columns.length }, emptyLabel)));
+    tbody.appendChild(el('tr', { class: 'empty-row' }, el('td', { colspan: columns.length + (selection ? 1 : 0) }, emptyLabel)));
   } else {
     rows.forEach((row) => {
       const tr = el('tr', { class: rowClass ? rowClass(row) || '' : '' });
+      if (selection) {
+        const checked = String(row.id) === String(selection.selectedId);
+        tr.appendChild(el('td', { class: 'select' }, el('input', {
+          type: 'radio', name: 'tw-select', checked,
+          onclick: (e) => { e.stopPropagation(); selection.onSelect(checked ? null : row.id); },
+        })));
+      }
       columns.forEach((c) => {
         const content = c.render ? c.render(row) : (row[c.key] ?? '—');
-        const td = el('td', { class: c.numeric ? 'num' : (c.className || '') });
+        const isActions = c.className === 'actions';
+        const td = el('td', { class: [c.numeric ? 'num' : (c.className || ''), (onRowClick && !isActions) ? 'tw-clickable' : ''].filter(Boolean).join(' ') });
+        if (onRowClick && !isActions) td.addEventListener('click', () => onRowClick(row));
         if (content instanceof Node) td.appendChild(content); else td.textContent = content;
         tr.appendChild(td);
       });
@@ -143,6 +159,14 @@ export function renderTable(container, columns, rows, { rowClass, emptyLabel = '
   table.appendChild(tbody);
   wrap.appendChild(table);
   container.appendChild(wrap);
+}
+
+// ---------- impostazioni ----------
+// Pulsante a rotella nel toolbar di una scheda, verso la pagina Impostazioni
+// (liste configurabili). Lettura aperta a tutti; chi non è admin vede le
+// liste ma non può modificarle (coerente con /api/categorie).
+export function settingsGear(hint = 'Impostazioni') {
+  return el('a', { href: '#/impostazioni', class: 'btn btn--sm btn--ghost btn--icon', title: hint, 'aria-label': hint }, '⚙');
 }
 
 export function pill(text, variant = 'normale') {
