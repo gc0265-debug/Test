@@ -9,9 +9,12 @@ import {
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { barChart, pieChart } from '../components/charts.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
 
-const STATO = { 'da-fare': ['Da fare', 'outline', 'var(--ink-3)'], 'in-corso': ['In corso', 'ambra', 'var(--ambra)'], completata: ['Completata', 'verde', 'var(--verde)'], bloccata: ['Bloccata', 'rosso', 'var(--red)'] };
-const PRIORITA = { alta: ['Alta', 'rosso'], media: ['Media', 'ambra'], bassa: ['Bassa', 'outline'] };
+const STATO_FIXED = { 'da-fare': ['Da fare', 'outline', 'var(--ink-3)'], 'in-corso': ['In corso', 'ambra', 'var(--ambra)'], completata: ['Completata', 'verde', 'var(--verde)'], bloccata: ['Bloccata', 'rosso', 'var(--red)'] };
+const PRIORITA_FIXED = { alta: ['Alta', 'rosso'], media: ['Media', 'ambra'], bassa: ['Bassa', 'outline'] };
+let STATO = STATO_FIXED;
+let PRIORITA = PRIORITA_FIXED;
 
 async function openForm(existing, onSaved) {
   const contrattiRes = await api.get(`/contratti?commessa_id=${state.commessaId}`);
@@ -111,7 +114,13 @@ export async function renderLavorazioni(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/lavorazioni?commessa_id=${state.commessaId}`);
+    const [res, statoList, prioritaList] = await Promise.all([
+      api.get(`/lavorazioni?commessa_id=${state.commessaId}`),
+      getCategoria('lavorazioni_stato'),
+      getCategoria('lavorazioni_priorita'),
+    ]);
+    STATO = mergeLabels(STATO_FIXED, statoList);
+    PRIORITA = mergeLabels(PRIORITA_FIXED, prioritaList);
     lastRows = res.data;
     chartsHost.innerHTML = '';
     chartsHost.appendChild(renderCharts(res.data));

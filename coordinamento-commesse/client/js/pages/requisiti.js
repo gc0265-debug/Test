@@ -12,9 +12,10 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
-import { getCategoria, toMap, toOptions } from '../components/categorie.js';
+import { getCategoria, toMap, toOptions, mergeLabels } from '../components/categorie.js';
 
-const STATO = { bozza: ['Bozza', 'outline'], approvato: ['Approvato', 'verde'], 'in-revisione': ['In revisione', 'ambra'], superato: ['Superato', 'rosso'] };
+const STATO_FIXED = { bozza: ['Bozza', 'outline'], approvato: ['Approvato', 'verde'], 'in-revisione': ['In revisione', 'ambra'], superato: ['Superato', 'rosso'] };
+let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
   const [capitolatoRes, faseList] = await Promise.all([
@@ -140,12 +141,14 @@ export async function renderRequisiti(container) {
   async function refresh() {
     const query = new URLSearchParams({ commessa_id: state.commessaId });
     if (filtroFase) query.set('fase', filtroFase);
-    const [res, faseList] = await Promise.all([
+    const [res, faseList, statoList] = await Promise.all([
       api.get(`/requisiti?${query.toString()}`),
       getCategoria('requisiti_fase'),
+      getCategoria('requisiti_stato'),
     ]);
     faseMap = toMap(faseList);
     const FASE = faseMap;
+    STATO = mergeLabels(STATO_FIXED, statoList);
     drawFilters();
     lastRows = res.data;
     renderTable(tableHost, [

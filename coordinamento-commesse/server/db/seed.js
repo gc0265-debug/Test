@@ -142,6 +142,48 @@ function seedCategorie() {
       ['capitolato', 'Capitolato'], ['elaborato', 'Elaborato'], ['verbale', 'Verbale'],
       ['contratto', 'Contratto'], ['sicurezza', 'Sicurezza'], ['altro', 'Altro'],
     ],
+    // Liste "a etichetta bloccata": il valore è fisso (guida la logica
+    // dell'app — cruscotti, colori, CHECK a DB), solo il testo mostrato è
+    // personalizzabile da Impostazioni (vedi LISTE_BLOCCATE in impostazioni.js).
+    criticita_stato: [
+      ['aperta', 'Aperta'], ['in-attesa', 'In attesa'], ['chiusa', 'Chiusa'],
+    ],
+    criticita_urgenza: [
+      ['viola', 'Urgente (3gg)'], ['verde', 'Dovuta da controparte'], ['normale', 'Normale'],
+    ],
+    decisioni_stato: [
+      ['richiesta', 'Richiesta'], ['parziale', 'Parziale'], ['decisa', 'Decisa'],
+    ],
+    allert_stato: [
+      ['aperto', 'Aperto'], ['monitorato', 'Monitorato'], ['chiuso', 'Chiuso'],
+    ],
+    allert_classificazione: [
+      ['informativo', 'Informativo'], ['attenzione', 'Attenzione'], ['critico', 'Critico'],
+    ],
+    milestone_stato: [
+      ['pianificata', 'Pianificata'], ['in-corso', 'In corso'], ['completata', 'Completata'],
+    ],
+    lavorazioni_stato: [
+      ['da-fare', 'Da fare'], ['in-corso', 'In corso'], ['completata', 'Completata'], ['bloccata', 'Bloccata'],
+    ],
+    lavorazioni_priorita: [
+      ['alta', 'Alta'], ['media', 'Media'], ['bassa', 'Bassa'],
+    ],
+    requisiti_stato: [
+      ['bozza', 'Bozza'], ['approvato', 'Approvato'], ['in-revisione', 'In revisione'], ['superato', 'Superato'],
+    ],
+    contratti_stato: [
+      ['attivo', 'Attivo'], ['chiuso', 'Chiuso'],
+    ],
+    stakeholder_stato: [
+      ['attivo', 'Attivo'], ['non-attivo', 'Non attivo'],
+    ],
+    maestranze_stato: [
+      ['attivo', 'Attivo'], ['non-attivo', 'Non attivo'],
+    ],
+    note_stato: [
+      ['bozza', 'Bozza'], ['inviata', 'Inviata'],
+    ],
   };
   Object.entries(liste).forEach(([lista, voci]) => {
     const count = db.prepare('SELECT COUNT(*) AS n FROM categorie WHERE lista = ?').get(lista).n;

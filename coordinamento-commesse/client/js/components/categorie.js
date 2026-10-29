@@ -27,3 +27,17 @@ export function toMap(list) {
 export function toOptions(list) {
   return list.map((i) => [i.valore, i.etichetta]);
 }
+
+// Applica le etichette personalizzate (da Impostazioni) a una mappa fissa
+// { valore: 'Etichetta' } o { valore: ['Etichetta', variantePillola] }, senza
+// toccare il valore né il colore — usata per gli "stato" e campi simili che
+// restano vincolati nel codice ma la cui etichetta visualizzata può essere
+// rinominata dall'amministratore.
+export function mergeLabels(fixedMap, overrideList) {
+  const overrides = toMap(overrideList || []);
+  const merged = {};
+  Object.entries(fixedMap).forEach(([k, v]) => {
+    merged[k] = Array.isArray(v) ? [overrides[k] || v[0], ...v.slice(1)] : (overrides[k] || v);
+  });
+  return merged;
+}

@@ -12,8 +12,10 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
 
-const STATO = { richiesta: ['Richiesta', 'outline'], parziale: ['Parziale', 'ambra'], decisa: ['Decisa', 'verde'] };
+const STATO_FIXED = { richiesta: ['Richiesta', 'outline'], parziale: ['Parziale', 'ambra'], decisa: ['Decisa', 'verde'] };
+let STATO = STATO_FIXED;
 const AZIONE_LABEL = { creata: 'Creata', modificata: 'Modificata', chiusa: 'Chiusa', riaperta: 'Riaperta', eliminata: 'Eliminata', rilancio: 'Rilanciata' };
 
 async function openForm(existing, onSaved) {
@@ -110,10 +112,12 @@ export async function renderDecisioni(container) {
   }
 
   async function refresh() {
-    const [dash, list] = await Promise.all([
+    const [dash, list, statoList] = await Promise.all([
       api.get(`/dashboard/${state.commessaId}`),
       api.get(`/decisioni?commessa_id=${state.commessaId}`),
+      getCategoria('decisioni_stato'),
     ]);
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = list.data;
     const d = dash.decisioni;
     dashHost.innerHTML = '';

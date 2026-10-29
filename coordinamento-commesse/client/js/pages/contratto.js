@@ -9,8 +9,10 @@ import {
   el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
 
-const STATO = { attivo: 'Attivo', chiuso: 'Chiuso' };
+const STATO_FIXED = { attivo: 'Attivo', chiuso: 'Chiuso' };
+let STATO = STATO_FIXED;
 
 function formatValore(v) {
   if (v === null || v === undefined) return '—';
@@ -228,7 +230,11 @@ export async function renderContratto(container) {
   container.appendChild(listHost);
 
   async function refresh() {
-    const res = await api.get(`/contratti?commessa_id=${state.commessaId}`);
+    const [res, statoList] = await Promise.all([
+      api.get(`/contratti?commessa_id=${state.commessaId}`),
+      getCategoria('contratti_stato'),
+    ]);
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     listHost.innerHTML = '';
     if (!res.data.length) {

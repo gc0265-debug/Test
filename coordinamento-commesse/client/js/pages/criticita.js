@@ -11,9 +11,12 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
 
-const URGENZA = { viola: ['Urgente (3gg)', 'viola'], verde: ['Dovuta da controparte', 'verde'], normale: ['Normale', 'normale'] };
-const STATO = { aperta: ['Aperta', 'outline'], 'in-attesa': ['In attesa', 'ambra'], chiusa: ['Chiusa', 'verde'] };
+const URGENZA_FIXED = { viola: ['Urgente (3gg)', 'viola'], verde: ['Dovuta da controparte', 'verde'], normale: ['Normale', 'normale'] };
+const STATO_FIXED = { aperta: ['Aperta', 'outline'], 'in-attesa': ['In attesa', 'ambra'], chiusa: ['Chiusa', 'verde'] };
+let URGENZA = URGENZA_FIXED;
+let STATO = STATO_FIXED;
 
 function urgenzaCell(row) {
   const [label] = URGENZA[row.urgenza];
@@ -121,10 +124,14 @@ export async function renderCriticita(container) {
   async function refresh() {
     const query = new URLSearchParams({ commessa_id: state.commessaId });
     if (filtroStato) query.set('stato', filtroStato);
-    const [res, allRes] = await Promise.all([
+    const [res, allRes, urgenzaList, statoList] = await Promise.all([
       api.get(`/criticita?${query.toString()}`),
       api.get(`/criticita?commessa_id=${state.commessaId}`),
+      getCategoria('criticita_urgenza'),
+      getCategoria('criticita_stato'),
     ]);
+    URGENZA = mergeLabels(URGENZA_FIXED, urgenzaList);
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     const totali = allRes.data.length;
     const aperte = allRes.data.filter((r) => r.stato !== 'chiusa').length;

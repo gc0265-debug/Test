@@ -9,6 +9,10 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
+
+const STATO_FIXED = { bozza: ['Bozza', 'outline'], inviata: ['Inviata', 'verde'] };
+let STATO = STATO_FIXED;
 
 function renderPuntiEditor(punti, onChange) {
   const host = el('div');
@@ -47,7 +51,7 @@ function openForm(existing, onSaved) {
   form.appendChild(field('Per conoscenza', textInput('per_conoscenza', existing?.per_conoscenza ?? '')));
   form.appendChild(el('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'Punti dell\'agenda'));
   form.appendChild(renderPuntiEditor(punti, () => {}));
-  form.appendChild(field('Stato', select('stato', [['bozza', 'Bozza'], ['inviata', 'Inviata']], existing?.stato ?? 'bozza')));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza')));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -142,7 +146,7 @@ export async function renderNote(container) {
         printReport('Note di Coordinamento', state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Elenco note',
           columns: ['Data', 'Oggetto', 'Destinatari', 'Punti', 'Stato'],
-          rows: rows.map((n) => [formatDate(n.data), n.oggetto, n.destinatari || '—', n.punti.length, n.stato === 'inviata' ? 'Inviata' : 'Bozza']),
+          rows: rows.map((n) => [formatDate(n.data), n.oggetto, n.destinatari || '—', n.punti.length, STATO[n.stato][0]]),
         }]);
       } }, 'Stampa elenco'),
       el('button', { class: 'btn', onclick: () => openGeneraBozza(refresh) }, 'Genera da criticità aperte'),
@@ -156,14 +160,18 @@ export async function renderNote(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/note-coordinamento?commessa_id=${state.commessaId}`);
+    const [res, statoList] = await Promise.all([
+      api.get(`/note-coordinamento?commessa_id=${state.commessaId}`),
+      getCategoria('note_stato'),
+    ]);
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
       { key: 'data', label: 'Data', render: (n) => formatDate(n.data) },
       { key: 'oggetto', label: 'Oggetto', render: (n) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); openPreview(n); } }, n.oggetto) },
       { key: 'destinatari', label: 'Destinatari' },
       { key: 'punti', label: 'Punti', numeric: true, render: (n) => n.punti.length },
-      { key: 'stato', label: 'Stato', render: (n) => n.stato === 'inviata' ? pill('Inviata', 'verde') : pill('Bozza', 'outline') },
+      { key: 'stato', label: 'Stato', render: (n) => pill(STATO[n.stato][0], STATO[n.stato][1]) },
       {
         key: 'actions', label: '', className: 'actions',
         render: (nota) => el('div', {}, [

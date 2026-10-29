@@ -11,10 +11,12 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
-import { getCategoria, toMap, toOptions } from '../components/categorie.js';
+import { getCategoria, toMap, toOptions, mergeLabels } from '../components/categorie.js';
 
-const CLASSIFICAZIONE = { informativo: ['Informativo', 'outline'], attenzione: ['Attenzione', 'ambra'], critico: ['Critico', 'rosso'] };
-const STATO = { aperto: ['Aperto', 'outline'], monitorato: ['Monitorato', 'ambra'], chiuso: ['Chiuso', 'verde'] };
+const CLASSIFICAZIONE_FIXED = { informativo: ['Informativo', 'outline'], attenzione: ['Attenzione', 'ambra'], critico: ['Critico', 'rosso'] };
+const STATO_FIXED = { aperto: ['Aperto', 'outline'], monitorato: ['Monitorato', 'ambra'], chiuso: ['Chiuso', 'verde'] };
+let CLASSIFICAZIONE = CLASSIFICAZIONE_FIXED;
+let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
   const [criticitaRes, decisioniRes, requisitiRes, perimetroList] = await Promise.all([
@@ -97,12 +99,16 @@ export async function renderAllert(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const [res, perimetroList] = await Promise.all([
+    const [res, perimetroList, classificazioneList, statoList] = await Promise.all([
       api.get(`/allert?commessa_id=${state.commessaId}`),
       getCategoria('allert_perimetro'),
+      getCategoria('allert_classificazione'),
+      getCategoria('allert_stato'),
     ]);
     perimetroMap = toMap(perimetroList);
     const PERIMETRO = perimetroMap;
+    CLASSIFICAZIONE = mergeLabels(CLASSIFICAZIONE_FIXED, classificazioneList);
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
       { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },

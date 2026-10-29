@@ -15,10 +15,13 @@ import {
   openModal, closeModal, toast, confirmDialog, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
 
-const STATO = { pianificata: ['Pianificata', 'outline'], 'in-corso': ['In corso', 'ambra'], completata: ['Completata', 'verde'] };
+const STATO_FIXED = { pianificata: ['Pianificata', 'outline'], 'in-corso': ['In corso', 'ambra'], completata: ['Completata', 'verde'] };
 const STATO_LAVORAZIONE_CLS = { 'da-fare': 'pianificata', 'in-corso': 'in-corso', completata: 'completata', bloccata: 'ritardo' };
-const STATO_LAVORAZIONE_LABEL = { 'da-fare': 'Da fare', 'in-corso': 'In corso', completata: 'Completata', bloccata: 'Bloccata' };
+const STATO_LAVORAZIONE_LABEL_FIXED = { 'da-fare': 'Da fare', 'in-corso': 'In corso', completata: 'Completata', bloccata: 'Bloccata' };
+let STATO = STATO_FIXED;
+let STATO_LAVORAZIONE_LABEL = STATO_LAVORAZIONE_LABEL_FIXED;
 
 function daysBetween(a, b) {
   return Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
@@ -259,10 +262,14 @@ export async function renderTimeline(container) {
   container.appendChild(ganttHost);
 
   async function refresh() {
-    const [milestoneRes, lavorazioniRes] = await Promise.all([
+    const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList] = await Promise.all([
       api.get(`/milestone?commessa_id=${state.commessaId}`),
       api.get(`/lavorazioni?commessa_id=${state.commessaId}`),
+      getCategoria('milestone_stato'),
+      getCategoria('lavorazioni_stato'),
     ]);
+    STATO = mergeLabels(STATO_FIXED, milestoneStatoList);
+    STATO_LAVORAZIONE_LABEL = mergeLabels(STATO_LAVORAZIONE_LABEL_FIXED, lavorazioniStatoList);
     const oggi = todayISO();
     const milestoneItems = milestoneRes.data.map((m) => ({
       ...m, type: 'milestone', statoLabel: STATO[m.stato][0],

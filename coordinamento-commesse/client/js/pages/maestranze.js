@@ -9,8 +9,10 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, mergeLabels } from '../components/categorie.js';
 
-const STATO = { attivo: ['Attivo', 'verde'], 'non-attivo': ['Non attivo', 'outline'] };
+const STATO_FIXED = { attivo: ['Attivo', 'verde'], 'non-attivo': ['Non attivo', 'outline'] };
+let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
   const [stakeholderRes, fornitoriAttuali] = await Promise.all([
@@ -99,7 +101,11 @@ export async function renderMaestranze(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/maestranze?commessa_id=${state.commessaId}`);
+    const [res, statoList] = await Promise.all([
+      api.get(`/maestranze?commessa_id=${state.commessaId}`),
+      getCategoria('maestranze_stato'),
+    ]);
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
       { key: 'nome', label: 'Nome' },

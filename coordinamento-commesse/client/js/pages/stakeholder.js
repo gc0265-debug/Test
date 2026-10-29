@@ -7,10 +7,12 @@ import { state } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
-import { getCategoria, toMap, toOptions } from '../components/categorie.js';
+import { getCategoria, toMap, toOptions, mergeLabels } from '../components/categorie.js';
 
 const INTERESSE = ['basso', 'medio', 'alto'];
 const INFLUENZA = ['bassa', 'media', 'alta'];
+const STATO_FIXED = { attivo: ['Attivo', 'verde'], 'non-attivo': ['Non attivo', 'outline'] };
+let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
   const categoriaOptions = toOptions(await getCategoria('stakeholder_categoria'));
@@ -30,7 +32,7 @@ async function openForm(existing, onSaved) {
     field('Email', textInput('email', existing?.email ?? '', { type: 'email' })),
     field('Telefono', textInput('telefono', existing?.telefono ?? '')),
   ]));
-  form.appendChild(field('Stato', select('stato', [['attivo', 'Attivo'], ['non-attivo', 'Non attivo']], existing?.stato ?? 'attivo')));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'attivo')));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
@@ -99,7 +101,7 @@ export async function renderStakeholder(container) {
         printReport('Registro Stakeholder', state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Stakeholder',
           columns: ['Nome', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Stato'],
-          rows: rows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, r.stato === 'attivo' ? 'Attivo' : 'Non attivo']),
+          rows: rows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
@@ -111,12 +113,14 @@ export async function renderStakeholder(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const [res, categoriaList] = await Promise.all([
+    const [res, categoriaList, statoList] = await Promise.all([
       api.get(`/stakeholder?commessa_id=${state.commessaId}`),
       getCategoria('stakeholder_categoria'),
+      getCategoria('stakeholder_stato'),
     ]);
     categoriaMap = toMap(categoriaList);
     const CATEGORIA = categoriaMap;
+    STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     matrixHost.innerHTML = '';
     matrixHost.appendChild(renderMatrice(res.data));
@@ -127,7 +131,7 @@ export async function renderStakeholder(container) {
       { key: 'categoria', label: 'Categoria', render: (r) => CATEGORIA[r.categoria] || r.categoria },
       { key: 'interesse', label: 'Interesse', render: (r) => pill(r.interesse, r.interesse === 'alto' ? 'rosso' : (r.interesse === 'medio' ? 'ambra' : 'outline')) },
       { key: 'influenza', label: 'Influenza', render: (r) => pill(r.influenza, r.influenza === 'alta' ? 'rosso' : (r.influenza === 'media' ? 'ambra' : 'outline')) },
-      { key: 'stato', label: 'Stato', render: (r) => r.stato === 'attivo' ? pill('Attivo', 'verde') : pill('Non attivo', 'outline') },
+      { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
