@@ -36,6 +36,7 @@ const comunicazioneRouter = require('./routes/comunicazione');
 const categorieRouter = require('./routes/categorie');
 const finanziariaRouter = require('./routes/finanziaria');
 const approvazioniDrawingsRouter = require('./routes/approvazioniDrawings');
+const misureRouter = require('./routes/misure');
 
 // Il secret firma i cookie di sessione: deve restare lo stesso tra un
 // riavvio e l'altro, altrimenti ogni riavvio invaliderebbe tutte le
@@ -89,6 +90,7 @@ app.use('/api/decisioni', requireAuth, blockWriteForCliente, requireSection('dec
 app.use('/api/note-coordinamento', requireAuth, blockWriteForCliente, requireSection('note'), noteCoordinamentoRouter);
 app.use('/api/diario', requireAuth, blockWriteForCliente, requireSection('diario'), diarioRouter);
 app.use('/api/lavorazioni', requireAuth, blockWriteForCliente, requireSection('lavorazioni', 'timeline'), lavorazioniRouter);
+app.use('/api/misure', requireAuth, blockWriteForCliente, requireSection('lavorazioni', 'timeline'), misureRouter);
 app.use('/api/maestranze', requireAuth, blockWriteForCliente, requireSection('maestranze'), maestranzeRouter);
 app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), documentiRouter);
 app.use('/api/dashboard', requireAuth, blockWriteForCliente, requireSection('cruscotto'), dashboardRouter);

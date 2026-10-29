@@ -129,6 +129,26 @@ CREATE TABLE IF NOT EXISTS lavorazioni (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Misure rilevate in opera per una lavorazione (tipicamente arredi su
+-- misura: boiserie, corridoi), confrontate con la quota di progetto per
+-- individuare scostamenti da motivare in sede di SAL. Una lavorazione
+-- può avere più tratte misurate separatamente.
+CREATE TABLE IF NOT EXISTS misure (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lavorazione_id INTEGER NOT NULL REFERENCES lavorazioni(id) ON DELETE CASCADE,
+    tratta TEXT NOT NULL,
+    quota_progetto REAL,
+    quota_rilevata REAL,
+    unita TEXT NOT NULL DEFAULT 'm'
+          CHECK(unita IN ('m','m2','pz')),
+    nota_tecnica TEXT,
+    data_rilievo TEXT NOT NULL DEFAULT (date('now')),
+    documento_id INTEGER REFERENCES documenti(id) ON DELETE SET NULL,
+    rif_criticita_id INTEGER REFERENCES criticita(id) ON DELETE SET NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 CREATE TABLE IF NOT EXISTS maestranze (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
@@ -445,6 +465,7 @@ CREATE INDEX IF NOT EXISTS idx_decisioni_commessa ON decisioni(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_note_commessa ON note_coordinamento(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_diario_commessa ON diario(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_lavorazioni_commessa ON lavorazioni(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_misure_lavorazione ON misure(lavorazione_id);
 CREATE INDEX IF NOT EXISTS idx_maestranze_commessa ON maestranze(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_documenti_commessa ON documenti(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_allert_commessa ON allert(commessa_id);
