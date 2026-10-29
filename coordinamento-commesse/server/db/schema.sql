@@ -401,6 +401,27 @@ CREATE TABLE IF NOT EXISTS maestranze_fornitori (
     UNIQUE(maestranza_id, stakeholder_id)
 );
 
+-- Approvazioni Drawings: elenco elaborati/deliverable sottoposti a DL/GC
+-- per approvazione, importabile da un file Excel. Ogni riga può agganciarsi
+-- a un Requisito del Capitolato Requisiti, in modo da restare collegata
+-- agli altri registri di Coordinamento e Contratti tramite il requisito.
+CREATE TABLE IF NOT EXISTS approvazioni_drawings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    codice TEXT NOT NULL,
+    titolo TEXT NOT NULL,
+    revisione TEXT,
+    data_invio TEXT,
+    data_approvazione TEXT,
+    stato TEXT NOT NULL DEFAULT 'in-attesa'
+          CHECK(stato IN ('in-attesa','approvato','approvato-con-riserve','rigettato')),
+    rif_requisito_id INTEGER REFERENCES requisiti(id) ON DELETE SET NULL,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 -- Storico modifiche: traccia creazione/modifica/chiusura/eliminazione su
 -- criticità, decisioni e allert con l'utente autenticato e un riassunto
 -- testuale di cosa è cambiato — ai fini di tracciabilità D.Lgs. 81/2008.
@@ -441,3 +462,4 @@ CREATE INDEX IF NOT EXISTS idx_raci_processo ON raci_assegnazioni(processo_id);
 CREATE INDEX IF NOT EXISTS idx_maestranze_fornitori_m ON maestranze_fornitori(maestranza_id);
 CREATE INDEX IF NOT EXISTS idx_atti_contratto ON atti_aggiuntivi(contratto_id);
 CREATE INDEX IF NOT EXISTS idx_categorie_lista ON categorie(lista);
+CREATE INDEX IF NOT EXISTS idx_approvazioni_commessa ON approvazioni_drawings(commessa_id);

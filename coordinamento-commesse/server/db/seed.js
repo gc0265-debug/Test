@@ -184,6 +184,9 @@ function seedCategorie() {
     note_stato: [
       ['bozza', 'Bozza'], ['inviata', 'Inviata'],
     ],
+    approvazioni_stato: [
+      ['in-attesa', 'In attesa'], ['approvato', 'Approvato'], ['approvato-con-riserve', 'Approvato con riserve'], ['rigettato', 'Rigettato'],
+    ],
   };
   Object.entries(liste).forEach(([lista, voci]) => {
     const count = db.prepare('SELECT COUNT(*) AS n FROM categorie WHERE lista = ?').get(lista).n;

@@ -33,6 +33,7 @@ const LISTE_BLOCCATE = [
   { lista: 'stakeholder_stato', titolo: 'Registro Stakeholder — Stato' },
   { lista: 'maestranze_stato', titolo: 'Maestranze — Stato' },
   { lista: 'note_stato', titolo: 'Note di Coordinamento — Stato' },
+  { lista: 'approvazioni_stato', titolo: 'Approvazioni Drawings — Stato' },
 ];
 
 function openOptionForm(lista, existing, onSaved, { locked = false } = {}) {

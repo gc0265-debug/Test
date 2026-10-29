@@ -17,8 +17,15 @@ let STATO = STATO_FIXED;
 let PRIORITA = PRIORITA_FIXED;
 
 async function openForm(existing, onSaved) {
-  const contrattiRes = await api.get(`/contratti?commessa_id=${state.commessaId}`);
-  const contrattoOptions = [['', '— nessuna (testo libero sotto)'], ...contrattiRes.data.map((c) => [c.id, `${c.controparte || c.titolo}`])];
+  const [contrattiRes, stakeholderRes] = await Promise.all([
+    api.get(`/contratti?commessa_id=${state.commessaId}`),
+    api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+  ]);
+  const contrattoOptions = [['', '— nessuna (seleziona dal Registro Stakeholder sotto)'], ...contrattiRes.data.map((c) => [c.id, `${c.controparte || c.titolo}`])];
+  const impresaOptions = [['', '—'], ...stakeholderRes.data.filter((s) => s.stato === 'attivo').map((s) => [s.nome, s.nome])];
+  if (existing?.impresa && !impresaOptions.some(([v]) => v === existing.impresa)) {
+    impresaOptions.push([existing.impresa, `${existing.impresa} (non più nel Registro Stakeholder)`]);
+  }
 
   const form = el('form', {});
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
@@ -37,7 +44,7 @@ async function openForm(existing, onSaved) {
   ]));
   form.appendChild(field('Impresa (collegata a un contratto)', select('contratto_id', contrattoOptions, existing?.contratto_id ?? ''),
     'Se l\'impresa ha un contratto registrato in Contratti, collegalo qui invece di scriverlo a mano.'));
-  form.appendChild(field('Impresa / squadra (testo libero)', textInput('impresa', existing?.impresa ?? ''),
+  form.appendChild(field('Impresa / squadra (da Registro Stakeholder)', select('impresa', impresaOptions, existing?.impresa ?? ''),
     'Usato solo se non è collegato un contratto sopra.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),

@@ -7,7 +7,42 @@ import { state, loadCommesse, setCommessa } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
-function openCommessaForm(existing, onSaved) {
+async function renderWpMiniList(existing, onChanged) {
+  const host = el('div');
+  async function draw() {
+    const res = await api.get(`/commesse/${existing.id}/wp`);
+    host.innerHTML = '';
+    if (!res.data.length) {
+      host.appendChild(el('p', { class: 'muted', style: 'margin:4px 0' }, 'Nessun work package collegato.'));
+    } else {
+      host.appendChild(el('div', { style: 'border:1px solid var(--rule);margin:6px 0 4px' }, res.data.map((w) => el('div', {
+        style: 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;font-size:12.5px;border-bottom:1px solid var(--rule-2)',
+      }, [
+        el('span', {}, `${w.codice} — ${w.nome}${w.pm_responsabile ? ' · ' + w.pm_responsabile : ''}`),
+        el('div', { style: 'display:flex;gap:6px' }, [
+          el('button', {
+            type: 'button', class: 'btn btn--sm btn--ghost',
+            onclick: () => openWpForm(existing.id, w, async () => { await loadCommesse(); await draw(); onChanged(); }),
+          }, 'Modifica'),
+          el('button', {
+            type: 'button', class: 'btn btn--sm btn--ghost btn--danger',
+            onclick: async () => {
+              if (!confirmDialog('Eliminare questo work package?')) return;
+              await api.del(`/commesse/wp/${w.id}`);
+              await loadCommesse();
+              await draw();
+              onChanged();
+            },
+          }, 'Elimina'),
+        ]),
+      ]))));
+    }
+  }
+  await draw();
+  return { host, refresh: draw };
+}
+
+async function openCommessaForm(existing, onSaved) {
   const form = el('form', {});
   form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. 2514RW' })));
   form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Hotel Rosewood Roma' })));
@@ -20,6 +55,15 @@ function openCommessaForm(existing, onSaved) {
   form.appendChild(field('Data apertura', textInput('data_apertura', existing?.data_apertura ?? '', { type: 'date' })));
   form.appendChild(field('Stato', select('stato', [['attiva', 'Attiva'], ['sospesa', 'Sospesa'], ['chiusa', 'Chiusa']], existing?.stato ?? 'attiva')));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  if (existing) {
+    form.appendChild(el('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'Work package collegati'));
+    const { host: wpHost } = await renderWpMiniList(existing, () => onSaved());
+    form.appendChild(wpHost);
+    form.appendChild(el('button', {
+      type: 'button', class: 'btn btn--sm', style: 'margin:4px 0 4px',
+      onclick: () => openWpForm(existing.id, null, async () => { await loadCommesse(); closeModal(); await openCommessaForm(existing, onSaved); onSaved(); }),
+    }, '+ Aggiungi work package'));
+  }
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

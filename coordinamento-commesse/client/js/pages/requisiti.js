@@ -37,7 +37,7 @@ async function openForm(existing, onSaved) {
   if (existing) {
     form.appendChild(field('Motivo della modifica', textInput('motivo_modifica', ''), 'Registrato solo se titolo o descrizione cambiano in questo salvataggio.'));
   }
-  form.appendChild(field('Voce di capitolato', select('rif_capitolato_voce_id', capitolatoOptions, existing?.rif_capitolato_voce_id ?? ''), 'Collegamento strutturato alla tabella Capitolato, se già scritta.'));
+  form.appendChild(field('Voce di capitolato', select('rif_capitolato_voce_id', capitolatoOptions, existing?.rif_capitolato_voce_id ?? ''), 'Collegamento strutturato al Capitolato Requisiti, se già scritto.'));
   form.appendChild(field('Fonte nel capitolato (testo libero)', textInput('fonte_capitolato', existing?.fonte_capitolato ?? '', { placeholder: 'es. par. 4.2, pag. 18, rev. 3' })));
   form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza')));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));

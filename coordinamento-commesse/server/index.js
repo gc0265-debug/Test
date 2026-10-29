@@ -31,6 +31,7 @@ const stakeholderRouter = require('./routes/stakeholder');
 const comunicazioneRouter = require('./routes/comunicazione');
 const categorieRouter = require('./routes/categorie');
 const finanziariaRouter = require('./routes/finanziaria');
+const approvazioniDrawingsRouter = require('./routes/approvazioniDrawings');
 
 const app = express();
 app.use(cors());
@@ -67,6 +68,7 @@ app.use('/api/stakeholder', requireAuth, stakeholderRouter);
 app.use('/api/comunicazione', requireAuth, comunicazioneRouter);
 app.use('/api/categorie', requireAuth, categorieRouter);
 app.use('/api/finanziaria', requireAuth, requireAdmin, finanziariaRouter);
+app.use('/api/approvazioni-drawings', requireAuth, approvazioniDrawingsRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));

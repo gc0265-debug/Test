@@ -20,8 +20,10 @@ import { getCategoria, mergeLabels } from '../components/categorie.js';
 const STATO_FIXED = { pianificata: ['Pianificata', 'outline'], 'in-corso': ['In corso', 'ambra'], completata: ['Completata', 'verde'] };
 const STATO_LAVORAZIONE_CLS = { 'da-fare': 'pianificata', 'in-corso': 'in-corso', completata: 'completata', bloccata: 'ritardo' };
 const STATO_LAVORAZIONE_LABEL_FIXED = { 'da-fare': 'Da fare', 'in-corso': 'In corso', completata: 'Completata', bloccata: 'Bloccata' };
+const PRIORITA_FIXED = { alta: 'Alta', media: 'Media', bassa: 'Bassa' };
 let STATO = STATO_FIXED;
 let STATO_LAVORAZIONE_LABEL = STATO_LAVORAZIONE_LABEL_FIXED;
+let PRIORITA = PRIORITA_FIXED;
 
 function daysBetween(a, b) {
   return Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
@@ -127,8 +129,17 @@ function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
 }
 
 function openForm(existing, onSaved) {
+  const isLavorazione = existing ? existing.type === 'lavorazione' : false;
   const form = el('form', {});
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+
+  const tipoCheckbox = el('input', { type: 'checkbox', checked: isLavorazione, disabled: !!existing });
+  form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin-bottom:6px;cursor:pointer' }, [
+    tipoCheckbox, 'È una Lavorazione (lascia vuoto per una Milestone)',
+  ]));
+  form.appendChild(el('div', { class: 'field__hint', style: 'margin:0 0 16px' },
+    existing ? 'Il tipo non si può cambiare dopo la creazione.' : 'Scegli il tipo di riga prima di compilare i campi sotto.'));
+
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Montaggio boiserie corridoio' })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -139,18 +150,34 @@ function openForm(existing, onSaved) {
     field('Data inizio', dateInput('data_inizio', existing?.data_inizio || todayISO(), { required: true })),
     field('Data fine', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true })),
   ]));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata')));
-  if (existing?.ha_scostamento) {
-    form.appendChild(el('label', { style: 'display:flex;gap:6px;align-items:flex-start;font-size:11.5px;color:var(--ink-2);margin:-6px 0 14px' }, [
-      el('input', { type: 'checkbox', name: 'reimposta_baseline', style: 'margin-top:2px' }),
-      el('span', {}, [
-        'Reimposta la baseline su queste date',
-        el('div', { class: 'field__hint', style: 'margin-top:2px' },
-          `Baseline attuale: ${formatDate(existing.baseline_data_inizio)} → ${formatDate(existing.baseline_data_fine)}. Spunta per far coincidere la barra di riferimento con le nuove date.`),
-      ]),
-    ]));
+
+  const extraHost = el('div');
+  form.appendChild(extraHost);
+
+  function drawExtra() {
+    extraHost.innerHTML = '';
+    if (tipoCheckbox.checked) {
+      extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO_LAVORAZIONE_LABEL).map(([k, v]) => [k, v]), existing?.statoReale ?? 'da-fare')));
+      extraHost.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA), existing?.priorita ?? 'media')));
+      extraHost.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
+    } else {
+      extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata')));
+      if (existing?.ha_scostamento) {
+        extraHost.appendChild(el('label', { style: 'display:flex;gap:6px;align-items:flex-start;font-size:11.5px;color:var(--ink-2);margin:-6px 0 14px' }, [
+          el('input', { type: 'checkbox', name: 'reimposta_baseline', style: 'margin-top:2px' }),
+          el('span', {}, [
+            'Reimposta la baseline su queste date',
+            el('div', { class: 'field__hint', style: 'margin-top:2px' },
+              `Baseline attuale: ${formatDate(existing.baseline_data_inizio)} → ${formatDate(existing.baseline_data_fine)}. Spunta per far coincidere la barra di riferimento con le nuove date.`),
+          ]),
+        ]));
+      }
+      extraHost.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+    }
   }
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  drawExtra();
+  tipoCheckbox.addEventListener('change', drawExtra);
+
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -160,18 +187,24 @@ function openForm(existing, onSaved) {
     e.preventDefault();
     const data = formData(form);
     data.commessa_id = state.commessaId;
-    data.reimposta_baseline = data.reimposta_baseline === '1';
+    const lavorazione = tipoCheckbox.checked;
     try {
-      if (existing) await api.put(`/milestone/${existing.id}`, data);
-      else await api.post('/milestone', data);
+      if (lavorazione) {
+        if (existing) await api.put(`/lavorazioni/${existing.id}`, data);
+        else await api.post('/lavorazioni', data);
+      } else {
+        data.reimposta_baseline = data.reimposta_baseline === '1';
+        if (existing) await api.put(`/milestone/${existing.id}`, data);
+        else await api.post('/milestone', data);
+      }
       closeModal();
-      toast(existing ? 'Milestone aggiornata.' : 'Milestone registrata.');
+      toast(existing ? 'Modifica salvata.' : (lavorazione ? 'Lavorazione creata.' : 'Milestone registrata.'));
       onSaved();
     } catch (err) {
       toast(err.message, { error: true });
     }
   });
-  openModal(existing ? 'Modifica milestone' : 'Nuova milestone', form);
+  openModal(existing ? (isLavorazione ? 'Modifica lavorazione' : 'Modifica milestone') : 'Nuova riga', form);
 }
 
 function stampaVistaGantt() {
@@ -240,7 +273,7 @@ export async function renderTimeline(container) {
       el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
       zoomSlider,
       el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova milestone'),
+      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova riga'),
       settingsGear(),
     ]),
   ]);
@@ -262,14 +295,16 @@ export async function renderTimeline(container) {
   container.appendChild(ganttHost);
 
   async function refresh() {
-    const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList] = await Promise.all([
+    const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList, lavorazioniPrioritaList] = await Promise.all([
       api.get(`/milestone?commessa_id=${state.commessaId}`),
       api.get(`/lavorazioni?commessa_id=${state.commessaId}`),
       getCategoria('milestone_stato'),
       getCategoria('lavorazioni_stato'),
+      getCategoria('lavorazioni_priorita'),
     ]);
     STATO = mergeLabels(STATO_FIXED, milestoneStatoList);
     STATO_LAVORAZIONE_LABEL = mergeLabels(STATO_LAVORAZIONE_LABEL_FIXED, lavorazioniStatoList);
+    PRIORITA = mergeLabels(PRIORITA_FIXED, lavorazioniPrioritaList);
     const oggi = todayISO();
     const milestoneItems = milestoneRes.data.map((m) => ({
       ...m, type: 'milestone', statoLabel: STATO[m.stato][0],
@@ -278,6 +313,7 @@ export async function renderTimeline(container) {
       .filter((l) => l.data_inizio && l.data_fine)
       .map((l) => ({
         ...l, type: 'lavorazione',
+        statoReale: l.stato,
         stato: STATO_LAVORAZIONE_CLS[l.stato] || 'pianificata',
         statoLabel: STATO_LAVORAZIONE_LABEL[l.stato] || l.stato,
         in_ritardo: l.stato !== 'completata' && l.data_fine < oggi,
@@ -353,7 +389,7 @@ export async function renderTimeline(container) {
           `Baseline: ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}`
         ));
       }
-      const onEdit = isLavorazione ? (() => { location.hash = '#/lavorazioni'; }) : (() => openForm(it, refresh));
+      const onEdit = () => openForm(it, refresh);
       track.appendChild(bar(
         it.data_inizio, it.data_fine, `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}`,
         `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,
