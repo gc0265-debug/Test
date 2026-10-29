@@ -7,6 +7,11 @@ Non serve sapere programmare: sono tutti doppio-click.
 Questa guida viene aggiornata ogni volta che il processo cambia — è il
 riferimento unico, non serve tenere a mente altro.
 
+Per sapere **cosa cambia** ad ogni aggiornamento (in linguaggio semplice,
+non tecnico), vedi `NOTE_RILASCIO.md` nella stessa cartella principale:
+viene aggiornato con una nuova voce ogni volta che carico una novità, ed
+è pensato per essere condiviso con chi usa l'app.
+
 ---
 
 ## 1. Installazione iniziale (una tantum)

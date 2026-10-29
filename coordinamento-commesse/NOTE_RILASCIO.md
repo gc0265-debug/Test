@@ -1,0 +1,103 @@
+# Note di rilascio — Coordinamento Commesse
+
+Cosa cambia ad ogni aggiornamento, spiegato in modo semplice. Questo file
+si aggiorna da solo ogni volta che viene caricata una nuova versione
+dell'app (vedi `GUIDA_AGGIORNAMENTI.md` per come scaricarla sul Mac) e
+resta il riferimento da condividere con chi usa l'app, per sapere cosa è
+cambiato senza dover leggere il codice.
+
+Le versioni più recenti sono in alto.
+
+---
+
+## In lavorazione
+
+Nessuna modifica in corso al momento.
+
+---
+
+## Etichette di stato personalizzabili (29 ottobre 2026)
+
+- In **Impostazioni** è ora possibile rinominare il testo mostrato per
+  gli stati di uso più frequente — ad esempio "Aperta/In attesa/Chiusa"
+  per le criticità, "Da fare/In corso/Completata/Bloccata" per le
+  lavorazioni, e così via per decisioni, allert, milestone, requisiti,
+  contratti, stakeholder, maestranze e note di coordinamento.
+- Si può cambiare solo il **nome** mostrato, non il funzionamento: i
+  colori, i conteggi del cruscotto e le regole di avanzamento restano
+  quelli di sempre, così non si rischia di rompere nulla.
+- **Maestranze**: nel form di modifica ora si collegano i fornitori
+  pescandoli direttamente dal Registro Stakeholder con una selezione
+  multipla, invece di scriverli a mano.
+- **Timeline Montaggi**: un solo pulsante "Stampa" apre un'unica
+  finestra dove si scegliono il periodo da stampare e, con una casella
+  da spuntare, se includere anche l'immagine del grafico Gantt.
+
+---
+
+## Capitolato collegato ai contratti, Timeline più leggibile (ottobre 2026)
+
+- Le voci di **Capitolato** si possono raggruppare per contratto e per
+  data.
+- **Timeline**: la colonna "Attività" si ridimensiona da sola in base al
+  testo più lungo, ed è possibile stampare solo il periodo visualizzato.
+- Il menu laterale è stato riordinato per seguire meglio il flusso di
+  lavoro in cantiere.
+- I **Work Package** si possono ora collegare a più commesse.
+- Il tipo di documento in **Documenti** è configurabile da Impostazioni.
+
+---
+
+## Avvio automatico sul Mac (ottobre 2026)
+
+- L'app può partire da sola all'accensione del Mac, senza più bisogno di
+  aprire il Terminale: vedi `GUIDA_AGGIORNAMENTI.md` per l'installazione
+  (una volta sola) e per gli aggiornamenti futuri (un doppio-click).
+
+---
+
+## Righe cliccabili, stampa mirata, Cruscotto a riquadri (ottobre 2026)
+
+- In quasi tutte le tabelle, un click sulla riga apre direttamente la
+  scheda di modifica — non serve più cercare il pulsante.
+- Si può selezionare una singola riga e stampare solo quella, invece di
+  tutto l'elenco.
+- **Cruscotto**: ridisegnato con riquadri compatti e cliccabili per
+  andare subito alla sezione interessata.
+- **Timeline**: aggiunto uno zoom e l'integrazione delle Lavorazioni nel
+  grafico, insieme alle milestone.
+- **Lavorazioni**, **Maestranze** e **Piano Comunicazioni** arricchiti
+  con nuovi campi (piano, zona, date, contratto collegato; work package;
+  responsabile).
+
+---
+
+## Impostazioni e Dashboard Finanziaria (ottobre 2026)
+
+- Nuova pagina **Impostazioni**: le liste a tendina usate nelle varie
+  schede (categorie, fasi, ecc.) si possono personalizzare da qui, senza
+  bisogno di intervento tecnico.
+- Nuova **Dashboard Finanziaria**: vista d'insieme sui contratti e sugli
+  importi, trasversale a tutte le commesse.
+
+---
+
+## Prima versione — Coordinamento Commesse (ottobre 2026)
+
+- Nasce l'app **Coordinamento Commesse**, separata dal sistema Board:
+  Registro Criticità, Registro Decisioni, Registro Allert, Requisiti
+  versionati, Contratti con change management, Registro Stakeholder,
+  Piano Comunicazioni con matrice RACI, Timeline Montaggi (Gantt), Note
+  di Coordinamento, Lezioni Apprese, Documenti con upload, login e
+  gestione utenti, storico delle modifiche, export Excel e promemoria
+  scadenze.
+
+---
+
+### Come si aggiorna questo file
+
+Ad ogni push di una nuova funzione o correzione, va aggiunta una voce in
+cima (sotto "In lavorazione" se presente, altrimenti come nuova sezione
+in testa), scritta in linguaggio semplice e orientato a "cosa cambia per
+chi usa l'app", non ai dettagli tecnici del codice. Le voci già scritte
+non si modificano: ogni aggiornamento ne aggiunge una nuova.
