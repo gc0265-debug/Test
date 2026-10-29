@@ -6,7 +6,9 @@ const router = express.Router();
 router.get('/', (req, res) => {
   const { commessa_id, stato, search } = req.query;
   let sql = `
-    SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome
+    SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome,
+           (SELECT GROUP_CONCAT(s.nome, ', ') FROM maestranze_fornitori mf
+            JOIN stakeholder s ON mf.stakeholder_id = s.id WHERE mf.maestranza_id = m.id) AS fornitori_nomi
     FROM maestranze m LEFT JOIN work_packages w ON m.wp_id = w.id
     WHERE 1=1
   `;
@@ -43,6 +45,27 @@ router.delete('/:id', (req, res) => {
   const result = db.prepare('DELETE FROM maestranze WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'maestranza non trovata' });
   res.status(204).end();
+});
+
+// ---- fornitori collegati (scelti dal Registro Stakeholder) ----
+router.get('/:id/fornitori', (req, res) => {
+  const rows = db.prepare('SELECT stakeholder_id FROM maestranze_fornitori WHERE maestranza_id = ?').all(req.params.id);
+  res.json({ data: rows.map((r) => r.stakeholder_id) });
+});
+
+// Sostituisce in blocco i fornitori collegati. Body: { stakeholder_ids: [...] }
+router.put('/:id/fornitori', (req, res) => {
+  const existing = db.prepare('SELECT * FROM maestranze WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'maestranza non trovata' });
+  const ids = Array.isArray(req.body.stakeholder_ids) ? req.body.stakeholder_ids : [];
+
+  const salva = db.transaction(() => {
+    db.prepare('DELETE FROM maestranze_fornitori WHERE maestranza_id = ?').run(req.params.id);
+    const insert = db.prepare('INSERT INTO maestranze_fornitori (maestranza_id, stakeholder_id) VALUES (?, ?)');
+    ids.forEach((sid) => insert.run(req.params.id, sid));
+  });
+  salva();
+  res.json({ data: ids });
 });
 
 module.exports = router;

@@ -391,6 +391,16 @@ CREATE TABLE IF NOT EXISTS raci_assegnazioni (
     UNIQUE(processo_id, stakeholder_id)
 );
 
+-- Fornitori collegati a una maestranza, scelti fra gli stakeholder della
+-- commessa invece che scritti a mano (sostituisce il vecchio campo libero
+-- "azienda", mantenuto solo come fallback per le righe create prima).
+CREATE TABLE IF NOT EXISTS maestranze_fornitori (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    maestranza_id INTEGER NOT NULL REFERENCES maestranze(id) ON DELETE CASCADE,
+    stakeholder_id INTEGER NOT NULL REFERENCES stakeholder(id) ON DELETE CASCADE,
+    UNIQUE(maestranza_id, stakeholder_id)
+);
+
 -- Storico modifiche: traccia creazione/modifica/chiusura/eliminazione su
 -- criticità, decisioni e allert con l'utente autenticato e un riassunto
 -- testuale di cosa è cambiato — ai fini di tracciabilità D.Lgs. 81/2008.
@@ -428,5 +438,6 @@ CREATE INDEX IF NOT EXISTS idx_contratti_commessa ON contratti(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_stakeholder_commessa ON stakeholder(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_processi_commessa ON processi_comunicazione(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_raci_processo ON raci_assegnazioni(processo_id);
+CREATE INDEX IF NOT EXISTS idx_maestranze_fornitori_m ON maestranze_fornitori(maestranza_id);
 CREATE INDEX IF NOT EXISTS idx_atti_contratto ON atti_aggiuntivi(contratto_id);
 CREATE INDEX IF NOT EXISTS idx_categorie_lista ON categorie(lista);

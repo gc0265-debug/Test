@@ -171,12 +171,22 @@ function openForm(existing, onSaved) {
   openModal(existing ? 'Modifica milestone' : 'Nuova milestone', form);
 }
 
+function stampaVistaGantt() {
+  document.body.classList.add('printing-gantt');
+  window.addEventListener('afterprint', () => document.body.classList.remove('printing-gantt'), { once: true });
+  window.print();
+}
+
 function openStampaModal(items, commessa) {
   const form = el('form', {});
   form.appendChild(el('p', { class: 'muted', style: 'margin-top:0' }, 'Lascia vuoto per stampare l\'elenco completo, oppure indica un periodo per stampare solo le attività che vi ricadono.'));
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Da', dateInput('da', '')),
     field('A', dateInput('a', '')),
+  ]));
+  const ganttCheckbox = el('input', { type: 'checkbox' });
+  form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin:-6px 0 16px;cursor:pointer' }, [
+    ganttCheckbox, 'Includi anche la vista Gantt (grafico)',
   ]));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
@@ -188,6 +198,7 @@ function openStampaModal(items, commessa) {
     const filtered = (data.da || data.a)
       ? items.filter((it) => (!data.da || it.data_fine >= data.da) && (!data.a || it.data_inizio <= data.a))
       : items;
+    const includeGantt = ganttCheckbox.checked;
     closeModal();
     printReport('Elenco Timeline', commessa, [{
       heading: 'Milestone e lavorazioni',
@@ -200,8 +211,9 @@ function openStampaModal(items, commessa) {
         it.ha_scostamento ? `era ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}` : '—',
       ]),
     }]);
+    if (includeGantt) stampaVistaGantt();
   });
-  openModal('Stampa elenco Timeline', form);
+  openModal('Stampa Timeline', form);
 }
 
 export async function renderTimeline(container) {
@@ -224,8 +236,7 @@ export async function renderTimeline(container) {
     el('div', { style: 'display:flex;gap:8px;align-items:center' }, [
       el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
       zoomSlider,
-      el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa elenco'),
-      el('button', { class: 'btn btn--sm', onclick: () => stampaVistaGantt() }, 'Stampa vista Gantt'),
+      el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova milestone'),
       settingsGear(),
     ]),
@@ -246,12 +257,6 @@ export async function renderTimeline(container) {
 
   const ganttHost = el('div', { class: 'gantt-print-area' });
   container.appendChild(ganttHost);
-
-  function stampaVistaGantt() {
-    document.body.classList.add('printing-gantt');
-    window.addEventListener('afterprint', () => document.body.classList.remove('printing-gantt'), { once: true });
-    window.print();
-  }
 
   async function refresh() {
     const [milestoneRes, lavorazioniRes] = await Promise.all([
