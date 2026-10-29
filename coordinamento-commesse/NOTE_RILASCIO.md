@@ -16,6 +16,26 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Sezione Misure in Lavorazioni (29 ottobre 2026)
+
+- Ogni lavorazione ha ora una sezione **Misure**, per registrare le
+  quote rilevate in cantiere a confronto con quelle di progetto, tratta
+  per tratta (es. un segmento di boiserie, un vano scala).
+- Per ogni misura si indicano la quota di progetto e la quota
+  effettivamente rilevata in opera: l'app calcola da sola il delta e la
+  percentuale di scostamento, ed evidenzia in modo visibile quando lo
+  scostamento supera il 3% — una soglia di attenzione, non una
+  tolleranza contrattuale: resta sempre una valutazione del Direttore
+  di Cantiere, da annotare nella nota tecnica della misura.
+- Da una misura fuori soglia è possibile **segnalare una criticità**
+  con un clic: viene creata una nuova riga nel Registro Criticità, già
+  precompilata con i dati della misura, e collegata ad essa.
+- È stata aggiunta una **guida in linea**, richiamabile direttamente
+  dalla sezione Misure, con la procedura in 5 fasi da seguire per
+  l'aggiornamento delle misure in cantiere.
+
+---
+
 ## Accesso cliente a sola lettura (29 ottobre 2026)
 
 - Nuovo ruolo utente **Cliente**: un accesso a sola lettura, pensato per
