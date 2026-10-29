@@ -219,8 +219,7 @@ CREATE TABLE IF NOT EXISTS allert (
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
     wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
     data TEXT NOT NULL DEFAULT (date('now')),
-    perimetro TEXT NOT NULL DEFAULT 'interno'
-              CHECK(perimetro IN ('interno','gc','dl','committente','fornitore','esterno')),
+    perimetro TEXT NOT NULL DEFAULT 'interno',  -- lista configurabile, vedi tabella categorie ('allert_perimetro')
     classificazione TEXT NOT NULL DEFAULT 'attenzione'
                     CHECK(classificazione IN ('informativo','attenzione','critico')),
     descrizione TEXT NOT NULL,
@@ -259,8 +258,7 @@ CREATE TABLE IF NOT EXISTS requisiti (
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
     wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
     codice_wbs TEXT NOT NULL,                  -- es. 2514RW.WP1.03
-    fase TEXT NOT NULL DEFAULT 'progettazione'
-         CHECK(fase IN ('progettazione','approvvigionamento','montaggio','collaudo')),
+    fase TEXT NOT NULL DEFAULT 'progettazione',  -- lista configurabile, vedi tabella categorie ('requisiti_fase')
     titolo TEXT NOT NULL,
     descrizione TEXT,
     fonte_capitolato TEXT,                     -- riferimento al capitolato (paragrafo/pagina/revisione)
@@ -320,8 +318,7 @@ CREATE TABLE IF NOT EXISTS stakeholder (
     nome TEXT NOT NULL,
     organizzazione TEXT,
     ruolo TEXT,
-    categoria TEXT NOT NULL DEFAULT 'interno'
-              CHECK(categoria IN ('interno','gc','dl','committente','fornitore','advisor','ente','altro')),
+    categoria TEXT NOT NULL DEFAULT 'interno',  -- lista configurabile, vedi tabella categorie ('stakeholder_categoria')
     interesse TEXT NOT NULL DEFAULT 'medio' CHECK(interesse IN ('basso','medio','alto')),
     influenza TEXT NOT NULL DEFAULT 'media' CHECK(influenza IN ('bassa','media','alta')),
     email TEXT,
@@ -340,13 +337,41 @@ CREATE TABLE IF NOT EXISTS processi_comunicazione (
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
     nome TEXT NOT NULL,
     scopo TEXT,
-    frequenza TEXT NOT NULL DEFAULT 'settimanale'
-              CHECK(frequenza IN ('giornaliera','settimanale','quindicinale','mensile','ad-evento')),
+    frequenza TEXT NOT NULL DEFAULT 'settimanale',  -- lista configurabile, vedi tabella categorie ('comunicazione_frequenza')
     canale TEXT,
     output TEXT,
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Atti Aggiuntivi: varianti/integrazioni economiche al contratto base,
+-- sommate al suo valore nella scheda Contratto e nella Dashboard
+-- Finanziaria (multi-commessa).
+CREATE TABLE IF NOT EXISTS atti_aggiuntivi (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contratto_id INTEGER NOT NULL REFERENCES contratti(id) ON DELETE CASCADE,
+    titolo TEXT NOT NULL,
+    data TEXT,
+    valore REAL NOT NULL DEFAULT 0,
+    descrizione TEXT,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Categorie: valori configurabili dalla pagina Impostazioni per le
+-- liste a tendina che non guidano logica applicativa (a differenza di
+-- uno "stato" con transizioni, qui sono etichette pure). 'lista'
+-- identifica quale tendina (es. 'stakeholder_categoria').
+CREATE TABLE IF NOT EXISTS categorie (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lista TEXT NOT NULL,
+    valore TEXT NOT NULL,
+    etichetta TEXT NOT NULL,
+    ordine INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    UNIQUE(lista, valore)
 );
 
 CREATE TABLE IF NOT EXISTS raci_assegnazioni (
@@ -394,3 +419,5 @@ CREATE INDEX IF NOT EXISTS idx_contratti_commessa ON contratti(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_stakeholder_commessa ON stakeholder(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_processi_commessa ON processi_comunicazione(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_raci_processo ON raci_assegnazioni(processo_id);
+CREATE INDEX IF NOT EXISTS idx_atti_contratto ON atti_aggiuntivi(contratto_id);
+CREATE INDEX IF NOT EXISTS idx_categorie_lista ON categorie(lista);

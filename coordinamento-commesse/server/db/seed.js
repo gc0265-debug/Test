@@ -115,5 +115,37 @@ function seedAdminUser() {
   console.log('');
 }
 
+// Popola le liste configurabili (pagina Impostazioni) con i valori che
+// prima erano hardcoded nel client — idempotente per singola lista, così
+// un'aggiunta futura di una nuova lista non tocca quelle già personalizzate.
+function seedCategorie() {
+  const insert = db.prepare('INSERT INTO categorie (lista, valore, etichetta, ordine) VALUES (?, ?, ?, ?)');
+  const liste = {
+    stakeholder_categoria: [
+      ['interno', 'Interno Field Project'], ['gc', 'GC'], ['dl', 'DL'],
+      ['committente', 'Committente / GILI'], ['fornitore', 'Fornitore'],
+      ['advisor', 'Advisor'], ['ente', 'Ente'], ['altro', 'Altro'],
+    ],
+    allert_perimetro: [
+      ['interno', 'Interno Field Project'], ['gc', 'GC'], ['dl', 'DL'],
+      ['committente', 'Committente / GILI'], ['fornitore', 'Fornitore'], ['esterno', 'Esterno'],
+    ],
+    comunicazione_frequenza: [
+      ['giornaliera', 'Giornaliera'], ['settimanale', 'Settimanale'], ['quindicinale', 'Quindicinale'],
+      ['mensile', 'Mensile'], ['ad-evento', 'Ad evento'],
+    ],
+    requisiti_fase: [
+      ['progettazione', 'Progettazione'], ['approvvigionamento', 'Approvvigionamento'],
+      ['montaggio', 'Montaggio'], ['collaudo', 'Collaudo'],
+    ],
+  };
+  Object.entries(liste).forEach(([lista, voci]) => {
+    const count = db.prepare('SELECT COUNT(*) AS n FROM categorie WHERE lista = ?').get(lista).n;
+    if (count > 0) return;
+    voci.forEach(([valore, etichetta], i) => insert.run(lista, valore, etichetta, i));
+  });
+}
+
 seed();
 seedAdminUser();
+seedCategorie();

@@ -6,7 +6,7 @@
 import { api } from '../api.js';
 import { state } from '../state.js';
 import {
-  el, field, textInput, dateInput, textarea, select, openModal, closeModal, toast, confirmDialog, formatDate,
+  el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
@@ -20,6 +20,36 @@ function formatSize(bytes) {
   if (!bytes) return '';
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function openAttoForm(contrattoId, existing, onSaved) {
+  const form = el('form', {});
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Variante n.1 — fornitura aggiuntiva' })));
+  form.appendChild(el('div', { class: 'field--row' }, [
+    field('Data', dateInput('data', existing?.data ?? '')),
+    field('Valore (€)', textInput('valore', existing?.valore ?? '', { type: 'number', step: '0.01' })),
+  ]));
+  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(el('div', { class: 'modal__actions' }, [
+    el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
+    el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
+  ]));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = formData(form);
+    try {
+      if (existing) await api.put(`/contratti/atti/${existing.id}`, data);
+      else await api.post(`/contratti/${contrattoId}/atti`, data);
+      closeModal();
+      toast(existing ? 'Atto aggiuntivo aggiornato.' : 'Atto aggiuntivo registrato.');
+      onSaved();
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  });
+  openModal(existing ? 'Modifica atto aggiuntivo' : 'Nuovo atto aggiuntivo', form);
 }
 
 function openForm(existing, onSaved) {
@@ -94,15 +124,22 @@ async function segnalaVariazione(contratto, variazione, onDone) {
 }
 
 async function renderContrattoCard(c, refreshAll) {
-  const variazioni = c.stato === 'attivo' && c.capitolato_baseline_data
-    ? (await api.get(`/contratti/${c.id}/variazioni`)).data
-    : [];
+  const [variazioni, atti] = await Promise.all([
+    c.stato === 'attivo' && c.capitolato_baseline_data
+      ? api.get(`/contratti/${c.id}/variazioni`).then((r) => r.data)
+      : Promise.resolve([]),
+    api.get(`/contratti/${c.id}/atti`).then((r) => r.data),
+  ]);
+  const valoreAtti = atti.reduce((sum, a) => sum + (a.valore || 0), 0);
+  const valoreTotale = (c.valore || 0) + valoreAtti;
 
   return el('div', { class: 'section card' }, [
     el('div', { class: 'section__head' }, [
       el('div', {}, [
         el('h2', {}, c.titolo),
-        el('div', { class: 'muted' }, [c.controparte, c.data_stipula && `stipulato il ${formatDate(c.data_stipula)}`, formatValore(c.valore)].filter(Boolean).join(' · ')),
+        el('div', { class: 'muted' }, [c.controparte, c.data_stipula && `stipulato il ${formatDate(c.data_stipula)}`,
+          atti.length ? `base ${formatValore(c.valore)} + atti ${formatValore(valoreAtti)} = ${formatValore(valoreTotale)}` : formatValore(c.valore)]
+          .filter(Boolean).join(' · ')),
       ]),
       el('div', { style: 'display:flex;gap:6px' }, [
         el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(c, refreshAll) }, 'Modifica'),
@@ -121,12 +158,34 @@ async function renderContrattoCard(c, refreshAll) {
       el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Stato'), el('div', { class: 'tile__value' }, STATO[c.stato])]),
       el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Baseline capitolato'), el('div', { class: 'tile__value', style: 'font-size:16px' }, c.capitolato_baseline_data ? formatDate(c.capitolato_baseline_data) : '—')]),
       el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Variazioni da gestire'), el('div', { class: 'tile__value' + (variazioni.length ? ' alert' : '') }, String(variazioni.length))]),
+      el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Valore totale (con atti aggiuntivi)'), el('div', { class: 'tile__value', style: 'font-size:16px' }, formatValore(valoreTotale))]),
     ]),
     c.riferimento_capitolato ? el('p', {}, [el('b', {}, 'Riferimento capitolato: '), c.riferimento_capitolato]) : null,
     c.procedura_change_management ? el('p', {}, [el('b', {}, 'Procedura di change management: '), c.procedura_change_management]) : null,
     el('p', {}, [
       c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', class: 'btn btn--sm', style: 'margin-right:8px' }, 'Apri link ↗') : null,
       c.file_path ? el('a', { href: `/api/contratti/${c.id}/file`, class: 'btn btn--sm' }, `⬇ ${c.file_nome}`) : null,
+    ]),
+    el('div', { style: 'margin-top:14px' }, [
+      el('div', { class: 'section__head' }, [
+        el('div', { class: 'eyebrow' }, 'Atti aggiuntivi (varianti/integrazioni economiche)'),
+        el('button', { class: 'btn btn--sm', onclick: () => openAttoForm(c.id, null, refreshAll) }, '+ Nuovo atto'),
+      ]),
+      atti.length ? el('div', { class: 'reminder-list' }, atti.map((a) => el('div', { class: 'reminder-item' }, [
+        el('span', {}, `${a.titolo}${a.data ? ` — ${formatDate(a.data)}` : ''} · ${formatValore(a.valore)}`),
+        el('div', { style: 'display:flex;gap:6px' }, [
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openAttoForm(c.id, a, refreshAll) }, 'Modifica'),
+          el('button', {
+            class: 'btn btn--sm btn--ghost btn--danger',
+            onclick: async () => {
+              if (!confirmDialog('Eliminare questo atto aggiuntivo?')) return;
+              await api.del(`/contratti/atti/${a.id}`);
+              toast('Eliminato.');
+              refreshAll();
+            },
+          }, 'Elimina'),
+        ]),
+      ]))) : el('p', { class: 'muted' }, 'Nessun atto aggiuntivo registrato per questo contratto.'),
     ]),
     variazioni.length ? el('div', { style: 'margin-top:14px' }, [
       el('div', { class: 'eyebrow' }, 'Variazioni rispetto alla baseline'),

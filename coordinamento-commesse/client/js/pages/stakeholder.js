@@ -7,19 +7,21 @@ import { state } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
-const CATEGORIA = { interno: 'Interno Field Project', gc: 'GC', dl: 'DL', committente: 'Committente / GILI', fornitore: 'Fornitore', advisor: 'Advisor', ente: 'Ente', altro: 'Altro' };
 const INTERESSE = ['basso', 'medio', 'alto'];
 const INFLUENZA = ['bassa', 'media', 'alta'];
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  const categoriaOptions = toOptions(await getCategoria('stakeholder_categoria'));
+
   const form = el('form', {});
   form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true })));
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Organizzazione', textInput('organizzazione', existing?.organizzazione ?? '')),
     field('Ruolo', textInput('ruolo', existing?.ruolo ?? '', { placeholder: 'es. Direttore Lavori' })),
   ]));
-  form.appendChild(field('Categoria', select('categoria', Object.entries(CATEGORIA).map(([k, v]) => [k, v]), existing?.categoria ?? 'interno')));
+  form.appendChild(field('Categoria', select('categoria', categoriaOptions, existing?.categoria ?? 'interno')));
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Interesse', select('interesse', INTERESSE.map((v) => [v, v[0].toUpperCase() + v.slice(1)]), existing?.interesse ?? 'medio')),
     field('Influenza', select('influenza', INFLUENZA.map((v) => [v, v[0].toUpperCase() + v.slice(1)]), existing?.influenza ?? 'media')),
@@ -87,13 +89,14 @@ export async function renderStakeholder(container) {
   container.appendChild(matrixHost);
 
   let lastRows = [];
+  let categoriaMap = {};
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Stakeholder', state.commesse.find(c => c.id === state.commessaId), [{
         heading: 'Stakeholder',
         columns: ['Nome', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Stato'],
-        rows: lastRows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', CATEGORIA[r.categoria] || r.categoria, r.interesse, r.influenza, r.stato === 'attivo' ? 'Attivo' : 'Non attivo']),
+        rows: lastRows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, r.stato === 'attivo' ? 'Attivo' : 'Non attivo']),
       }]) }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
     ]),
@@ -103,7 +106,12 @@ export async function renderStakeholder(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/stakeholder?commessa_id=${state.commessaId}`);
+    const [res, categoriaList] = await Promise.all([
+      api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+      getCategoria('stakeholder_categoria'),
+    ]);
+    categoriaMap = toMap(categoriaList);
+    const CATEGORIA = categoriaMap;
     lastRows = res.data;
     matrixHost.innerHTML = '';
     matrixHost.appendChild(renderMatrice(res.data));

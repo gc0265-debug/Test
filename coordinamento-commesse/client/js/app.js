@@ -21,6 +21,8 @@ import { renderMaestranze } from './pages/maestranze.js';
 import { renderDocumenti } from './pages/documenti.js';
 import { renderCommesse } from './pages/commesse.js';
 import { renderUtenti } from './pages/utenti.js';
+import { renderImpostazioni } from './pages/impostazioni.js';
+import { renderFinanziaria } from './pages/finanziaria.js';
 
 route('cruscotto', { title: 'Cruscotto', render: renderCruscotto });
 route('criticita', { title: 'Registro Criticità', render: renderCriticita });
@@ -40,6 +42,8 @@ route('maestranze', { title: 'Maestranze', render: renderMaestranze });
 route('documenti', { title: 'Documenti', render: renderDocumenti });
 route('commesse', { title: 'Commesse', render: renderCommesse });
 route('utenti', { title: 'Utenti', render: renderUtenti });
+route('impostazioni', { title: 'Impostazioni', render: renderImpostazioni });
+route('finanziaria', { title: 'Dashboard Finanziaria', render: renderFinanziaria });
 
 function renderCommessaSelect() {
   const select = document.getElementById('commessaSelect');

@@ -7,7 +7,7 @@ const path = require('path');
 require('./db/database'); // crea lo schema se non esiste
 require('./db/seed');     // popola solo se il database è vuoto
 
-const { requireAuth } = require('./utils/auth');
+const { requireAuth, requireAdmin } = require('./utils/auth');
 
 const authRouter = require('./routes/auth');
 const commesseRouter = require('./routes/commesse');
@@ -29,6 +29,8 @@ const capitolatoRouter = require('./routes/capitolato');
 const contrattiRouter = require('./routes/contratti');
 const stakeholderRouter = require('./routes/stakeholder');
 const comunicazioneRouter = require('./routes/comunicazione');
+const categorieRouter = require('./routes/categorie');
+const finanziariaRouter = require('./routes/finanziaria');
 
 const app = express();
 app.use(cors());
@@ -63,6 +65,8 @@ app.use('/api/capitolato', requireAuth, capitolatoRouter);
 app.use('/api/contratti', requireAuth, contrattiRouter);
 app.use('/api/stakeholder', requireAuth, stakeholderRouter);
 app.use('/api/comunicazione', requireAuth, comunicazioneRouter);
+app.use('/api/categorie', requireAuth, categorieRouter);
+app.use('/api/finanziaria', requireAuth, requireAdmin, finanziariaRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));

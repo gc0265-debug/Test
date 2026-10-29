@@ -6,15 +6,17 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
-const FREQUENZA = { giornaliera: 'Giornaliera', settimanale: 'Settimanale', quindicinale: 'Quindicinale', mensile: 'Mensile', 'ad-evento': 'Ad evento' };
 const RUOLI = [['', '—'], ['R', 'R — Responsible'], ['A', 'A — Accountable'], ['C', 'C — Consulted'], ['I', 'I — Informed']];
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  const frequenzaOptions = toOptions(await getCategoria('comunicazione_frequenza'));
+
   const form = el('form', {});
   form.appendChild(field('Nome processo', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Riunione di coordinamento settimanale' })));
   form.appendChild(field('Scopo', textarea('scopo', existing?.scopo ?? '')));
-  form.appendChild(field('Frequenza', select('frequenza', Object.entries(FREQUENZA).map(([k, v]) => [k, v]), existing?.frequenza ?? 'settimanale')));
+  form.appendChild(field('Frequenza', select('frequenza', frequenzaOptions, existing?.frequenza ?? 'settimanale')));
   form.appendChild(field('Canale', textInput('canale', existing?.canale ?? '', { placeholder: 'es. Riunione, email, PEC, piattaforma condivisa' })));
   form.appendChild(field('Output atteso', textInput('output', existing?.output ?? '', { placeholder: 'es. Verbale, Nota di Coordinamento, registro aggiornato' })));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
@@ -88,13 +90,14 @@ export async function renderComunicazione(container) {
     'Un processo di gestione per riga, con la matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli stakeholder registrati.'));
 
   let lastRows = [];
+  let frequenzaMap = {};
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => printReport('Piano Comunicazioni', state.commesse.find(c => c.id === state.commessaId), [{
         heading: 'Processi di comunicazione',
         columns: ['Processo', 'Frequenza', 'Canale', 'Output atteso'],
-        rows: lastRows.map((r) => [r.nome, FREQUENZA[r.frequenza] || r.frequenza, r.canale || '—', r.output || '—']),
+        rows: lastRows.map((r) => [r.nome, frequenzaMap[r.frequenza] || r.frequenza, r.canale || '—', r.output || '—']),
       }]) }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo processo'),
     ]),
@@ -104,10 +107,13 @@ export async function renderComunicazione(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const [processiRes, stakeholderRes] = await Promise.all([
+    const [processiRes, stakeholderRes, frequenzaList] = await Promise.all([
       api.get(`/comunicazione/processi?commessa_id=${state.commessaId}`),
       api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+      getCategoria('comunicazione_frequenza'),
     ]);
+    frequenzaMap = toMap(frequenzaList);
+    const FREQUENZA = frequenzaMap;
     lastRows = processiRes.data;
     const stakeholderAttivi = stakeholderRes.data.filter((s) => s.stato === 'attivo');
 

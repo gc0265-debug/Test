@@ -57,7 +57,10 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   capitolato e la procedura di change management concordata. Ogni
   versione di un requisito successiva alla baseline è segnalata come
   variazione da gestire, con un'azione rapida per registrarla nel
-  Registro Allert secondo la procedura concordata.
+  Registro Allert secondo la procedura concordata. Ogni contratto può
+  avere **atti aggiuntivi** (varianti/integrazioni economiche): titolo,
+  data, valore e descrizione, sommati al valore base per il totale
+  mostrato in scheda.
 - **Registro Stakeholder** — con matrice interesse/influenza (prassi
   di project management) e **Piano Comunicazioni**: un processo di
   gestione per riga (riunione, aggiornamento registro, approvazione…)
@@ -92,6 +95,16 @@ Inoltre:
   Lavorazioni, Maestranze, Documenti, Diario, Commesse): genera un
   report formattato in una nuova finestra, pronto per la stampa o il
   salvataggio in PDF dal browser.
+- **Dashboard Finanziaria** (solo amministratori) — l'unica vista
+  dell'app che non è filtrata dalla commessa selezionata: valore
+  contratti + atti aggiuntivi per ogni commessa e totale complessivo,
+  con pulsante Stampa.
+- **Impostazioni** (solo amministratori) — editor delle liste a tendina
+  configurabili senza intervento tecnico: categoria stakeholder,
+  perimetro allert, frequenza del piano comunicazioni e fase dei
+  requisiti. Non comprende gli "stato" delle varie schede, che restano
+  fissi perché guidano direttamente la logica dell'app (cruscotti,
+  colori, workflow di approvazione).
 
 L'app è multi-commessa: ogni commessa ha i propri Work Package (di
 default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B, la convenzione

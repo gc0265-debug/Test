@@ -12,13 +12,17 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
-const FASE = { progettazione: 'Progettazione', approvvigionamento: 'Approvvigionamento', montaggio: 'Montaggio', collaudo: 'Collaudo' };
 const STATO = { bozza: ['Bozza', 'outline'], approvato: ['Approvato', 'verde'], 'in-revisione': ['In revisione', 'ambra'], superato: ['Superato', 'rosso'] };
 
 async function openForm(existing, onSaved) {
-  const capitolatoRes = await api.get(`/capitolato?commessa_id=${state.commessaId}`);
+  const [capitolatoRes, faseList] = await Promise.all([
+    api.get(`/capitolato?commessa_id=${state.commessaId}`),
+    getCategoria('requisiti_fase'),
+  ]);
   const capitolatoOptions = [['', '— nessuna'], ...capitolatoRes.data.map((c) => [c.id, `${c.codice_wbs} — ${c.titolo}`])];
+  const faseOptions = toOptions(faseList);
 
   const form = el('form', {});
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
@@ -26,7 +30,7 @@ async function openForm(existing, onSaved) {
     field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === state.commessaId)?.codice || '2514RW'}.WP1.03` })),
     field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')),
   ]));
-  form.appendChild(field('Fase di esecuzione', select('fase', Object.entries(FASE).map(([k, v]) => [k, v]), existing?.fase ?? 'progettazione')));
+  form.appendChild(field('Fase di esecuzione', select('fase', faseOptions, existing?.fase ?? 'progettazione')));
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
   form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''), 'Una modifica qui (o al titolo) crea automaticamente una nuova versione.'));
   if (existing) {
@@ -100,13 +104,14 @@ export async function renderRequisiti(container) {
 
   let filtroFase = '';
   let lastRows = [];
+  let faseMap = {};
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => printReport('Requisiti', state.commesse.find(c => c.id === state.commessaId), [{
         heading: 'Elenco requisiti',
         columns: ['WBS', 'Titolo', 'Fase', 'Versione', 'Stato'],
-        rows: lastRows.map((r) => [r.codice_wbs, r.titolo, FASE[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
+        rows: lastRows.map((r) => [r.codice_wbs, r.titolo, faseMap[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
       }]) }, 'Stampa'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
     ]),
@@ -116,7 +121,7 @@ export async function renderRequisiti(container) {
   function drawFilters() {
     const host = toolbar.firstChild;
     host.innerHTML = '';
-    [['', 'Tutte le fasi'], ...Object.entries(FASE)].forEach(([value, label]) => {
+    [['', 'Tutte le fasi'], ...Object.entries(faseMap)].forEach(([value, label]) => {
       host.appendChild(el('button', {
         class: 'btn btn--sm' + (filtroFase === value ? ' btn--primary' : ''),
         onclick: () => { filtroFase = value; refresh(); },
@@ -128,10 +133,15 @@ export async function renderRequisiti(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    drawFilters();
     const query = new URLSearchParams({ commessa_id: state.commessaId });
     if (filtroFase) query.set('fase', filtroFase);
-    const res = await api.get(`/requisiti?${query.toString()}`);
+    const [res, faseList] = await Promise.all([
+      api.get(`/requisiti?${query.toString()}`),
+      getCategoria('requisiti_fase'),
+    ]);
+    faseMap = toMap(faseList);
+    const FASE = faseMap;
+    drawFilters();
     lastRows = res.data;
     renderTable(tableHost, [
       { key: 'codice_wbs', label: 'WBS' },

@@ -115,6 +115,48 @@ router.put('/:id', upload.single('file'), (req, res) => {
   res.json(row);
 });
 
+// ---- atti aggiuntivi: varianti/integrazioni economiche al contratto ----
+router.get('/:id/atti', (req, res) => {
+  const rows = db.prepare('SELECT * FROM atti_aggiuntivi WHERE contratto_id = ? ORDER BY data ASC, id ASC').all(req.params.id);
+  res.json({ data: rows });
+});
+
+router.post('/:id/atti', (req, res) => {
+  const contratto = db.prepare('SELECT * FROM contratti WHERE id = ?').get(req.params.id);
+  if (!contratto) return res.status(404).json({ error: 'contratto non trovato' });
+  const { titolo, data, valore, descrizione, note } = req.body;
+  if (!titolo) return res.status(400).json({ error: 'titolo obbligatorio' });
+  const result = db.prepare(`
+    INSERT INTO atti_aggiuntivi (contratto_id, titolo, data, valore, descrizione, note)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(req.params.id, titolo, data || null, Number(valore) || 0, descrizione || null, note || null);
+  const row = db.prepare('SELECT * FROM atti_aggiuntivi WHERE id = ?').get(result.lastInsertRowid);
+  logAudit({ commessa_id: contratto.commessa_id, entity_type: 'atti_aggiuntivi', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: `${titolo} (${contratto.titolo})` });
+  res.status(201).json(row);
+});
+
+router.put('/atti/:id', (req, res) => {
+  const existing = db.prepare('SELECT * FROM atti_aggiuntivi WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'atto aggiuntivo non trovato' });
+  const next = { ...existing, ...req.body };
+  db.prepare(`
+    UPDATE atti_aggiuntivi SET titolo=?, data=?, valore=?, descrizione=?, note=?, updated_at=unixepoch() WHERE id=?
+  `).run(next.titolo, next.data || null, Number(next.valore) || 0, next.descrizione || null, next.note || null, req.params.id);
+  const row = db.prepare('SELECT * FROM atti_aggiuntivi WHERE id = ?').get(req.params.id);
+  const contratto = db.prepare('SELECT * FROM contratti WHERE id = ?').get(row.contratto_id);
+  logAudit({ commessa_id: contratto.commessa_id, entity_type: 'atti_aggiuntivi', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: row.titolo });
+  res.json(row);
+});
+
+router.delete('/atti/:id', (req, res) => {
+  const existing = db.prepare('SELECT * FROM atti_aggiuntivi WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'atto aggiuntivo non trovato' });
+  const contratto = db.prepare('SELECT * FROM contratti WHERE id = ?').get(existing.contratto_id);
+  db.prepare('DELETE FROM atti_aggiuntivi WHERE id = ?').run(req.params.id);
+  logAudit({ commessa_id: contratto?.commessa_id, entity_type: 'atti_aggiuntivi', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: existing.titolo });
+  res.status(204).end();
+});
+
 router.get('/:id/file', (req, res) => {
   const row = db.prepare('SELECT * FROM contratti WHERE id = ?').get(req.params.id);
   if (!row || !row.file_path) return res.status(404).json({ error: 'nessun file allegato' });

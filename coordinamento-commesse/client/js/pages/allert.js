@@ -11,16 +11,17 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
-const PERIMETRO = { interno: 'Interno Field Project', gc: 'GC', dl: 'DL', committente: 'Committente / GILI', fornitore: 'Fornitore', esterno: 'Esterno' };
 const CLASSIFICAZIONE = { informativo: ['Informativo', 'outline'], attenzione: ['Attenzione', 'ambra'], critico: ['Critico', 'rosso'] };
 const STATO = { aperto: ['Aperto', 'outline'], monitorato: ['Monitorato', 'ambra'], chiuso: ['Chiuso', 'verde'] };
 
 async function openForm(existing, onSaved) {
-  const [criticitaRes, decisioniRes, requisitiRes] = await Promise.all([
+  const [criticitaRes, decisioniRes, requisitiRes, perimetroList] = await Promise.all([
     api.get(`/criticita?commessa_id=${state.commessaId}`),
     api.get(`/decisioni?commessa_id=${state.commessaId}`),
     api.get(`/requisiti?commessa_id=${state.commessaId}`),
+    getCategoria('allert_perimetro'),
   ]);
   const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   const criticitaOptions = [['', '— nessuna'], ...criticitaRes.data.map((c) => [c.id, c.tema])];
@@ -31,7 +32,7 @@ async function openForm(existing, onSaved) {
   form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '', { required: true })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(field('Data', dateInput('data', existing?.data || todayISO(), { required: true })));
-  form.appendChild(field('Perimetro', select('perimetro', Object.entries(PERIMETRO).map(([k, v]) => [k, v]), existing?.perimetro ?? 'interno')));
+  form.appendChild(field('Perimetro', select('perimetro', toOptions(perimetroList), existing?.perimetro ?? 'interno')));
   form.appendChild(field('Classificazione', select('classificazione', Object.entries(CLASSIFICAZIONE).map(([k, v]) => [k, v[0]]), existing?.classificazione ?? 'attenzione')));
   form.appendChild(field('Azione di tutela', textarea('azione_tutela', existing?.azione_tutela ?? ''), 'Cosa è stato fatto per tutelare la posizione: PEC, verbalizzazione, riserva scritta...'));
   form.appendChild(field('Riferimento documento', textInput('rif_documento', existing?.rif_documento ?? '', { placeholder: 'es. PEC del 12/10, verbale riunione' })));
@@ -72,13 +73,14 @@ export async function renderAllert(container) {
     'Classificazione di perimetro e azioni di tutela — funzione di presidio GC, distinta dal coordinamento operativo dei registri precedenti.'));
 
   let lastRows = [];
+  let perimetroMap = {};
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => printReport('Registro Allert', state.commesse.find(c => c.id === state.commessaId), [{
         heading: 'Allert',
         columns: ['Data', 'Descrizione', 'Perimetro', 'Classificazione', 'Stato'],
-        rows: lastRows.map((r) => [formatDate(r.data), r.descrizione, PERIMETRO[r.perimetro] || r.perimetro, CLASSIFICAZIONE[r.classificazione][0], STATO[r.stato][0]]),
+        rows: lastRows.map((r) => [formatDate(r.data), r.descrizione, perimetroMap[r.perimetro] || r.perimetro, CLASSIFICAZIONE[r.classificazione][0], STATO[r.stato][0]]),
       }]) }, 'Stampa'),
       el('a', { class: 'btn btn--sm', href: `/api/export/allert/${state.commessaId}` }, 'Esporta Excel'),
       el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo allert'),
@@ -90,7 +92,12 @@ export async function renderAllert(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/allert?commessa_id=${state.commessaId}`);
+    const [res, perimetroList] = await Promise.all([
+      api.get(`/allert?commessa_id=${state.commessaId}`),
+      getCategoria('allert_perimetro'),
+    ]);
+    perimetroMap = toMap(perimetroList);
+    const PERIMETRO = perimetroMap;
     lastRows = res.data;
     renderTable(tableHost, [
       { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },
