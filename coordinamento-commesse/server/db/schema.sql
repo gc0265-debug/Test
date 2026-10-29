@@ -210,7 +210,8 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     ruolo TEXT NOT NULL DEFAULT 'operatore'
-          CHECK(ruolo IN ('admin','operatore')),
+          CHECK(ruolo IN ('admin','operatore','cliente')),
+    sezioni_consentite TEXT,                   -- JSON array di sezioni, solo per ruolo 'cliente' (accesso in sola lettura)
     attivo INTEGER NOT NULL DEFAULT 1,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())

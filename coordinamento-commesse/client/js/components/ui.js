@@ -2,6 +2,8 @@
 // attributi e figli in una chiamata; il resto sono i widget condivisi
 // (toast, modale, conferma) usati da tutte le pagine.
 
+import { state } from '../state.js';
+
 export function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
@@ -166,6 +168,7 @@ export function renderTable(container, columns, rows, { rowClass, emptyLabel = '
 // (liste configurabili). Lettura aperta a tutti; chi non è admin vede le
 // liste ma non può modificarle (coerente con /api/categorie).
 export function settingsGear(hint = 'Impostazioni') {
+  if (state.currentUser?.ruolo === 'cliente') return null; // Impostazioni non è una sezione concessa ai clienti
   return el('a', { href: '#/impostazioni', class: 'btn btn--sm btn--ghost btn--icon', title: hint, 'aria-label': hint }, '⚙');
 }
 

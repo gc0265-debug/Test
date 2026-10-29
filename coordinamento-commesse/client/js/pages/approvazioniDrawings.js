@@ -73,6 +73,7 @@ export async function renderApprovazioniDrawings(container) {
 
   let lastRows = [];
   let selectedId = null;
+  const soloLettura = state.currentUser?.ruolo === 'cliente';
 
   const fileInput = el('input', { type: 'file', accept: '.xlsx,.xls', style: 'display:none' });
   fileInput.addEventListener('change', async () => {
@@ -107,8 +108,8 @@ export async function renderApprovazioniDrawings(container) {
           ]),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo elaborato'),
+      soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo elaborato'),
       settingsGear(),
     ]),
   ]);
@@ -136,8 +137,8 @@ export async function renderApprovazioniDrawings(container) {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('approvazioni_drawings', row.id, `${row.codice} — ${row.titolo}`) }, 'Storico'),
-          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
-          el('button', {
+          soloLettura ? null : el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
+          soloLettura ? null : el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
             onclick: async () => {
               if (!confirmDialog('Eliminare questo elaborato?')) return;
@@ -150,7 +151,7 @@ export async function renderApprovazioniDrawings(container) {
       },
     ], res.data, {
       emptyLabel: 'Nessun elaborato registrato. Aggiungilo a mano o importa un elenco da Excel.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

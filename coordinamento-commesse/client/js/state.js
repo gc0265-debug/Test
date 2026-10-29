@@ -8,6 +8,7 @@ export const state = {
   commesse: [],
   commessaId: null,
   workPackages: [],
+  currentUser: null,
 };
 
 export function subscribe(fn) {

@@ -9,7 +9,7 @@ const path = require('path');
 require('./db/database'); // crea lo schema se non esiste
 require('./db/seed');     // popola solo se il database è vuoto
 
-const { requireAuth, requireAdmin } = require('./utils/auth');
+const { requireAuth, requireAdmin, requireSection, blockWriteForCliente } = require('./utils/auth');
 const SqliteSessionStore = require('./utils/sessionStore');
 const logger = require('./utils/logger');
 
@@ -76,29 +76,35 @@ app.use(session({
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRouter);
 
-// tutto il resto delle API richiede una sessione autenticata
-app.use('/api/commesse', requireAuth, commesseRouter);
-app.use('/api/criticita', requireAuth, criticitaRouter);
-app.use('/api/decisioni', requireAuth, decisioniRouter);
-app.use('/api/note-coordinamento', requireAuth, noteCoordinamentoRouter);
-app.use('/api/diario', requireAuth, diarioRouter);
-app.use('/api/lavorazioni', requireAuth, lavorazioniRouter);
-app.use('/api/maestranze', requireAuth, maestranzeRouter);
-app.use('/api/documenti', requireAuth, documentiRouter);
-app.use('/api/dashboard', requireAuth, dashboardRouter);
-app.use('/api/allert', requireAuth, allertRouter);
-app.use('/api/audit', requireAuth, auditRouter);
-app.use('/api/export', requireAuth, exportRouter);
-app.use('/api/milestone', requireAuth, milestoneRouter);
-app.use('/api/lezioni-apprese', requireAuth, lezioniApprese);
-app.use('/api/requisiti', requireAuth, requisitiRouter);
-app.use('/api/capitolato', requireAuth, capitolatoRouter);
-app.use('/api/contratti', requireAuth, contrattiRouter);
-app.use('/api/stakeholder', requireAuth, stakeholderRouter);
-app.use('/api/comunicazione', requireAuth, comunicazioneRouter);
-app.use('/api/categorie', requireAuth, categorieRouter);
+// tutto il resto delle API richiede una sessione autenticata. Un utente
+// "cliente" è in sola lettura ovunque (blockWriteForCliente) e, per
+// difetto, NON vede nessuna sezione: requireSection la apre solo per
+// quelle elencate in sezioni_consentite. Restano aperte a qualunque
+// ruolo autenticato solo le rotte infrastrutturali che servono a far
+// funzionare l'app stessa (commesse/WP per il selettore, le etichette
+// di categorie, lo storico): non espongono dati di un singolo registro.
+app.use('/api/commesse', requireAuth, blockWriteForCliente, commesseRouter);
+app.use('/api/criticita', requireAuth, blockWriteForCliente, requireSection('criticita'), criticitaRouter);
+app.use('/api/decisioni', requireAuth, blockWriteForCliente, requireSection('decisioni'), decisioniRouter);
+app.use('/api/note-coordinamento', requireAuth, blockWriteForCliente, requireSection('note'), noteCoordinamentoRouter);
+app.use('/api/diario', requireAuth, blockWriteForCliente, requireSection('diario'), diarioRouter);
+app.use('/api/lavorazioni', requireAuth, blockWriteForCliente, requireSection('lavorazioni', 'timeline'), lavorazioniRouter);
+app.use('/api/maestranze', requireAuth, blockWriteForCliente, requireSection('maestranze'), maestranzeRouter);
+app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), documentiRouter);
+app.use('/api/dashboard', requireAuth, blockWriteForCliente, requireSection('cruscotto'), dashboardRouter);
+app.use('/api/allert', requireAuth, blockWriteForCliente, requireSection('allert'), allertRouter);
+app.use('/api/audit', requireAuth, blockWriteForCliente, auditRouter);
+app.use('/api/export', requireAuth, blockWriteForCliente, exportRouter);
+app.use('/api/milestone', requireAuth, blockWriteForCliente, requireSection('timeline'), milestoneRouter);
+app.use('/api/lezioni-apprese', requireAuth, blockWriteForCliente, requireSection('lezioni'), lezioniApprese);
+app.use('/api/requisiti', requireAuth, blockWriteForCliente, requireSection('requisiti', 'capitolato'), requisitiRouter);
+app.use('/api/capitolato', requireAuth, blockWriteForCliente, requireSection('capitolato'), capitolatoRouter);
+app.use('/api/contratti', requireAuth, blockWriteForCliente, requireSection('contratto'), contrattiRouter);
+app.use('/api/stakeholder', requireAuth, blockWriteForCliente, requireSection('stakeholder'), stakeholderRouter);
+app.use('/api/comunicazione', requireAuth, blockWriteForCliente, requireSection('comunicazione'), comunicazioneRouter);
+app.use('/api/categorie', requireAuth, blockWriteForCliente, categorieRouter);
 app.use('/api/finanziaria', requireAuth, requireAdmin, finanziariaRouter);
-app.use('/api/approvazioni-drawings', requireAuth, approvazioniDrawingsRouter);
+app.use('/api/approvazioni-drawings', requireAuth, blockWriteForCliente, requireSection('approvazioni-drawings'), approvazioniDrawingsRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));

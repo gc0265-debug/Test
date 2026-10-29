@@ -103,12 +103,38 @@ function renderUserBadge(user) {
   ]));
 }
 
+// Un utente "cliente" vede in sidebar solo le sezioni a cui gli è stato
+// dato accesso (sezioni_consentite), mai la Gestione (Commesse/Utenti/
+// Impostazioni) né la Dashboard Finanziaria — a prescindere da cosa è
+// stato eventualmente salvato, qui è una lista chiusa per sicurezza.
+function applyClientNavRestrictions(user) {
+  if (user.ruolo !== 'cliente') return;
+  const consentite = new Set(user.sezioni_consentite || []);
+  const semprenascoste = new Set(['commesse', 'utenti', 'impostazioni', 'finanziaria']);
+  document.querySelectorAll('.side__nav a[data-route]').forEach((a) => {
+    const route = a.dataset.route;
+    const visibile = !semprenascoste.has(route) && consentite.has(route);
+    a.style.display = visibile ? '' : 'none';
+  });
+  document.querySelectorAll('.side__group').forEach((group) => {
+    let sib = group.nextElementSibling;
+    let haVociVisibili = false;
+    while (sib && !sib.classList.contains('side__group')) {
+      if (sib.tagName === 'A' && sib.style.display !== 'none') { haVociVisibili = true; break; }
+      sib = sib.nextElementSibling;
+    }
+    group.style.display = haVociVisibili ? '' : 'none';
+  });
+}
+
 async function main() {
   const user = await getCurrentUser();
   if (!user) { renderLogin(); return; }
 
+  state.currentUser = user;
   renderUserBadge(user);
   document.querySelectorAll('[data-admin-only]').forEach((n) => { n.style.display = user.ruolo === 'admin' ? '' : 'none'; });
+  applyClientNavRestrictions(user);
 
   await loadCommesse();
   renderCommessaSelect();

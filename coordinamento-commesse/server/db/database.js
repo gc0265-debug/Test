@@ -146,6 +146,23 @@ dropColumnCheck('processi_comunicazione', "CHECK(frequenza IN", `
   );
 `);
 
+ensureColumns('users', [{ name: 'sezioni_consentite', def: 'TEXT' }]);
+
+dropColumnCheck('users', "CHECK(ruolo IN", `
+  CREATE TABLE __TABLE__ (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    ruolo TEXT NOT NULL DEFAULT 'operatore'
+          CHECK(ruolo IN ('admin','operatore','cliente')),
+    sezioni_consentite TEXT,
+    attivo INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+`);
+
 dropColumnCheck('requisiti', "CHECK(fase IN", `
   CREATE TABLE __TABLE__ (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

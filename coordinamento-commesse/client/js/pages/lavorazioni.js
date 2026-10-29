@@ -101,6 +101,7 @@ export async function renderLavorazioni(container) {
 
   let lastRows = [];
   let selectedId = null;
+  const soloLettura = state.currentUser?.ruolo === 'cliente';
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -112,7 +113,7 @@ export async function renderLavorazioni(container) {
           rows: rows.map((r) => [r.titolo, r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—', [r.piano, r.zona].filter(Boolean).join(' · ') || '—', STATO[r.stato][0], PRIORITA[r.priorita][0], formatDate(r.data_inizio), formatDate(r.data_fine), r.contratto_controparte || r.impresa || '—']),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lavorazione'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lavorazione'),
       settingsGear(),
     ]),
   ]);
@@ -140,7 +141,7 @@ export async function renderLavorazioni(container) {
       { key: 'priorita', label: 'Priorità', render: (r) => pill(PRIORITA[r.priorita][0], PRIORITA[r.priorita][1]) },
       { key: 'date', label: 'Inizio → Fine', render: (r) => (r.data_inizio || r.data_fine) ? `${formatDate(r.data_inizio)} → ${formatDate(r.data_fine)}` : '—' },
       { key: 'impresa', label: 'Impresa', render: (r) => r.contratto_controparte || r.impresa || '—' },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
@@ -155,9 +156,9 @@ export async function renderLavorazioni(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuna lavorazione registrata per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

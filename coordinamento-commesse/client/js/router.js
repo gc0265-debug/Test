@@ -1,5 +1,12 @@
+import { state } from './state.js';
+
 const routes = {};
 let current = null;
+
+// Nessuna rotta è raggiungibile da un cliente per difetto: solo quelle
+// elencate nelle sue sezioni_consentite (stesso principio "chiuso per
+// difetto" applicato lato server in requireSection).
+const ROTTE_SEMPRE_ACCESSIBILI_CLIENTE = new Set([]);
 
 export function route(name, { title, render }) {
   routes[name] = { title, render };
@@ -23,12 +30,28 @@ export async function navigate() {
 
   const content = document.getElementById('content');
   content.innerHTML = '';
+
+  if (state.currentUser?.ruolo === 'cliente') {
+    const consentite = new Set(state.currentUser.sezioni_consentite || []);
+    if (!ROTTE_SEMPRE_ACCESSIBILI_CLIENTE.has(current) && !consentite.has(current)) {
+      content.appendChild(renderAccessoNegato());
+      return;
+    }
+  }
+
   try {
     await r.render(content);
   } catch (err) {
     content.innerHTML = '';
     content.appendChild(renderError(err));
   }
+}
+
+function renderAccessoNegato() {
+  const div = document.createElement('div');
+  div.className = 'muted';
+  div.textContent = 'Non hai accesso a questa sezione.';
+  return div;
 }
 
 function renderError(err) {

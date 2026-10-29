@@ -261,6 +261,7 @@ export async function renderTimeline(container) {
   let granularity = 'week';
   let zoom = 1;
   let items = [];
+  const soloLettura = state.currentUser?.ruolo === 'cliente';
 
   const zoomSlider = el('input', {
     type: 'range', min: '0.4', max: '3', step: '0.1', value: '1', class: 'gantt__zoom',
@@ -273,7 +274,7 @@ export async function renderTimeline(container) {
       el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
       zoomSlider,
       el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova riga'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova riga'),
       settingsGear(),
     ]),
   ]);
@@ -389,7 +390,7 @@ export async function renderTimeline(container) {
           `Baseline: ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}`
         ));
       }
-      const onEdit = () => openForm(it, refresh);
+      const onEdit = soloLettura ? null : (() => openForm(it, refresh));
       track.appendChild(bar(
         it.data_inizio, it.data_fine, `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}`,
         `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,

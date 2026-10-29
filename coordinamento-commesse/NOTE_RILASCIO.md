@@ -16,6 +16,22 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Accesso cliente a sola lettura (29 ottobre 2026)
+
+- Nuovo ruolo utente **Cliente**: un accesso a sola lettura, pensato per
+  dare a GILI Creations (o ad altri soggetti esterni) la possibilità di
+  vedere alcuni dati senza poter modificare nulla.
+- Per ogni utente cliente si scelgono, da Impostazioni → Utenti, quali
+  sezioni può vedere tra Timeline Montaggi, Lavorazioni e Approvazioni
+  Drawings — tutte le altre sezioni (Commesse, Utenti, Impostazioni,
+  Dashboard Finanziaria e qualunque sezione non spuntata) restano
+  completamente invisibili e inaccessibili a quell'utente.
+- In quelle sezioni il cliente vede tutto ma non trova pulsanti per
+  creare, modificare, eliminare o importare: è una vetrina, non un
+  accesso operativo.
+
+---
+
 ## Affidabilità e sicurezza del server (29 ottobre 2026)
 
 Aggiornamenti "dietro le quinte", non visibili nell'uso quotidiano
