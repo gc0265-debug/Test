@@ -16,6 +16,48 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Affidabilità e sicurezza del server (29 ottobre 2026)
+
+Aggiornamenti "dietro le quinte", non visibili nell'uso quotidiano
+dell'app, ma importanti per la sicurezza dei dati:
+
+- **Backup automatico cifrato**: ogni notte il database viene copiato,
+  cifrato e salvato in una cartella a scelta (tipicamente iCloud Drive),
+  con una verifica automatica ogni domenica che l'ultimo backup sia
+  davvero recuperabile. Si attiva una tantum da
+  `deploy/macos/installa-backup-automatico.command` (vedi
+  `GUIDA_AGGIORNAMENTI.md`).
+- Gli accessi non vengono più persi ad ogni riavvio del server (es.
+  dopo un aggiornamento): restano validi come prima.
+- Troppi tentativi di accesso sbagliati di fila da uno stesso
+  indirizzo vengono ora bloccati temporaneamente, a protezione della
+  password.
+- Rinforzate le protezioni standard del server contro gli attacchi più
+  comuni ai siti web (intestazioni di sicurezza).
+- Aggiunta una prima serie di controlli automatici (test) sulle parti
+  più delicate — accesso, etichette personalizzabili, aggiornamenti del
+  database — così un errore si scopre prima di pubblicarlo.
+
+---
+
+## Capitolato Requisiti, Approvazioni Drawings, Timeline unificata (29 ottobre 2026)
+
+- Il **Capitolato** è stato rinominato **Capitolato Requisiti**: ogni
+  voce si apre ora come un documento, con i Requisiti collegati
+  visibili e modificabili senza uscire dalla scheda.
+- Nuova sezione **Approvazioni Drawings**: elenco degli elaborati
+  sottoposti a DL/GC per approvazione, compilabile a mano o importando
+  un elenco deliverable direttamente da un file Excel.
+- **Timeline Montaggi**: il pulsante "+ Nuova riga" permette ora di
+  scegliere se si sta creando una Milestone o una Lavorazione, ed è
+  possibile modificare una lavorazione direttamente da qui.
+- **Lavorazioni**: il campo Impresa/squadra è ora un menu a tendina
+  collegato al Registro Stakeholder, invece di un testo libero.
+- **Commesse**: il modal di modifica mostra ora i Work Package
+  collegati, modificabili senza uscire dalla scheda.
+
+---
+
 ## Etichette di stato personalizzabili (29 ottobre 2026)
 
 - In **Impostazioni** è ora possibile rinominare il testo mostrato per

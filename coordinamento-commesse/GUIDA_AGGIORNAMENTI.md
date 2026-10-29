@@ -75,6 +75,35 @@ Non c'è bisogno di fermare nulla a mano prima: lo script se ne occupa.
 
 ---
 
+## 3bis. Backup automatico cifrato (consigliato, una tantum)
+
+Oltre all'avvio automatico, conviene attivare anche il backup giornaliero
+del database, cifrato, salvato fuori da questo Mac (es. iCloud Drive):
+se il Mac si guasta o viene smarrito, i dati restano recuperabili.
+
+1. Apri `coordinamento-commesse/deploy/macos`.
+2. Fai doppio click su **`installa-backup-automatico.command`**.
+3. Ti viene chiesta la cartella dove salvare i backup (premi solo Invio
+   per usare quella proposta, di solito dentro iCloud Drive).
+4. Lo script fa subito un primo backup di prova e, **solo la prima
+   volta**, mostra la chiave di cifratura: copiala e conservala in un
+   posto sicuro diverso da questo Mac (es. un password manager). Senza
+   quella chiave, se il Mac va perso, i backup non si possono più
+   riaprire.
+5. Da stanotte in poi: un backup cifrato ogni notte, più una verifica
+   automatica ogni domenica che l'ultimo backup sia davvero leggibile.
+
+**Per controllare subito che funzioni**, doppio click su
+`deploy/macos/verifica-backup-ora.command`: decifra l'ultimo backup, ne
+controlla l'integrità e cancella la copia temporanea, senza toccare il
+database reale.
+
+**Per disinstallarlo**: doppio click su
+`deploy/macos/ferma-backup-automatico.command`. I backup già fatti non
+vengono cancellati.
+
+---
+
 ## 4. Tornare indietro o disinstallare
 
 - **Disinstallare l'avvio automatico**: doppio click su

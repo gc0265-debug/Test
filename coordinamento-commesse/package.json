@@ -6,6 +6,7 @@
   "scripts": {
     "install:server": "npm install --prefix server",
     "dev": "npm run dev --prefix server",
-    "start": "npm start --prefix server"
+    "start": "npm start --prefix server",
+    "test": "node --test"
   }
 }

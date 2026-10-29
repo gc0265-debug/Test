@@ -1,6 +1,8 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const db = require('../db/database');
 const { hashPassword, verifyPassword, requireAuth, requireAdmin } = require('../utils/auth');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -10,11 +12,27 @@ function publicUser(u) {
   return rest;
 }
 
-router.post('/login', (req, res) => {
+// Al massimo 10 tentativi di login ogni 15 minuti per indirizzo IP: chiude
+// la porta più ovvia a un attacco a forza bruta sulla password, senza
+// intralciare un uso normale (anche con qualche errore di battitura).
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Troppi tentativi di accesso da questo indirizzo. Riprova tra qualche minuto.' },
+  handler: (req, res, next, options) => {
+    logger.warn('login rate-limited', { ip: req.ip, email: req.body?.email });
+    res.status(options.statusCode).json(options.message);
+  },
+});
+
+router.post('/login', loginLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'email e password sono obbligatorie' });
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND attivo = 1').get(String(email).toLowerCase().trim());
   if (!user || !verifyPassword(password, user.password_hash)) {
+    logger.warn('login fallito', { ip: req.ip, email: String(email).toLowerCase().trim() });
     return res.status(401).json({ error: 'credenziali non valide' });
   }
   req.session.user = publicUser(user);

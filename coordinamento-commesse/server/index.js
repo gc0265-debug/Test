@@ -1,13 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const helmet = require('helmet');
 const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
 
 require('./db/database'); // crea lo schema se non esiste
 require('./db/seed');     // popola solo se il database è vuoto
 
 const { requireAuth, requireAdmin } = require('./utils/auth');
+const SqliteSessionStore = require('./utils/sessionStore');
+const logger = require('./utils/logger');
 
 const authRouter = require('./routes/auth');
 const commesseRouter = require('./routes/commesse');
@@ -33,11 +37,37 @@ const categorieRouter = require('./routes/categorie');
 const finanziariaRouter = require('./routes/finanziaria');
 const approvazioniDrawingsRouter = require('./routes/approvazioniDrawings');
 
+// Il secret firma i cookie di sessione: deve restare lo stesso tra un
+// riavvio e l'altro, altrimenti ogni riavvio invaliderebbe tutte le
+// sessioni salvate — vanificando il punto di averle persistenti su
+// SQLite. Se non è impostata una variabile d'ambiente, viene generato
+// una sola volta e salvato in un file escluso da git.
+function getOrCreateSessionSecret() {
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  const secretPath = path.join(__dirname, '.session-secret');
+  if (fs.existsSync(secretPath)) return fs.readFileSync(secretPath, 'utf8').trim();
+  const secret = crypto.randomBytes(32).toString('hex');
+  fs.writeFileSync(secretPath, secret, { mode: 0o600 });
+  return secret;
+}
+
 const app = express();
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com'],
+      'img-src': ["'self'", 'data:'],
+      'script-src': ["'self'"],
+    },
+  },
+}));
 app.use(cors());
 app.use(express.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+  store: new SqliteSessionStore(),
+  secret: getOrCreateSessionSecret(),
   resave: false,
   saveUninitialized: false,
   cookie: { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 },
@@ -80,8 +110,15 @@ app.get('*', (req, res, next) => {
 // error handler — ultima risorsa, non deve mai far cadere il processo
 app.use((err, req, res, next) => {
   console.error(err);
+  logger.error(err.message, { stack: err.stack, path: req.path, method: req.method });
   res.status(500).json({ error: 'errore interno del server' });
 });
 
 const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => console.log(`Coordinamento Commesse — running on port ${PORT}`));
+// avvia il server solo quando il file viene eseguito direttamente (node
+// index.js / npm start) — non quando viene richiesto dai test, che hanno
+// bisogno dell'app Express senza che si metta in ascolto da sola.
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Coordinamento Commesse — running on port ${PORT}`));
+}
+module.exports = app;

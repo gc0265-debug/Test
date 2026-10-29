@@ -463,3 +463,13 @@ CREATE INDEX IF NOT EXISTS idx_maestranze_fornitori_m ON maestranze_fornitori(ma
 CREATE INDEX IF NOT EXISTS idx_atti_contratto ON atti_aggiuntivi(contratto_id);
 CREATE INDEX IF NOT EXISTS idx_categorie_lista ON categorie(lista);
 CREATE INDEX IF NOT EXISTS idx_approvazioni_commessa ON approvazioni_drawings(commessa_id);
+
+-- Sessioni di login persistite su SQLite invece che in memoria: un
+-- riavvio o un aggiornamento del server non disconnette più tutti gli
+-- utenti collegati (vedi server/utils/sessionStore.js).
+CREATE TABLE IF NOT EXISTS sessions (
+    sid TEXT PRIMARY KEY,
+    sess TEXT NOT NULL,
+    expires INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires);
