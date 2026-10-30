@@ -22,6 +22,7 @@
   --blue:#2E6FA8;
   --blue-wash:#EAF2F8;
   --shadow: 0 10px 28px -18px rgba(26,26,26,.35);
+  --side-grad-from:#FAFAFA; --side-grad-to:#E9E9E9; --side-shadow: 3px 0 18px -10px rgba(26,26,26,.5);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -34,6 +35,7 @@
     --ambra:#E0AE5C; --ambra-wash:#2A2112;
     --blue:#6FA8D8; --blue-wash:#17232C;
     --shadow: 0 10px 28px -18px rgba(0,0,0,.8);
+    --side-grad-from:#191919; --side-grad-to:#0C0C0C; --side-shadow: 3px 0 18px -10px rgba(0,0,0,.9);
   }
 }
 :root[data-theme="dark"]{
@@ -46,6 +48,7 @@
   --ambra:#E0AE5C; --ambra-wash:#2A2112;
   --blue:#6FA8D8; --blue-wash:#17232C;
   --shadow: 0 10px 28px -18px rgba(0,0,0,.8);
+  --side-grad-from:#191919; --side-grad-to:#0C0C0C; --side-shadow: 3px 0 18px -10px rgba(0,0,0,.9);
 }
 
 *{box-sizing:border-box;}
@@ -63,7 +66,8 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
 :root{--side-w:232px;}
 .shell{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh;}
 .side{
-  background:var(--paper-2);border-right:1px solid var(--rule);
+  background:linear-gradient(180deg,var(--side-grad-from) 0%,var(--side-grad-to) 100%);
+  border-right:1px solid var(--rule);box-shadow:var(--side-shadow);
   display:flex;flex-direction:column;padding:20px 0 16px;
   position:sticky;top:0;height:100vh;overflow-y:auto;
   position:relative;
@@ -91,9 +95,13 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
 .side__nav a{
   display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:2px;
   color:var(--ink-2);font-size:12.5px;font-weight:500;border-left:2px solid transparent;
+  transition:background .12s ease,box-shadow .12s ease;
 }
 .side__nav a:hover{background:var(--paper-3);color:var(--ink);}
-.side__nav a.active{background:var(--red-wash);color:var(--red);border-left-color:var(--red);font-weight:600;}
+.side__nav a.active{
+  background:var(--red-wash);color:var(--red);border-left-color:var(--red);font-weight:600;
+  box-shadow:0 1px 4px -1px rgba(26,26,26,.18);
+}
 .side__ico{width:16px;text-align:center;color:var(--ink-3);font-size:12px;flex:none;}
 .side__nav a.active .side__ico{color:var(--red);}
 .side__foot{padding:12px 20px 0;font-size:9.5px;color:var(--ink-3);letter-spacing:.05em;border-top:1px solid var(--rule);margin-top:10px;}

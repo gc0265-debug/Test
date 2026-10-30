@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.12';
+const VERSIONE_ATTUALE = '1.13';
 const DATA_ATTUALE = '30 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.12', title: 'Import Excel del Registro Criticità PM', date: '30 ottobre 2026', attuale: true,
+    v: '1.13', title: 'Correzione pannello Work Package, sidebar con più profondità', date: '30 ottobre 2026', attuale: true,
+    points: [
+      'Corretto un problema per cui, con la vista aggregata di gruppo attiva (es. "RSW Roma — tutte"), il pannello "Work package della commessa selezionata" nella scheda Commesse restava vuoto anche selezionando una riga della tabella.',
+      'Ora il pannello segue sempre la riga selezionata nell’elenco commesse, mostrando il codice della commessa scelta nel titolo ("Work package di 2514RW"), sia in vista singola commessa sia in vista aggregata di gruppo.',
+      'La sidebar a sinistra ha ora una leggera profondità: una sfumatura verso un tono più scuro e un’ombra sul bordo, per staccarla meglio dal contenuto della pagina — invariata nella sostanza, solo nell’aspetto, e coerente sia nel tema chiaro sia in quello scuro.',
+    ],
+  },
+  {
+    v: '1.12', title: 'Import Excel del Registro Criticità PM', date: '30 ottobre 2026',
     points: [
       'Nuovo pulsante "Importa da Excel" nella scheda Registro Criticità, sullo stesso modello già disponibile per Decisioni e Approvazioni Drawings: permette di caricare direttamente il Registro Criticità aggiornato dai PM di GILI, senza doverlo ricopiare a mano.',
       'L’importazione riconosce da sola la riga di intestazione reale del file (anche quando sopra ci sono righe di titolo o legenda) e i nomi di colonna usati dai PM: PM, Piano/Area, Tipo, Criticità, Cosa serve, Urgenza, Data limite, Impatto PL, Stato, Note dal DDC, Risposta dei PM.',

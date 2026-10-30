@@ -16,6 +16,23 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Correzione pannello Work Package, sidebar con più profondità (30 ottobre 2026)
+
+- Corretto un problema per cui, con la vista aggregata di gruppo attiva
+  (es. "RSW Roma — tutte"), il pannello "Work package della commessa
+  selezionata" nella scheda Commesse restava vuoto anche selezionando
+  una riga della tabella.
+- Ora il pannello segue sempre la riga selezionata nell'elenco
+  commesse, mostrando il codice della commessa scelta nel titolo
+  ("Work package di 2514RW"), sia in vista singola commessa sia in
+  vista aggregata di gruppo.
+- La sidebar a sinistra ha ora una leggera profondità: una sfumatura
+  verso un tono più scuro e un'ombra sul bordo, per staccarla meglio
+  dal contenuto della pagina — invariata nella sostanza, solo
+  nell'aspetto, e coerente sia nel tema chiaro sia in quello scuro.
+
+---
+
 ## Import Excel del Registro Criticità PM (30 ottobre 2026)
 
 - Nuovo pulsante **"Importa da Excel"** nella scheda Registro Criticità,

@@ -127,6 +127,11 @@ function openWpForm(commessaId, existing, onSaved) {
 export async function renderCommesse(container) {
   let lastCommesse = [];
   let selectedId = null;
+  // Il pannello "Work package della commessa selezionata" segue la riga
+  // scelta in questa tabella, non il filtro commessa/gruppo della sidebar:
+  // in vista aggregata di gruppo state.commessaId è null, quindi senza
+  // questo si perdeva ogni modo di vedere i WP di una singola commessa.
+  let wpCommessaId = state.commessaId || null;
   const toolbar = el('div', { class: 'section__head' }, [
     el('h2', {}, 'Commesse'),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -146,9 +151,10 @@ export async function renderCommesse(container) {
   const commesseHost = el('div');
   container.appendChild(commesseHost);
 
+const wpTitle = el('h2', {}, 'Work package della commessa selezionata');
   container.appendChild(el('div', { class: 'section__head', style: 'margin-top:30px' }, [
-    el('h2', {}, 'Work package della commessa selezionata'),
-    el('button', { class: 'btn btn--primary', onclick: () => { if (state.commessaId) openWpForm(state.commessaId, null, refreshWp); } }, '+ Nuovo WP'),
+    wpTitle,
+    el('button', { class: 'btn btn--primary', onclick: () => { if (wpCommessaId) openWpForm(wpCommessaId, null, refreshWp); } }, '+ Nuovo WP'),
   ]));
   const wpHost = el('div');
   container.appendChild(wpHost);
@@ -172,6 +178,7 @@ export async function renderCommesse(container) {
               if (!confirmDialog(`Eliminare la commessa ${row.codice} e tutti i suoi dati? L'operazione non è reversibile.`)) return;
               await api.del(`/commesse/${row.id}`);
               toast('Commessa eliminata.');
+              if (String(wpCommessaId) === String(row.id)) { wpCommessaId = null; selectedId = null; }
               await loadCommesse();
               refreshCommesse();
               refreshWp();
@@ -182,17 +189,20 @@ export async function renderCommesse(container) {
     ], res.data, {
       emptyLabel: 'Nessuna commessa. Creane una per iniziare.',
       onRowClick: (row) => openCommessaForm(row, refreshCommesse),
-      selection: { selectedId, onSelect: (id) => { selectedId = id; refreshCommesse(); } },
+      selection: { selectedId, onSelect: (id) => { selectedId = id; wpCommessaId = id; refreshCommesse(); refreshWp(); } },
     });
   }
 
   async function refreshWp() {
-    if (!state.commessaId) {
+    if (!wpCommessaId) {
+      wpTitle.textContent = 'Work package della commessa selezionata';
       wpHost.innerHTML = '';
-      wpHost.appendChild(el('p', { class: 'muted' }, 'Seleziona una commessa dal menu a sinistra.'));
+      wpHost.appendChild(el('p', { class: 'muted' }, 'Seleziona una riga nell\'elenco commesse qui sopra.'));
       return;
     }
-    const res = await api.get(`/commesse/${state.commessaId}/wp`);
+    const commessa = lastCommesse.find((c) => String(c.id) === String(wpCommessaId));
+    wpTitle.textContent = commessa ? `Work package di ${commessa.codice}` : 'Work package della commessa selezionata';
+    const res = await api.get(`/commesse/${wpCommessaId}/wp`);
     renderTable(wpHost, [
       { key: 'codice', label: 'Codice' },
       { key: 'nome', label: 'Nome' },
@@ -201,7 +211,7 @@ export async function renderCommesse(container) {
       {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
-          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openWpForm(state.commessaId, row, refreshWp) }, 'Modifica'),
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openWpForm(wpCommessaId, row, refreshWp) }, 'Modifica'),
           el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
             onclick: async () => {
@@ -216,10 +226,11 @@ export async function renderCommesse(container) {
       },
     ], res.data, {
       emptyLabel: 'Nessun work package per questa commessa.',
-      onRowClick: (row) => openWpForm(state.commessaId, row, refreshWp),
+      onRowClick: (row) => openWpForm(wpCommessaId, row, refreshWp),
     });
   }
 
+  selectedId = wpCommessaId;
   await refreshCommesse();
   await refreshWp();
 }
