@@ -84,7 +84,7 @@ export async function renderApprovazioniDrawings(container) {
     fd.append('commessa_id', state.commessaId);
     try {
       const res = await api.postForm('/approvazioni-drawings/import', fd);
-      toast(`Importate ${res.imported} righe${res.skipped ? ` (${res.skipped} saltate, senza codice o titolo)` : ''}.`);
+      toast(`Importati ${res.imported} elaborati${res.righeSezione ? ` (${res.righeSezione} righe di intestazione/sezione ignorate)` : ''}.`);
       await refresh();
     } catch (err) {
       toast(err.message, { error: true });
