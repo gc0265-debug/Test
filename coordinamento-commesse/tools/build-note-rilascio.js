@@ -28,13 +28,22 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.10';
+const VERSIONE_ATTUALE = '1.11';
 const DATA_ATTUALE = '30 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.10', title: 'Correzione import Excel di Approvazioni Drawings', date: '30 ottobre 2026', attuale: true,
+    v: '1.11', title: 'Vista aggregata per gruppo di commesse', date: '30 ottobre 2026', attuale: true,
+    points: [
+      'Nuovo campo "Gruppo progetto" nella scheda di ogni commessa (es. "RSW Roma"): commesse diverse che fanno parte dello stesso progetto (es. 2514RW e 2593RW) possono condividere lo stesso gruppo, pur restando commesse distinte con il proprio codice.',
+      'Quando due o più commesse condividono un gruppo, nel menu a tendina in alto a sinistra compare una nuova opzione "‹gruppo› — tutte (N)": selezionandola si vedono in un’unica vista, per tutti i registri, i dati di tutte le commesse del gruppo insieme — ogni riga mostra una colonna "Commessa" per sapere a quale commessa appartiene.',
+      'La vista aggregata è di sola lettura: per creare o modificare una riga serve tornare a selezionare una singola commessa dal menu.',
+      'Il Cruscotto e la Dashboard Finanziaria restano legati a una singola commessa e mostrano un avviso quando è selezionata la vista di gruppo.',
+    ],
+  },
+  {
+    v: '1.10', title: 'Correzione import Excel di Approvazioni Drawings', date: '30 ottobre 2026',
     points: [
       'Risolto il problema per cui il pulsante "Importa da Excel" nella scheda Approvazioni Drawings non importava alcuna riga con l’elenco deliverable reale: le intestazioni si trovavano su una riga diversa da quella attesa e i nomi di colonna non corrispondevano a quelli del modello generico.',
       'L’importazione ora riconosce sia il modello semplice sia il formato reale dell’Elenco Deliverable, individuando da sola la riga di intestazione.',

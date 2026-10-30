@@ -16,6 +16,29 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Vista aggregata per gruppo di commesse (30 ottobre 2026)
+
+- Nuovo campo **"Gruppo progetto"** nella scheda di ogni commessa
+  (es. "RSW Roma"): commesse diverse che fanno parte dello stesso
+  progetto (es. 2514RW e 2593RW) possono condividere lo stesso gruppo,
+  pur restando commesse distinte con il proprio codice.
+- Quando due o più commesse condividono un gruppo, nel menu a tendina
+  in alto a sinistra compare una nuova opzione **"‹gruppo› — tutte
+  (N)"**: selezionandola si vedono in un'unica vista, per tutti i
+  registri (Lavorazioni, Decisioni, Criticità, Allert, Approvazioni
+  Drawings, Requisiti, Capitolato Requisiti, Contratti, Registro
+  Stakeholder, Piano Comunicazioni, Note di Coordinamento, Diario,
+  Lezioni Apprese, Maestranze, Documenti, Timeline Montaggi), i dati
+  di tutte le commesse del gruppo insieme — ogni riga mostra una
+  colonna "Commessa" per sapere a quale commessa appartiene.
+- La vista aggregata è **di sola lettura**: per creare o modificare
+  una riga serve tornare a selezionare una singola commessa dal menu.
+- Il Cruscotto e la Dashboard Finanziaria restano legati a una singola
+  commessa e mostrano un avviso quando è selezionata la vista di
+  gruppo.
+
+---
+
 ## Correzione import Excel di Approvazioni Drawings (30 ottobre 2026)
 
 - Risolto il problema per cui il pulsante **"Importa da Excel"** nella
