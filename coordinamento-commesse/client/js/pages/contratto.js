@@ -148,9 +148,9 @@ async function renderContrattoCard(c, refreshAll, soloLettura) {
           atti.length ? `base ${formatValore(c.valore)} + atti ${formatValore(valoreAtti)} = ${formatValore(valoreTotale)}` : formatValore(c.valore)]
           .filter(Boolean).join(' · ')),
       ]),
-      soloLettura ? null : el('div', { style: 'display:flex;gap:6px' }, [
+      el('div', { style: 'display:flex;gap:6px' }, [
         el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(c, refreshAll) }, 'Modifica'),
-        el('button', {
+        soloLettura ? null : el('button', {
           class: 'btn btn--sm btn--ghost btn--danger',
           onclick: async () => {
             if (!confirmDialog('Eliminare questo contratto?')) return;
@@ -159,7 +159,7 @@ async function renderContrattoCard(c, refreshAll, soloLettura) {
             refreshAll();
           },
         }, 'Elimina'),
-      ]),
+      ].filter(Boolean)),
     ]),
     el('div', { class: 'tiles' }, [
       el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Stato'), el('div', { class: 'tile__value' }, STATO[c.stato])]),
@@ -212,7 +212,7 @@ export async function renderContratto(container) {
   const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      ? 'Vista aggregata di gruppo: usa "Modifica" su un contratto per aprirlo. Per crearne uno nuovo, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Il contratto stipulato con la sua baseline di capitolato: ogni modifica ai requisiti successiva alla baseline è segnalata qui come variazione da gestire secondo la procedura concordata.'));
 
   let lastRows = [];

@@ -23,9 +23,15 @@ const STATO_FIXED = {
 let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
-  const requisitiRes = await api.get(`/requisiti?commessa_id=${state.commessaId}`);
+  // In vista aggregata di gruppo l'elaborato può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [requisitiRes, wpRes] = await Promise.all([
+    api.get(`/requisiti?commessa_id=${commessaIdForm}`),
+    api.get(`/commesse/${commessaIdForm}/wp`),
+  ]);
   const requisitoOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const form = el('form', {});
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -49,7 +55,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/approvazioni-drawings/${existing.id}`, data);
       else await api.post('/approvazioni-drawings', data);
@@ -68,10 +74,11 @@ export async function renderApprovazioniDrawings(container) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
-  const soloLettura = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
+  const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
+  const soloLettura = clienteSoloLettura || inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    inVistaGruppo()
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+    inVistaGruppo() && !clienteSoloLettura
+      ? 'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo elaborato o importare da Excel, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Elenco degli elaborati (drawing) sottoposti ad approvazione, compilabile a mano o importando un elenco deliverable in Excel.'));
 
   let lastRows = [];
@@ -140,7 +147,7 @@ export async function renderApprovazioniDrawings(container) {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('approvazioni_drawings', row.id, `${row.codice} — ${row.titolo}`) }, 'Storico'),
-          soloLettura ? null : el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
+          clienteSoloLettura ? null : el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
           soloLettura ? null : el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
             onclick: async () => {
@@ -154,7 +161,7 @@ export async function renderApprovazioniDrawings(container) {
       },
     ].filter(Boolean), res.data, {
       emptyLabel: 'Nessun elaborato registrato. Aggiungilo a mano o importa un elenco da Excel.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: clienteSoloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

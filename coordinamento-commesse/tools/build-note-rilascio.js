@@ -28,13 +28,23 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.13';
+const VERSIONE_ATTUALE = '1.14';
 const DATA_ATTUALE = '30 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.13', title: 'Correzione pannello Work Package, sidebar con più profondità', date: '30 ottobre 2026', attuale: true,
+    v: '1.14', title: 'Righe modificabili nella vista aggregata di gruppo', date: '30 ottobre 2026', attuale: true,
+    points: [
+      'Finora, selezionando la vista aggregata di gruppo (es. "RSW Roma — tutte"), tutti i registri diventavano di sola lettura: ora si può cliccare una riga e modificarla direttamente, senza dover prima tornare a selezionare una singola commessa dal menu a sinistra.',
+      'La modifica resta sempre sulla commessa a cui la riga appartiene, mostrata nella colonna "Commessa": non è possibile spostare per errore un dato da una commessa all\'altra semplicemente modificandolo dalla vista di gruppo.',
+      'Registro Criticità: anche il pulsante "Importa da Excel" torna disponibile in vista di gruppo, dato che ogni riga importata viene già assegnata alla commessa corretta in base al nome del PM.',
+      'Restano riservate a una singola commessa solo le operazioni che richiedono di scegliere a quale commessa appartengono: creare una nuova riga, eliminarla, esportare in Excel e i cruscotti numerici che sommano i dati di una sola commessa.',
+      'Per gli utenti con accesso Cliente non cambia nulla: restano a sola lettura come prima, in vista singola o di gruppo.',
+    ],
+  },
+  {
+    v: '1.13', title: 'Correzione pannello Work Package, sidebar con più profondità', date: '30 ottobre 2026',
     points: [
       'Corretto un problema per cui, con la vista aggregata di gruppo attiva (es. "RSW Roma — tutte"), il pannello "Work package della commessa selezionata" nella scheda Commesse restava vuoto anche selezionando una riga della tabella.',
       'Ora il pannello segue sempre la riga selezionata nell’elenco commesse, mostrando il codice della commessa scelta nel titolo ("Work package di 2514RW"), sia in vista singola commessa sia in vista aggregata di gruppo.',

@@ -28,7 +28,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/comunicazione/processi/${existing.id}`, data);
       else await api.post('/comunicazione/processi', data);
@@ -90,7 +90,7 @@ export async function renderComunicazione(container) {
   const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      ? 'Vista aggregata di gruppo: clicca una riga per modificarla. La matrice RACI e la creazione di nuovi processi richiedono una singola commessa.'
       : 'Un processo di gestione per riga, con la matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli stakeholder registrati.'));
 
   let lastRows = [];
@@ -151,7 +151,7 @@ export async function renderComunicazione(container) {
       },
     ].filter(Boolean), processiRes.data, {
       emptyLabel: 'Nessun processo di comunicazione registrato per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

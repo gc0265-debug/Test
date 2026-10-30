@@ -16,6 +16,28 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Righe modificabili nella vista aggregata di gruppo (30 ottobre 2026)
+
+- Finora, selezionando la vista aggregata di gruppo (es. "RSW Roma —
+  tutte"), tutti i registri diventavano di sola lettura: ora si può
+  cliccare una riga e modificarla direttamente, senza dover prima
+  tornare a selezionare una singola commessa dal menu a sinistra.
+- La modifica resta sempre sulla commessa a cui la riga appartiene,
+  mostrata nella colonna "Commessa": non è possibile spostare per
+  errore un dato da una commessa all'altra semplicemente modificandolo
+  dalla vista di gruppo.
+- **Registro Criticità**: anche il pulsante "Importa da Excel" torna
+  disponibile in vista di gruppo, dato che ogni riga importata viene
+  già assegnata alla commessa corretta in base al nome del PM.
+- Restano riservate a una singola commessa solo le operazioni che
+  richiedono di scegliere a quale commessa appartengono: creare una
+  nuova riga, eliminarla, esportare in Excel e i cruscotti numerici
+  che sommano i dati di una sola commessa.
+- Per gli utenti con accesso **Cliente** non cambia nulla: restano a
+  sola lettura come prima, in vista singola o di gruppo.
+
+---
+
 ## Correzione pannello Work Package, sidebar con più profondità (30 ottobre 2026)
 
 - Corretto un problema per cui, con la vista aggregata di gruppo attiva

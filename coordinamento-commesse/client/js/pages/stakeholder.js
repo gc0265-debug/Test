@@ -42,7 +42,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/stakeholder/${existing.id}`, data);
       else await api.post('/stakeholder', data);
@@ -89,7 +89,7 @@ export async function renderStakeholder(container) {
   const soloLettura = inVistaGruppo();
   if (soloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo stakeholder, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   const matrixHost = el('div');
@@ -156,7 +156,7 @@ export async function renderStakeholder(container) {
       },
     ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuno stakeholder registrato per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

@@ -18,17 +18,21 @@ const STATO_FIXED = { bozza: ['Bozza', 'outline'], approvato: ['Approvato', 'ver
 let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
-  const [capitolatoRes, faseList] = await Promise.all([
-    api.get(`/capitolato?commessa_id=${state.commessaId}`),
+  // In vista aggregata di gruppo il requisito può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [capitolatoRes, faseList, wpRes] = await Promise.all([
+    api.get(`/capitolato?commessa_id=${commessaIdForm}`),
     getCategoria('requisiti_fase'),
+    api.get(`/commesse/${commessaIdForm}/wp`),
   ]);
   const capitolatoOptions = [['', '— nessuna'], ...capitolatoRes.data.map((c) => [c.id, `${c.codice_wbs} — ${c.titolo}`])];
   const faseOptions = toOptions(faseList);
 
   const form = el('form', {});
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === state.commessaId)?.codice || '2514RW'}.WP1.03` })),
+    field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === commessaIdForm)?.codice || '2514RW'}.WP1.03` })),
     field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')),
   ]));
   form.appendChild(field('Fase di esecuzione', select('fase', faseOptions, existing?.fase ?? 'progettazione')));
@@ -49,7 +53,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/requisiti/${existing.id}`, data);
       else await api.post('/requisiti', data);
@@ -103,7 +107,7 @@ export async function renderRequisiti(container) {
   const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      ? 'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo requisito o richiedere un\'approvazione, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Estratti dal capitolato, con codice WBS e fase di esecuzione. Le approvazioni si richiedono da qui ma confluiscono nel Registro Decisioni.'));
 
   let filtroFase = '';
@@ -185,7 +189,7 @@ export async function renderRequisiti(container) {
       },
     ].filter(Boolean), res.data, {
       emptyLabel: 'Nessun requisito registrato per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

@@ -28,9 +28,15 @@ function urgenzaCell(row) {
   return el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }, badges);
 }
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  // In vista aggregata di gruppo la criticità può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar: il
+  // menu Work package deve sempre riferirsi alla commessa della riga che
+  // si sta modificando, non a state.commessaId.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const wpRes = await api.get(`/commesse/${commessaIdForm}/wp`);
   const form = el('form', {});
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const urgenzaSelect = select('urgenza', Object.entries(URGENZA).map(([k, v]) => [k, v[0]]), existing?.urgenza ?? 'normale');
   const scadenzaField = field('Entro quando (se urgente)', dateInput('entro_quando', existing?.entro_quando || ''), 'Obbligatoria se l\'urgenza è "Urgente (3gg)".');
@@ -55,7 +61,7 @@ function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/criticita/${existing.id}`, data);
       else await api.post('/criticita', data);
@@ -77,7 +83,7 @@ export async function renderCriticita(container) {
   const soloLettura = inVistaGruppo();
   if (soloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. L\'importazione da Excel resta disponibile e assegna da sola ogni riga alla commessa giusta. Per creare una nuova criticità, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   const dashHost = el('div', { class: 'tiles' });
@@ -120,7 +126,7 @@ export async function renderCriticita(container) {
         }]);
       } }, 'Stampa'),
       soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
-      soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
+      el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
       settingsGear(),
     ]),
@@ -198,7 +204,7 @@ export async function renderCriticita(container) {
     ], res.data, {
       rowClass: (r) => r.scaduta ? 'row-scaduta' : (r.urgenza === 'viola' && r.stato !== 'chiusa' && r.giorni_rimanenti !== null && r.giorni_rimanenti <= 3 ? 'row-warn' : ''),
       emptyLabel: 'Nessuna criticità in questo filtro.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
 

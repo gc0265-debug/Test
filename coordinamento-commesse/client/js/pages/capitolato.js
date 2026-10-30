@@ -82,7 +82,7 @@ function openRequisitoQuickForm(voce, existing, refreshList) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    data.commessa_id = voce.commessa_id;
     data.rif_capitolato_voce_id = voce.id;
     try {
       if (existing) await api.put(`/requisiti/${existing.id}`, data);
@@ -101,9 +101,11 @@ function openRequisitoQuickForm(voce, existing, refreshList) {
 // linea, sotto l'elenco dei Requisiti collegati come sottorighe, ognuna
 // cliccabile per aprirla e modificarla senza lasciare la vista.
 async function openVoceDocument(voce, refreshList) {
+  // In vista aggregata di gruppo la voce può appartenere a una commessa
+  // diversa da quella (eventuale) selezionata in sidebar.
   const [contrattiRes, requisitiRes, statoList] = await Promise.all([
-    api.get(`/contratti?commessa_id=${state.commessaId}`),
-    api.get(`/requisiti?commessa_id=${state.commessaId}`),
+    api.get(`/contratti?commessa_id=${voce.commessa_id}`),
+    api.get(`/requisiti?commessa_id=${voce.commessa_id}`),
     getCategoria('requisiti_stato'),
   ]);
   const contrattoOptions = [['', '— nessuno'], ...contrattiRes.data.map((c) => [c.id, c.controparte || c.titolo])];
@@ -129,7 +131,6 @@ async function openVoceDocument(voce, refreshList) {
     e.preventDefault();
     const data = {};
     new FormData(headerForm).forEach((v, k) => { data[k] = v === '' ? null : v; });
-    data.commessa_id = state.commessaId;
     try {
       await api.put(`/capitolato/${voce.id}`, data);
       toast('Voce aggiornata.');
@@ -196,7 +197,7 @@ export async function renderCapitolato(container) {
   const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per aprire o modificare una voce.'
+      ? 'Vista aggregata di gruppo: clicca una voce per aprirla e modificarla. Per creare una nuova voce, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Il capitolato requisiti raccoglie tutti i requisiti definiti dalla Direzione Lavori, raggruppati per contratto: ogni voce è un documento che si apre per vedere e modificare i Requisiti collegati, restando agganciata ai registri di Coordinamento e Contratti.'));
 
   let lastRows = [];
@@ -250,7 +251,7 @@ export async function renderCapitolato(container) {
       ]));
       renderTable(tableHost, voceColumns(refresh, soloLettura), voci, {
         emptyLabel: 'Nessuna voce.',
-        onRowClick: soloLettura ? null : (row) => openVoceDocument(row, refresh),
+        onRowClick: (row) => openVoceDocument(row, refresh),
         selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
       });
     });
@@ -263,7 +264,7 @@ export async function renderCapitolato(container) {
       ]));
       renderTable(tableHost, voceColumns(refresh, soloLettura), senzaContratto, {
         emptyLabel: 'Nessuna voce.',
-        onRowClick: soloLettura ? null : (row) => openVoceDocument(row, refresh),
+        onRowClick: (row) => openVoceDocument(row, refresh),
         selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
       });
     }

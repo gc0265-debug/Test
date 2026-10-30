@@ -15,15 +15,19 @@ const STATO_FIXED = { attivo: ['Attivo', 'verde'], 'non-attivo': ['Non attivo', 
 let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
-  const [stakeholderRes, fornitoriAttuali] = await Promise.all([
-    api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+  // In vista aggregata di gruppo la maestranza può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [stakeholderRes, fornitoriAttuali, wpRes] = await Promise.all([
+    api.get(`/stakeholder?commessa_id=${commessaIdForm}`),
     existing ? api.get(`/maestranze/${existing.id}/fornitori`).then((r) => r.data) : Promise.resolve([]),
+    api.get(`/commesse/${commessaIdForm}/wp`),
   ]);
   const stakeholderAttivi = stakeholderRes.data.filter((s) => s.stato === 'attivo');
   const selezionati = new Set(fornitoriAttuali);
 
   const form = el('form', {});
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true })));
   form.appendChild(field('Ruolo', textInput('ruolo', existing?.ruolo ?? '')));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
@@ -57,7 +61,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       let id = existing?.id;
       if (existing) await api.put(`/maestranze/${existing.id}`, data);
@@ -81,7 +85,7 @@ export async function renderMaestranze(container) {
   const soloLettura = inVistaGruppo();
   if (soloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova maestranza, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   let lastRows = [];
@@ -137,7 +141,7 @@ export async function renderMaestranze(container) {
       },
     ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuna maestranza registrata per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

@@ -153,9 +153,13 @@ async function renderMisureSection(lavorazione, onSaved, soloLettura) {
 }
 
 async function openForm(existing, onSaved) {
-  const [contrattiRes, stakeholderRes] = await Promise.all([
-    api.get(`/contratti?commessa_id=${state.commessaId}`),
-    api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+  // In vista aggregata di gruppo la lavorazione può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [contrattiRes, stakeholderRes, wpRes] = await Promise.all([
+    api.get(`/contratti?commessa_id=${commessaIdForm}`),
+    api.get(`/stakeholder?commessa_id=${commessaIdForm}`),
+    api.get(`/commesse/${commessaIdForm}/wp`),
   ]);
   const contrattoOptions = [['', '— nessuna (seleziona dal Registro Stakeholder sotto)'], ...contrattiRes.data.map((c) => [c.id, `${c.controparte || c.titolo}`])];
   const impresaOptions = [['', '—'], ...stakeholderRes.data.filter((s) => s.stato === 'attivo').map((s) => [s.nome, s.nome])];
@@ -164,7 +168,7 @@ async function openForm(existing, onSaved) {
   }
 
   const form = el('form', {});
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -205,7 +209,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/lavorazioni/${existing.id}`, data);
       else await api.post('/lavorazioni', data);
@@ -253,10 +257,11 @@ export async function renderLavorazioni(container) {
 
   let lastRows = [];
   let selectedId = null;
-  const soloLettura = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
-  if (inVistaGruppo()) {
+  const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
+  const soloLettura = clienteSoloLettura || inVistaGruppo();
+  if (inVistaGruppo() && !clienteSoloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova lavorazione, seleziona prima una singola commessa dal menu a sinistra.'));
   }
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
@@ -315,7 +320,7 @@ export async function renderLavorazioni(container) {
       },
     ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuna lavorazione registrata per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: clienteSoloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

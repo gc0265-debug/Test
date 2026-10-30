@@ -19,13 +19,18 @@ let CLASSIFICAZIONE = CLASSIFICAZIONE_FIXED;
 let STATO = STATO_FIXED;
 
 async function openForm(existing, onSaved) {
-  const [criticitaRes, decisioniRes, requisitiRes, perimetroList] = await Promise.all([
-    api.get(`/criticita?commessa_id=${state.commessaId}`),
-    api.get(`/decisioni?commessa_id=${state.commessaId}`),
-    api.get(`/requisiti?commessa_id=${state.commessaId}`),
+  // In vista aggregata di gruppo l'allert può appartenere a una commessa
+  // diversa da quella (eventuale) selezionata in sidebar: i menu a tendina
+  // devono sempre riferirsi alla commessa della riga in modifica.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [criticitaRes, decisioniRes, requisitiRes, perimetroList, wpRes] = await Promise.all([
+    api.get(`/criticita?commessa_id=${commessaIdForm}`),
+    api.get(`/decisioni?commessa_id=${commessaIdForm}`),
+    api.get(`/requisiti?commessa_id=${commessaIdForm}`),
     getCategoria('allert_perimetro'),
+    api.get(`/commesse/${commessaIdForm}/wp`),
   ]);
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   const criticitaOptions = [['', '— nessuna'], ...criticitaRes.data.map((c) => [c.id, c.tema])];
   const decisioniOptions = [['', '— nessuna'], ...decisioniRes.data.map((d) => [d.id, d.tema])];
   const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
@@ -51,7 +56,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/allert/${existing.id}`, data);
       else await api.post('/allert', data);
@@ -74,7 +79,7 @@ export async function renderAllert(container) {
 
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      ? 'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo allert, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Classificazione di perimetro e azioni di tutela — funzione di presidio GC, distinta dal coordinamento operativo dei registri precedenti.'));
 
   let lastRows = [];
@@ -141,7 +146,7 @@ export async function renderAllert(container) {
     ].filter(Boolean), res.data, {
       rowClass: (r) => (r.classificazione === 'critico' && r.stato !== 'chiuso') ? 'row-scaduta' : '',
       emptyLabel: 'Nessun allert registrato per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

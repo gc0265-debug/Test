@@ -40,7 +40,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form);
-    fd.set('commessa_id', state.commessaId);
+    if (!existing) fd.set('commessa_id', state.commessaId);
     if (fd.get('rimuovi_file') === 'on') fd.set('rimuovi_file', '1');
     if (!fileInput.files.length) fd.delete('file');
     try {
@@ -64,7 +64,7 @@ export async function renderDocumenti(container) {
   const soloLettura = inVistaGruppo();
   if (soloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo documento, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   let lastRows = [];
@@ -121,7 +121,7 @@ export async function renderDocumenti(container) {
       },
     ].filter(Boolean), res.data, {
       emptyLabel: 'Nessun documento registrato per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

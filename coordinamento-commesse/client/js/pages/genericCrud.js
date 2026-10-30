@@ -37,7 +37,7 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = formData(form);
-      data.commessa_id = state.commessaId;
+      if (!existing) data.commessa_id = state.commessaId;
       try {
         if (existing) await api.put(`${apiPath}/${existing.id}`, data);
         else await api.post(apiPath, data);
@@ -59,7 +59,7 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
     const soloLettura = scopedByCommessa && inVistaGruppo();
     if (soloLettura) {
       container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-        `Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.`));
+        `Vista aggregata di gruppo: clicca una riga per modificarla. Per crearne una nuova, seleziona prima una singola commessa dal menu a sinistra.`));
     }
 
     let lastRows = [];
@@ -96,11 +96,11 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
       const cols = [
         ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (row) => row.commessa_codice || '—' }] : []),
         ...columns,
-        ...(soloLettura ? [] : [{
+        {
           key: 'actions', label: '', className: 'actions',
           render: (row) => el('div', {}, [
             el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
-            el('button', {
+            soloLettura ? null : el('button', {
               class: 'btn btn--sm btn--ghost btn--danger', onclick: async () => {
                 if (!confirmDialog(`Eliminare definitivamente questo elemento?`)) return;
                 await api.del(`${apiPath}/${row.id}`);
@@ -108,12 +108,12 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
                 refresh();
               },
             }, 'Elimina'),
-          ]),
-        }]),
+          ].filter(Boolean)),
+        },
       ];
       renderTable(tableHost, cols, rows, {
         emptyLabel,
-        onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+        onRowClick: (row) => openForm(row, refresh),
         selection: printColumns ? { selectedId, onSelect: (id) => { selectedId = id; refresh(); } } : null,
       });
     }

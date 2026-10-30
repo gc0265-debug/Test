@@ -128,10 +128,14 @@ function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
   return segments;
 }
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
   const isLavorazione = existing ? existing.type === 'lavorazione' : false;
+  // In vista aggregata di gruppo la riga può appartenere a una commessa
+  // diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const wpRes = await api.get(`/commesse/${commessaIdForm}/wp`);
   const form = el('form', {});
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const tipoCheckbox = el('input', { type: 'checkbox', checked: isLavorazione, disabled: !!existing });
   form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin-bottom:6px;cursor:pointer' }, [
@@ -186,7 +190,7 @@ function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     const lavorazione = tipoCheckbox.checked;
     try {
       if (lavorazione) {
@@ -261,10 +265,11 @@ export async function renderTimeline(container) {
   let granularity = 'week';
   let zoom = 1;
   let items = [];
-  const soloLettura = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
-  if (inVistaGruppo()) {
+  const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
+  const soloLettura = clienteSoloLettura || inVistaGruppo();
+  if (inVistaGruppo() && !clienteSoloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una barra o una riga per modificarla. Per creare una nuova riga, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   const zoomSlider = el('input', {
@@ -394,7 +399,7 @@ export async function renderTimeline(container) {
           `Baseline: ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}`
         ));
       }
-      const onEdit = soloLettura ? null : (() => openForm(it, refresh));
+      const onEdit = clienteSoloLettura ? null : (() => openForm(it, refresh));
       track.appendChild(bar(
         it.data_inizio, it.data_fine, `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}`,
         `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,

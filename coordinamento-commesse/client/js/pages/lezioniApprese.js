@@ -16,12 +16,16 @@ const CATEGORIA = {
 };
 
 async function openForm(existing, onSaved) {
-  const [criticitaRes, decisioniRes, allertRes] = await Promise.all([
-    api.get(`/criticita?commessa_id=${state.commessaId}`),
-    api.get(`/decisioni?commessa_id=${state.commessaId}`),
-    api.get(`/allert?commessa_id=${state.commessaId}`),
+  // In vista aggregata di gruppo la lezione può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [criticitaRes, decisioniRes, allertRes, wpRes] = await Promise.all([
+    api.get(`/criticita?commessa_id=${commessaIdForm}`),
+    api.get(`/decisioni?commessa_id=${commessaIdForm}`),
+    api.get(`/allert?commessa_id=${commessaIdForm}`),
+    api.get(`/commesse/${commessaIdForm}/wp`),
   ]);
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   const criticitaOptions = [['', '— nessuna'], ...criticitaRes.data.map((c) => [c.id, c.tema])];
   const decisioniOptions = [['', '— nessuna'], ...decisioniRes.data.map((d) => [d.id, d.tema])];
   const allertOptions = [['', '— nessuno'], ...allertRes.data.map((a) => [a.id, a.descrizione])];
@@ -46,7 +50,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     try {
       if (existing) await api.put(`/lezioni-apprese/${existing.id}`, data);
       else await api.post('/lezioni-apprese', data);
@@ -64,10 +68,10 @@ function openDettaglio(l, numero, onSaved, soloLettura) {
   const collegata = l.criticita_tema || l.decisione_tema || l.allert_descrizione;
   const azioni = [
     el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('lezioni_apprese', l.id, l.titolo) }, 'Storico'),
+    el('button', { class: 'btn', onclick: () => { closeModal(); openForm(l, onSaved); } }, 'Modifica'),
   ];
   if (!soloLettura) {
     azioni.push(
-      el('button', { class: 'btn', onclick: () => { closeModal(); openForm(l, onSaved); } }, 'Modifica'),
       el('button', {
         class: 'btn btn--danger',
         onclick: async () => {
@@ -100,7 +104,7 @@ export async function renderLezioniApprese(container) {
   const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
-      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      ? 'Vista aggregata di gruppo: clicca una riga per aprirla e modificarla. Per creare una nuova lezione, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Raccoglie quanto imparato da criticità, decisioni e allert già registrati — per non ripetere gli stessi errori sulla prossima commessa.'));
 
   const toolbar = el('div', { class: 'section__head' }, [

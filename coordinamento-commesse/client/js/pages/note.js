@@ -60,7 +60,7 @@ function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     data.punti = punti;
     try {
       if (existing) await api.put(`/note-coordinamento/${existing.id}`, data);
@@ -138,7 +138,7 @@ export async function renderNote(container) {
   const soloLettura = inVistaGruppo();
   if (soloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura (l\'anteprima resta disponibile). Seleziona una singola commessa dal menu a sinistra per modificare.'));
+      'Vista aggregata di gruppo: clicca una riga per l\'anteprima, o su "Modifica" per modificarla. Per creare una nuova nota, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   let lastRows = [];
@@ -182,7 +182,7 @@ export async function renderNote(container) {
         key: 'actions', label: '', className: 'actions',
         render: (nota) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openPreview(nota) }, 'Anteprima'),
-          soloLettura ? null : el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(nota, refresh) }, 'Modifica'),
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(nota, refresh) }, 'Modifica'),
           soloLettura ? null : el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
             onclick: async () => {

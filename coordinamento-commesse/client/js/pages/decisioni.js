@@ -19,11 +19,19 @@ let STATO = STATO_FIXED;
 const AZIONE_LABEL = { creata: 'Creata', modificata: 'Modificata', chiusa: 'Chiusa', riaperta: 'Riaperta', eliminata: 'Eliminata', rilancio: 'Rilanciata' };
 
 async function openForm(existing, onSaved) {
-  const requisitiRes = await api.get(`/requisiti?commessa_id=${state.commessaId}`);
+  // In vista aggregata di gruppo la decisione può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar: i menu
+  // a tendina di questo form devono sempre riferirsi alla commessa della
+  // riga che si sta modificando, non a state.commessaId.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [requisitiRes, wpRes] = await Promise.all([
+    api.get(`/requisiti?commessa_id=${commessaIdForm}`),
+    api.get(`/commesse/${commessaIdForm}/wp`),
+  ]);
   const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
 
   const form = el('form', {});
-  const wpOptions = [['', '—'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
@@ -46,7 +54,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = state.commessaId;
     data.conferma_scritta = data.conferma_scritta === '1';
     try {
       if (existing) await api.put(`/decisioni/${existing.id}`, data);
@@ -76,7 +84,7 @@ export async function renderDecisioni(container) {
   const soloLettura = inVistaGruppo();
   if (soloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare. Il cruscotto numerico sopra la tabella richiede una singola commessa.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova decisione o importare da Excel, seleziona prima una singola commessa dal menu a sinistra. Il cruscotto numerico sopra la tabella richiede anch\'esso una singola commessa.'));
   }
 
   const dashHost = el('div', { class: 'tiles' });
@@ -193,7 +201,7 @@ export async function renderDecisioni(container) {
       }]),
     ], list.data, {
       emptyLabel: 'Nessuna decisione registrata per questa commessa.',
-      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
+      onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }
