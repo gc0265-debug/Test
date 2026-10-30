@@ -16,6 +16,26 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Correzione import Excel di Approvazioni Drawings (30 ottobre 2026)
+
+- Risolto il problema per cui il pulsante **"Importa da Excel"** nella
+  scheda Approvazioni Drawings non importava nulla con l'elenco
+  deliverable reale (le intestazioni erano in una riga diversa da
+  quella attesa e i nomi di colonna non corrispondevano).
+- L'import ora riconosce sia il template semplice sia il formato reale
+  dell'Elenco Deliverable, cercando da solo la riga di intestazione.
+- Quando un elaborato non ha ancora un "Nome elaborato" assegnato,
+  viene usato come titolo provvisorio il nome dell'ambiente/area/zona,
+  così da non perdere elaborati ancora senza un file formale.
+- Lo stato della colonna "Status" (OK, temi minori, in approvazione,
+  da rilevare, ecc.) viene convertito automaticamente nei 4 stati
+  dell'app, mantenendo il testo originale in nota quando serve.
+- Livello, Area, Ambiente, PM e le annotazioni della maschera GILI
+  vengono riportati in nota, così da non perdere il contesto di ogni
+  riga importata.
+
+---
+
 ## Sezione Misure in Lavorazioni (29 ottobre 2026)
 
 - Ogni lavorazione ha ora una sezione **Misure**, per registrare le
