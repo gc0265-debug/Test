@@ -16,6 +16,33 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Import Excel del Registro Criticità PM (30 ottobre 2026)
+
+- Nuovo pulsante **"Importa da Excel"** nella scheda Registro Criticità,
+  sullo stesso modello già disponibile per Decisioni e Approvazioni
+  Drawings: permette di caricare direttamente il Registro Criticità
+  aggiornato dai PM di GILI, senza doverlo ricopiare a mano.
+- L'importazione riconosce da sola la riga di intestazione reale del
+  file (anche quando sopra ci sono righe di titolo o legenda) e i nomi
+  di colonna usati dai PM: PM, Piano/Area, Tipo, Criticità, Cosa serve,
+  Urgenza, Data limite, Impatto PL, Stato, Note dal DDC, Risposta dei PM.
+- Ogni riga viene assegnata in automatico al Work Package corretto in
+  base alla colonna "PM": PM FOH → WP1 FOH, PM Corridoi → WP2 CORRIDOI,
+  PM Suite → WP3 SUITE, PM Scala B → WP4 SCALA B, tutti all'interno
+  della commessa 2514RW — coerentemente con il fatto che FOH, Corridoi,
+  Suite e Scala B sono i quattro Work Package della stessa commessa, e
+  non commesse separate.
+- Le righe con un valore nella colonna "PM" non riconosciuto (ad
+  esempio relativo a una commessa non ancora presente in Coordinamento
+  Commesse) vengono saltate e segnalate con il motivo esatto, così
+  nessun dato viene perso o assegnato per errore: l'app non crea mai in
+  automatico una nuova commessa.
+- Piano/Area, Tipo di criticità, Note dal DDC e Risposta dei PM vengono
+  riportati in nota sulla criticità creata, per mantenere la piena
+  tracciabilità di ogni riga importata rispetto al file originale.
+
+---
+
 ## Vista aggregata per gruppo di commesse (30 ottobre 2026)
 
 - Nuovo campo **"Gruppo progetto"** nella scheda di ogni commessa

@@ -86,6 +86,24 @@ export async function renderCriticita(container) {
   let filtroStato = 'aperta';
   let lastRows = [];
   let selectedId = null;
+
+  const fileInput = el('input', { type: 'file', accept: '.xlsx,.xls', style: 'display:none' });
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await api.postForm('/criticita/import', fd);
+      toast(`Importate ${res.imported} criticità${res.skipped ? ` (${res.skipped} righe saltate: PM non riconosciuto o commessa non trovata)` : ''}.`);
+      await refresh();
+    } catch (err) {
+      toast(err.message, { error: true });
+    } finally {
+      fileInput.value = '';
+    }
+  });
+
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:6px' }, [
       pillFilter('aperta', 'Aperte'),
@@ -102,11 +120,13 @@ export async function renderCriticita(container) {
         }]);
       } }, 'Stampa'),
       soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
+      soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(fileInput);
 
   const tableHost = el('div');
   container.appendChild(tableHost);

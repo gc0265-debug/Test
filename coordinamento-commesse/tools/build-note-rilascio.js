@@ -28,13 +28,23 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.11';
+const VERSIONE_ATTUALE = '1.12';
 const DATA_ATTUALE = '30 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.11', title: 'Vista aggregata per gruppo di commesse', date: '30 ottobre 2026', attuale: true,
+    v: '1.12', title: 'Import Excel del Registro Criticità PM', date: '30 ottobre 2026', attuale: true,
+    points: [
+      'Nuovo pulsante "Importa da Excel" nella scheda Registro Criticità, sullo stesso modello già disponibile per Decisioni e Approvazioni Drawings: permette di caricare direttamente il Registro Criticità aggiornato dai PM di GILI, senza doverlo ricopiare a mano.',
+      'L’importazione riconosce da sola la riga di intestazione reale del file (anche quando sopra ci sono righe di titolo o legenda) e i nomi di colonna usati dai PM: PM, Piano/Area, Tipo, Criticità, Cosa serve, Urgenza, Data limite, Impatto PL, Stato, Note dal DDC, Risposta dei PM.',
+      'Ogni riga viene assegnata in automatico al Work Package corretto in base alla colonna "PM": PM FOH → WP1 FOH, PM Corridoi → WP2 CORRIDOI, PM Suite → WP3 SUITE, PM Scala B → WP4 SCALA B, tutti all’interno della commessa 2514RW — coerentemente con il fatto che FOH, Corridoi, Suite e Scala B sono i quattro Work Package della stessa commessa, e non commesse separate.',
+      'Le righe con un valore nella colonna "PM" non riconosciuto (ad esempio relativo a una commessa non ancora presente in Coordinamento Commesse) vengono saltate e segnalate con il motivo esatto, così nessun dato viene perso o assegnato per errore: l’app non crea mai in automatico una nuova commessa.',
+      'Piano/Area, Tipo di criticità, Note dal DDC e Risposta dei PM vengono riportati in nota sulla criticità creata, per mantenere la piena tracciabilità di ogni riga importata rispetto al file originale.',
+    ],
+  },
+  {
+    v: '1.11', title: 'Vista aggregata per gruppo di commesse', date: '30 ottobre 2026',
     points: [
       'Nuovo campo "Gruppo progetto" nella scheda di ogni commessa (es. "RSW Roma"): commesse diverse che fanno parte dello stesso progetto (es. 2514RW e 2593RW) possono condividere lo stesso gruppo, pur restando commesse distinte con il proprio codice.',
       'Quando due o più commesse condividono un gruppo, nel menu a tendina in alto a sinistra compare una nuova opzione "‹gruppo› — tutte (N)": selezionandola si vedono in un’unica vista, per tutti i registri, i dati di tutte le commesse del gruppo insieme — ogni riga mostra una colonna "Commessa" per sapere a quale commessa appartiene.',
