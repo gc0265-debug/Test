@@ -10,6 +10,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
@@ -22,10 +23,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
 
 router.get('/', (req, res) => {
-  const { commessa_id } = req.query;
-  let sql = 'SELECT * FROM contratti WHERE 1=1';
+  let sql = `
+    SELECT ct.*, cm.codice AS commessa_codice
+    FROM contratti ct
+    LEFT JOIN commesse cm ON ct.commessa_id = cm.id
+    WHERE 1=1
+  `;
   const params = [];
-  if (commessa_id) { sql += ' AND commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'ct.commessa_id');
   sql += ' ORDER BY data_stipula DESC';
   res.json({ data: db.prepare(sql).all(...params), total: 0 });
 });

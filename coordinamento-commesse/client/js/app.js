@@ -1,4 +1,4 @@
-import { state, loadCommesse, setCommessa, subscribe } from './state.js';
+import { state, loadCommesse, setCommessa, setGruppo, gruppiDisponibili, subscribe } from './state.js';
 import { route, startRouter, navigate } from './router.js';
 import { getCurrentUser, logout } from './auth.js';
 import { renderLogin } from './pages/login.js';
@@ -72,18 +72,38 @@ function setupSidebarResize() {
   });
 }
 
+// Oltre alle commesse singole, propone in cima un'opzione "<gruppo> —
+// tutte (N)" per ogni gruppo progetto con 2+ commesse (es. RSW Roma):
+// selezionandola si attiva la vista aggregata sui registri, con ogni
+// riga etichettata dal proprio codice commessa.
 function renderCommessaSelect() {
   const select = document.getElementById('commessaSelect');
   select.innerHTML = '';
+
+  const gruppi = gruppiDisponibili();
+  if (gruppi.length) {
+    gruppi.forEach((g) => {
+      const opt = document.createElement('option');
+      opt.value = `gruppo:${g.nome}`;
+      opt.textContent = `${g.nome} — tutte (${g.n})`;
+      if (state.gruppoAttivo === g.nome) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
   state.commesse.forEach((c) => {
     const opt = document.createElement('option');
     opt.value = c.id;
     opt.textContent = `${c.codice} — ${c.nome}`;
-    if (c.id === state.commessaId) opt.selected = true;
+    if (!state.gruppoAttivo && c.id === state.commessaId) opt.selected = true;
     select.appendChild(opt);
   });
   select.onchange = async (e) => {
-    await setCommessa(e.target.value);
+    const v = e.target.value;
+    if (v.startsWith('gruppo:')) {
+      await setGruppo(v.slice('gruppo:'.length));
+    } else {
+      await setCommessa(v);
+    }
     navigate();
   };
 }

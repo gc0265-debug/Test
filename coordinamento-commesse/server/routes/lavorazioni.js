@@ -1,19 +1,21 @@
 const express = require('express');
 const db = require('../db/database');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, stato, priorita, search } = req.query;
+  const { wp_id, stato, priorita, search } = req.query;
   let sql = `
-    SELECT l.*, w.codice AS wp_codice, w.nome AS wp_nome, c.titolo AS contratto_titolo, c.controparte AS contratto_controparte
+    SELECT l.*, w.codice AS wp_codice, w.nome AS wp_nome, c.titolo AS contratto_titolo, c.controparte AS contratto_controparte, cm.codice AS commessa_codice
     FROM lavorazioni l
     LEFT JOIN work_packages w ON l.wp_id = w.id
     LEFT JOIN contratti c ON l.contratto_id = c.id
+    LEFT JOIN commesse cm ON l.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND l.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'l.commessa_id');
   if (wp_id) { sql += ' AND l.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND l.stato = ?'; params.push(stato); }
   if (priorita) { sql += ' AND l.priorita = ?'; params.push(priorita); }

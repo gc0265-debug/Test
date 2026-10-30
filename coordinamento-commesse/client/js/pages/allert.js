@@ -4,7 +4,7 @@
 // presidio GC, non una sincronizzazione automatica con quel fascicolo.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -66,13 +66,16 @@ async function openForm(existing, onSaved) {
 }
 
 export async function renderAllert(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
 
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Classificazione di perimetro e azioni di tutela — funzione di presidio GC, distinta dal coordinamento operativo dei registri precedenti.'));
+    soloLettura
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      : 'Classificazione di perimetro e azioni di tutela — funzione di presidio GC, distinta dal coordinamento operativo dei registri precedenti.'));
 
   let lastRows = [];
   let perimetroMap = {};
@@ -82,14 +85,14 @@ export async function renderAllert(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Registro Allert', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Registro Allert', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Allert',
           columns: ['Data', 'Descrizione', 'Perimetro', 'Classificazione', 'Stato'],
           rows: rows.map((r) => [formatDate(r.data), r.descrizione, perimetroMap[r.perimetro] || r.perimetro, CLASSIFICAZIONE[r.classificazione][0], STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
-      el('a', { class: 'btn btn--sm', href: `/api/export/allert/${state.commessaId}` }, 'Esporta Excel'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo allert'),
+      soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/allert/${state.commessaId}` }, 'Esporta Excel'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo allert'),
       settingsGear(),
     ]),
   ]);
@@ -100,7 +103,7 @@ export async function renderAllert(container) {
 
   async function refresh() {
     const [res, perimetroList, classificazioneList, statoList] = await Promise.all([
-      api.get(`/allert?commessa_id=${state.commessaId}`),
+      api.get(`/allert?${queryScopeCommessa()}`),
       getCategoria('allert_perimetro'),
       getCategoria('allert_classificazione'),
       getCategoria('allert_stato'),
@@ -111,6 +114,7 @@ export async function renderAllert(container) {
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },
       { key: 'descrizione', label: 'Descrizione' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
@@ -118,7 +122,7 @@ export async function renderAllert(container) {
       { key: 'classificazione', label: 'Classificazione', render: (r) => pill(CLASSIFICAZIONE[r.classificazione][0], CLASSIFICAZIONE[r.classificazione][1]) },
       { key: 'collegata', label: 'Collegato a', render: (r) => r.criticita_tema || r.decisione_tema || (r.requisito_wbs ? `${r.requisito_wbs} — ${r.requisito_titolo}` : '—') },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('allert', row.id, row.descrizione) }, 'Storico'),
@@ -134,10 +138,10 @@ export async function renderAllert(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       rowClass: (r) => (r.classificazione === 'critico' && r.stato !== 'chiuso') ? 'row-scaduta' : '',
       emptyLabel: 'Nessun allert registrato per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

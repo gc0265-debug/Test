@@ -1,14 +1,19 @@
 const express = require('express');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { commessa_id } = req.query;
-  let sql = 'SELECT * FROM diario WHERE 1=1';
+  let sql = `
+    SELECT d.*, cm.codice AS commessa_codice
+    FROM diario d
+    LEFT JOIN commesse cm ON d.commessa_id = cm.id
+    WHERE 1=1
+  `;
   const params = [];
-  if (commessa_id) { sql += ' AND commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'd.commessa_id');
   sql += ' ORDER BY data DESC, created_at DESC';
   const rows = db.prepare(sql).all(...params);
   res.json({ data: rows, total: rows.length });

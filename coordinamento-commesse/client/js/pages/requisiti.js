@@ -5,7 +5,7 @@
 // approvazioni confluiscono lì, non in un registro separato.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, scopeParams, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, formatDateTime, settingsGear,
@@ -96,12 +96,15 @@ async function richiediApprovazione(requisito, onDone) {
 }
 
 export async function renderRequisiti(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Estratti dal capitolato, con codice WBS e fase di esecuzione. Le approvazioni si richiedono da qui ma confluiscono nel Registro Decisioni.'));
+    soloLettura
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      : 'Estratti dal capitolato, con codice WBS e fase di esecuzione. Le approvazioni si richiedono da qui ma confluiscono nel Registro Decisioni.'));
 
   let filtroFase = '';
   let lastRows = [];
@@ -112,13 +115,13 @@ export async function renderRequisiti(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Requisiti', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Requisiti', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Elenco requisiti',
           columns: ['WBS', 'Titolo', 'Fase', 'Versione', 'Stato'],
           rows: rows.map((r) => [r.codice_wbs, r.titolo, faseMap[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
       settingsGear(),
     ]),
   ]);
@@ -139,7 +142,7 @@ export async function renderRequisiti(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const query = new URLSearchParams({ commessa_id: state.commessaId });
+    const query = new URLSearchParams(scopeParams());
     if (filtroFase) query.set('fase', filtroFase);
     const [res, faseList, statoList] = await Promise.all([
       api.get(`/requisiti?${query.toString()}`),
@@ -152,6 +155,7 @@ export async function renderRequisiti(container) {
     drawFilters();
     lastRows = res.data;
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'codice_wbs', label: 'WBS' },
       {
         key: 'titolo', label: 'Titolo',
@@ -161,7 +165,7 @@ export async function renderRequisiti(container) {
       { key: 'fase', label: 'Fase', render: (r) => FASE[r.fase] || r.fase },
       { key: 'versione', label: 'Versione', render: (r) => pill(`v${r.versione_corrente}`, r.versione_corrente > 1 ? 'ambra' : 'outline') },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openVersioni(row) }, 'Versioni'),
@@ -179,9 +183,9 @@ export async function renderRequisiti(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessun requisito registrato per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

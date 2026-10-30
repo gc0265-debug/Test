@@ -1,11 +1,10 @@
-// Pagina CRUD generica: usata da Lavorazioni, Maestranze, Documenti e
-// Diario, che condividono la stessa meccanica (lista, crea, modifica,
-// elimina) e differiscono solo nei campi del modulo e nelle colonne
-// della tabella. Le pagine con logica propria (Criticità, Decisioni,
-// Note di Coordinamento, Commesse, Cruscotto) non passano da qui.
+// Pagina CRUD generica: ad oggi usata da Diario (le altre pagine con una
+// meccanica simile sono diventate custom via via che hanno accumulato
+// logica propria). Gestisce anche la vista aggregata di gruppo: in sola
+// lettura, con una colonna Commessa aggiunta in testa.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
@@ -21,7 +20,7 @@ function buildFieldNode(f, value) {
 
 export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true, printColumns }) {
   async function fetchRows() {
-    const query = scopedByCommessa ? `?commessa_id=${state.commessaId}` : '';
+    const query = scopedByCommessa ? `?${queryScopeCommessa()}` : '';
     const res = await api.get(`${apiPath}${query}`);
     return res.data;
   }
@@ -53,9 +52,14 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
   }
 
   return async function render(container) {
-    if (!state.commessaId) {
+    if (!state.commessaId && !state.gruppoAttivo) {
       container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
       return;
+    }
+    const soloLettura = scopedByCommessa && inVistaGruppo();
+    if (soloLettura) {
+      container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+        `Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.`));
     }
 
     let lastRows = [];
@@ -74,7 +78,7 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
             }]);
           },
         }, 'Stampa') : null,
-        el('button', {
+        soloLettura ? null : el('button', {
           class: 'btn btn--primary',
           onclick: () => openForm(null, refresh),
         }, `+ Nuovo`),
@@ -90,8 +94,9 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
       const rows = await fetchRows();
       lastRows = rows;
       const cols = [
+        ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (row) => row.commessa_codice || '—' }] : []),
         ...columns,
-        {
+        ...(soloLettura ? [] : [{
           key: 'actions', label: '', className: 'actions',
           render: (row) => el('div', {}, [
             el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
@@ -104,11 +109,11 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
               },
             }, 'Elimina'),
           ]),
-        },
+        }]),
       ];
       renderTable(tableHost, cols, rows, {
         emptyLabel,
-        onRowClick: (row) => openForm(row, refresh),
+        onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
         selection: printColumns ? { selectedId, onSelect: (id) => { selectedId = id; refresh(); } } : null,
       });
     }

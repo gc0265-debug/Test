@@ -7,20 +7,22 @@ const express = require('express');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { logAudit } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, fase, stato, search } = req.query;
+  const { wp_id, fase, stato, search } = req.query;
   let sql = `
-    SELECT r.*, w.codice AS wp_codice, w.nome AS wp_nome, cv.codice_wbs AS capitolato_wbs, cv.titolo AS capitolato_titolo
+    SELECT r.*, w.codice AS wp_codice, w.nome AS wp_nome, cv.codice_wbs AS capitolato_wbs, cv.titolo AS capitolato_titolo, cm.codice AS commessa_codice
     FROM requisiti r
     LEFT JOIN work_packages w ON r.wp_id = w.id
     LEFT JOIN capitolato_voci cv ON r.rif_capitolato_voce_id = cv.id
+    LEFT JOIN commesse cm ON r.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND r.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'r.commessa_id');
   if (wp_id) { sql += ' AND r.wp_id = ?'; params.push(wp_id); }
   if (fase) { sql += ' AND r.fase = ?'; params.push(fase); }
   if (stato) { sql += ' AND r.stato = ?'; params.push(stato); }

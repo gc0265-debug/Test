@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
@@ -9,10 +10,14 @@ function parseRow(row) {
 }
 
 router.get('/', (req, res) => {
-  const { commessa_id } = req.query;
-  let sql = 'SELECT * FROM note_coordinamento WHERE 1=1';
+  let sql = `
+    SELECT n.*, cm.codice AS commessa_codice
+    FROM note_coordinamento n
+    LEFT JOIN commesse cm ON n.commessa_id = cm.id
+    WHERE 1=1
+  `;
   const params = [];
-  if (commessa_id) { sql += ' AND commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'n.commessa_id');
   sql += ' ORDER BY data DESC, created_at DESC';
   res.json({ data: db.prepare(sql).all(...params).map(parseRow), total: 0 });
 });

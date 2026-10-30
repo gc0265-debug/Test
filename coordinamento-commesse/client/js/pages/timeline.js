@@ -9,7 +9,7 @@
 // modificarle si passa dalla scheda Lavorazioni.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, formatDate, todayISO, settingsGear,
@@ -253,7 +253,7 @@ function openStampaModal(items, commessa) {
 }
 
 export async function renderTimeline(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
@@ -261,7 +261,11 @@ export async function renderTimeline(container) {
   let granularity = 'week';
   let zoom = 1;
   let items = [];
-  const soloLettura = state.currentUser?.ruolo === 'cliente';
+  const soloLettura = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
+  if (inVistaGruppo()) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+  }
 
   const zoomSlider = el('input', {
     type: 'range', min: '0.4', max: '3', step: '0.1', value: '1', class: 'gantt__zoom',
@@ -273,7 +277,7 @@ export async function renderTimeline(container) {
     el('div', { style: 'display:flex;gap:8px;align-items:center' }, [
       el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
       zoomSlider,
-      el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
+      el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova riga'),
       settingsGear(),
     ]),
@@ -297,8 +301,8 @@ export async function renderTimeline(container) {
 
   async function refresh() {
     const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList, lavorazioniPrioritaList] = await Promise.all([
-      api.get(`/milestone?commessa_id=${state.commessaId}`),
-      api.get(`/lavorazioni?commessa_id=${state.commessaId}`),
+      api.get(`/milestone?${queryScopeCommessa()}`),
+      api.get(`/lavorazioni?${queryScopeCommessa()}`),
       getCategoria('milestone_stato'),
       getCategoria('lavorazioni_stato'),
       getCategoria('lavorazioni_priorita'),
@@ -397,9 +401,10 @@ export async function renderTimeline(container) {
         onEdit
       ));
 
-      const metaParts = isLavorazione
-        ? [it.piano, it.zona, it.wp_codice, it.impresa_label].filter(Boolean)
-        : [it.piano, it.zona, it.wp_codice].filter(Boolean);
+      const metaParts = (isLavorazione
+        ? [it.piano, it.zona, it.wp_codice, it.impresa_label]
+        : [it.piano, it.zona, it.wp_codice]
+      ).concat(inVistaGruppo() ? [it.commessa_codice] : []).filter(Boolean);
 
       return el('div', { class: 'gantt__row' + (it.ha_scostamento ? ' gantt__row--scostamento' : '') + (isLavorazione ? ' gantt__row--lavorazione' : '') }, [
         labelCols(

@@ -3,7 +3,7 @@
 // (per WP, se filtrate) e poi modificabile a mano prima dell'invio.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -131,9 +131,14 @@ function openPreview(nota) {
 }
 
 export async function renderNote(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
+  }
+  const soloLettura = inVistaGruppo();
+  if (soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura (l\'anteprima resta disponibile). Seleziona una singola commessa dal menu a sinistra per modificare.'));
   }
 
   let lastRows = [];
@@ -143,14 +148,14 @@ export async function renderNote(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((n) => String(n.id) === String(selectedId)) : lastRows;
-        printReport('Note di Coordinamento', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Note di Coordinamento', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Elenco note',
           columns: ['Data', 'Oggetto', 'Destinatari', 'Punti', 'Stato'],
           rows: rows.map((n) => [formatDate(n.data), n.oggetto, n.destinatari || '—', n.punti.length, STATO[n.stato][0]]),
         }]);
       } }, 'Stampa elenco'),
-      el('button', { class: 'btn', onclick: () => openGeneraBozza(refresh) }, 'Genera da criticità aperte'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nota vuota'),
+      soloLettura ? null : el('button', { class: 'btn', onclick: () => openGeneraBozza(refresh) }, 'Genera da criticità aperte'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nota vuota'),
       settingsGear(),
     ]),
   ]);
@@ -161,12 +166,13 @@ export async function renderNote(container) {
 
   async function refresh() {
     const [res, statoList] = await Promise.all([
-      api.get(`/note-coordinamento?commessa_id=${state.commessaId}`),
+      api.get(`/note-coordinamento?${queryScopeCommessa()}`),
       getCategoria('note_stato'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (n) => n.commessa_codice || '—' } : null,
       { key: 'data', label: 'Data', render: (n) => formatDate(n.data) },
       { key: 'oggetto', label: 'Oggetto', render: (n) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); openPreview(n); } }, n.oggetto) },
       { key: 'destinatari', label: 'Destinatari' },
@@ -176,8 +182,8 @@ export async function renderNote(container) {
         key: 'actions', label: '', className: 'actions',
         render: (nota) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openPreview(nota) }, 'Anteprima'),
-          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(nota, refresh) }, 'Modifica'),
-          el('button', {
+          soloLettura ? null : el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(nota, refresh) }, 'Modifica'),
+          soloLettura ? null : el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
             onclick: async () => {
               if (!confirmDialog('Eliminare questa nota?')) return;
@@ -188,7 +194,7 @@ export async function renderNote(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuna nota di coordinamento per questa commessa.',
       onRowClick: (n) => openPreview(n),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
@@ -200,6 +206,7 @@ export async function renderNote(container) {
 
 function printToWindow(win, nota) {
   const commessa = state.commesse.find((c) => c.id === state.commessaId);
+  const intestazione = commessa ? `${commessa.codice} — ${commessa.nome}` : (nota.commessa_codice || '');
   win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${nota.oggetto}</title>
     <style>
       body{font-family:Arial,sans-serif;padding:32px;color:#1A1A1A;}
@@ -209,7 +216,7 @@ function printToWindow(win, nota) {
       li b{display:block;margin-left:26px;} li .wp{font-size:10px;color:#888;text-transform:uppercase;margin-left:26px;}
       li p{margin:4px 0 0 26px;color:#444;}
     </style></head><body>
-    <h1>${commessa ? commessa.codice + ' — ' + commessa.nome : ''}</h1>
+    <h1>${intestazione}</h1>
     <p><span class="k">Data</span>${formatDate(nota.data)}</p>
     <p><span class="k">Oggetto</span>${nota.oggetto}</p>
     <p><span class="k">Destinatari</span>${nota.destinatari || '—'}</p>

@@ -5,7 +5,7 @@
 // Coordinamento e Contratti.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear,
@@ -64,16 +64,18 @@ async function openForm(existing, onSaved) {
 }
 
 export async function renderApprovazioniDrawings(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Elenco degli elaborati (drawing) sottoposti ad approvazione, compilabile a mano o importando un elenco deliverable in Excel.'));
+    inVistaGruppo()
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      : 'Elenco degli elaborati (drawing) sottoposti ad approvazione, compilabile a mano o importando un elenco deliverable in Excel.'));
 
   let lastRows = [];
   let selectedId = null;
-  const soloLettura = state.currentUser?.ruolo === 'cliente';
 
   const fileInput = el('input', { type: 'file', accept: '.xlsx,.xls', style: 'display:none' });
   fileInput.addEventListener('change', async () => {
@@ -98,7 +100,7 @@ export async function renderApprovazioniDrawings(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Approvazioni Drawings', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Approvazioni Drawings', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Elaborati',
           columns: ['Codice', 'Titolo', 'Rev.', 'WP', 'Invio', 'Approvazione', 'Stato', 'Requisito'],
           rows: rows.map((r) => [
@@ -120,12 +122,13 @@ export async function renderApprovazioniDrawings(container) {
 
   async function refresh() {
     const [res, statoList] = await Promise.all([
-      api.get(`/approvazioni-drawings?commessa_id=${state.commessaId}`),
+      api.get(`/approvazioni-drawings?${queryScopeCommessa()}`),
       getCategoria('approvazioni_stato'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
+      inVistaGruppo() ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'codice', label: 'Codice' },
       { key: 'titolo', label: 'Titolo' },
       { key: 'revisione', label: 'Rev.', render: (r) => r.revisione || '—' },
@@ -149,7 +152,7 @@ export async function renderApprovazioniDrawings(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessun elaborato registrato. Aggiungilo a mano o importa un elenco da Excel.',
       onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },

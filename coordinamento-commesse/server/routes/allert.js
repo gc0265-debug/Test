@@ -7,6 +7,7 @@ const express = require('express');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
@@ -18,19 +19,21 @@ const TRACKED = [
 ];
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, stato, perimetro, classificazione } = req.query;
+  const { wp_id, stato, perimetro, classificazione } = req.query;
   let sql = `
     SELECT a.*, w.codice AS wp_codice, w.nome AS wp_nome,
-           c.tema AS criticita_tema, d.tema AS decisione_tema, r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo
+           c.tema AS criticita_tema, d.tema AS decisione_tema, r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo,
+           cm.codice AS commessa_codice
     FROM allert a
     LEFT JOIN work_packages w ON a.wp_id = w.id
     LEFT JOIN criticita c ON a.rif_criticita_id = c.id
     LEFT JOIN decisioni d ON a.rif_decisione_id = d.id
     LEFT JOIN requisiti r ON a.rif_requisito_id = r.id
+    LEFT JOIN commesse cm ON a.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND a.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'a.commessa_id');
   if (wp_id) { sql += ' AND a.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND a.stato = ?'; params.push(stato); }
   if (perimetro) { sql += ' AND a.perimetro = ?'; params.push(perimetro); }

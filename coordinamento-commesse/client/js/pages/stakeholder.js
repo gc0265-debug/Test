@@ -3,7 +3,7 @@
 // del Piano Comunicazioni.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -82,9 +82,14 @@ function renderMatrice(rows) {
 }
 
 export async function renderStakeholder(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
+  }
+  const soloLettura = inVistaGruppo();
+  if (soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
   }
 
   const matrixHost = el('div');
@@ -98,13 +103,13 @@ export async function renderStakeholder(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Registro Stakeholder', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Registro Stakeholder', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Stakeholder',
           columns: ['Nome', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Stato'],
           rows: rows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
       settingsGear(),
     ]),
   ]);
@@ -114,7 +119,7 @@ export async function renderStakeholder(container) {
 
   async function refresh() {
     const [res, categoriaList, statoList] = await Promise.all([
-      api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+      api.get(`/stakeholder?${queryScopeCommessa()}`),
       getCategoria('stakeholder_categoria'),
       getCategoria('stakeholder_stato'),
     ]);
@@ -126,13 +131,14 @@ export async function renderStakeholder(container) {
     matrixHost.appendChild(renderMatrice(res.data));
 
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'nome', label: 'Nome' },
       { key: 'ruolo', label: 'Ruolo / organizzazione', render: (r) => [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—' },
       { key: 'categoria', label: 'Categoria', render: (r) => CATEGORIA[r.categoria] || r.categoria },
       { key: 'interesse', label: 'Interesse', render: (r) => pill(r.interesse, r.interesse === 'alto' ? 'rosso' : (r.interesse === 'medio' ? 'ambra' : 'outline')) },
       { key: 'influenza', label: 'Influenza', render: (r) => pill(r.influenza, r.influenza === 'alta' ? 'rosso' : (r.influenza === 'media' ? 'ambra' : 'outline')) },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('stakeholder', row.id, row.nome) }, 'Storico'),
@@ -148,9 +154,9 @@ export async function renderStakeholder(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuno stakeholder registrato per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

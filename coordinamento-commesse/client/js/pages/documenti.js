@@ -2,7 +2,7 @@
 // non in alternativa: una riga può avere entrambi, uno solo, o nessuno).
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
@@ -57,9 +57,14 @@ async function openForm(existing, onSaved) {
 }
 
 export async function renderDocumenti(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
+  }
+  const soloLettura = inVistaGruppo();
+  if (soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
   }
 
   let lastRows = [];
@@ -70,13 +75,13 @@ export async function renderDocumenti(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Documenti', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Documenti', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Elenco documenti',
           columns: ['Titolo', 'Tipo', 'Link', 'File', 'Note'],
           rows: rows.map((r) => [r.titolo, tipoMap[r.tipo] || r.tipo, r.url || '—', r.file_nome || '—', r.note || '—']),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo documento'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo documento'),
       settingsGear(),
     ]),
   ]);
@@ -86,19 +91,20 @@ export async function renderDocumenti(container) {
 
   async function refresh() {
     const [res, tipoList] = await Promise.all([
-      api.get(`/documenti?commessa_id=${state.commessaId}`),
+      api.get(`/documenti?${queryScopeCommessa()}`),
       getCategoria('documenti_tipo'),
     ]);
     tipoMap = toMap(tipoList);
     const TIPO = tipoMap;
     lastRows = res.data;
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'titolo', label: 'Titolo' },
       { key: 'tipo', label: 'Tipo', render: (r) => TIPO[r.tipo] || r.tipo },
       { key: 'url', label: 'Link', render: (r) => r.url ? el('a', { href: r.url, target: '_blank', rel: 'noopener' }, 'Apri link ↗') : '—' },
       { key: 'file', label: 'File', render: (r) => r.file_path ? el('a', { href: `/api/documenti/${r.id}/file`, class: 'btn btn--sm btn--ghost' }, `⬇ ${r.file_nome} (${formatSize(r.file_size)})`) : '—' },
       { key: 'note', label: 'Note' },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
@@ -113,9 +119,9 @@ export async function renderDocumenti(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessun documento registrato per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

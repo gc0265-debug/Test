@@ -5,14 +5,19 @@
 const express = require('express');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/processi', (req, res) => {
-  const { commessa_id } = req.query;
-  let sql = 'SELECT * FROM processi_comunicazione WHERE 1=1';
+  let sql = `
+    SELECT p.*, cm.codice AS commessa_codice
+    FROM processi_comunicazione p
+    LEFT JOIN commesse cm ON p.commessa_id = cm.id
+    WHERE 1=1
+  `;
   const params = [];
-  if (commessa_id) { sql += ' AND commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'p.commessa_id');
   sql += ' ORDER BY nome ASC';
   res.json({ data: db.prepare(sql).all(...params), total: 0 });
 });

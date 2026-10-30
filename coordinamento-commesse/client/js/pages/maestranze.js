@@ -3,7 +3,7 @@
 // commessa, invece di scriverli a mano in un campo di testo libero.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear,
@@ -74,9 +74,14 @@ async function openForm(existing, onSaved) {
 }
 
 export async function renderMaestranze(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
+  }
+  const soloLettura = inVistaGruppo();
+  if (soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
   }
 
   let lastRows = [];
@@ -86,13 +91,13 @@ export async function renderMaestranze(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Maestranze', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Maestranze', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Maestranze',
           columns: ['Nome', 'Ruolo', 'Fornitori', 'WP', 'Telefono', 'Stato'],
           rows: rows.map((r) => [r.nome, r.ruolo || '—', r.fornitori_nomi || r.azienda || '—', r.wp_codice || '—', r.telefono || '—', STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo'),
       settingsGear(),
     ]),
   ]);
@@ -102,19 +107,20 @@ export async function renderMaestranze(container) {
 
   async function refresh() {
     const [res, statoList] = await Promise.all([
-      api.get(`/maestranze?commessa_id=${state.commessaId}`),
+      api.get(`/maestranze?${queryScopeCommessa()}`),
       getCategoria('maestranze_stato'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'nome', label: 'Nome' },
       { key: 'ruolo', label: 'Ruolo' },
       { key: 'fornitori', label: 'Fornitori', render: (r) => r.fornitori_nomi || r.azienda || '—' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'telefono', label: 'Telefono' },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
@@ -129,9 +135,9 @@ export async function renderMaestranze(container) {
           }, 'Elimina'),
         ]),
       },
-    ], res.data, {
+    ].filter(Boolean), res.data, {
       emptyLabel: 'Nessuna maestranza registrata per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

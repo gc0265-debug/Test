@@ -4,7 +4,7 @@
 // senza termine fisso). La tabella mostra per prima cosa le viola scadute.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, scopeParams, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -70,9 +70,14 @@ function openForm(existing, onSaved) {
 }
 
 export async function renderCriticita(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
+  }
+  const soloLettura = inVistaGruppo();
+  if (soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
   }
 
   const dashHost = el('div', { class: 'tiles' });
@@ -90,14 +95,14 @@ export async function renderCriticita(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Registro Criticità', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Registro Criticità', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Criticità',
           columns: ['Tema', 'WP', 'Destinatario', 'Urgenza', 'Stato', 'Aperta il'],
           rows: rows.map((r) => [r.tema, r.wp_codice || '—', r.destinatario || '—', URGENZA[r.urgenza][0], STATO[r.stato][0], formatDate(r.data_apertura)]),
         }]);
       } }, 'Stampa'),
-      el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
+      soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/criticita/${state.commessaId}` }, 'Esporta Excel'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova criticità'),
       settingsGear(),
     ]),
   ]);
@@ -122,11 +127,11 @@ export async function renderCriticita(container) {
   }
 
   async function refresh() {
-    const query = new URLSearchParams({ commessa_id: state.commessaId });
+    const query = new URLSearchParams(scopeParams());
     if (filtroStato) query.set('stato', filtroStato);
     const [res, allRes, urgenzaList, statoList] = await Promise.all([
       api.get(`/criticita?${query.toString()}`),
-      api.get(`/criticita?commessa_id=${state.commessaId}`),
+      api.get(`/criticita?${new URLSearchParams(scopeParams())}`),
       getCategoria('criticita_urgenza'),
       getCategoria('criticita_stato'),
     ]);
@@ -143,13 +148,14 @@ export async function renderCriticita(container) {
     dashHost.appendChild(tile('In ritardo', inRitardo, inRitardo > 0 ? 'alert' : ''));
 
     renderTable(tableHost, [
+      ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' }] : []),
       { key: 'tema', label: 'Tema' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'destinatario', label: 'Destinatario' },
       { key: 'urgenza', label: 'Urgenza', render: urgenzaCell },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       { key: 'data_apertura', label: 'Aperta il', render: (r) => formatDate(r.data_apertura) },
-      {
+      ...(soloLettura ? [] : [{
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           row.stato !== 'chiusa' ? el('button', {
@@ -168,11 +174,11 @@ export async function renderCriticita(container) {
             },
           }, 'Elimina'),
         ]),
-      },
+      }]),
     ], res.data, {
       rowClass: (r) => r.scaduta ? 'row-scaduta' : (r.urgenza === 'viola' && r.stato !== 'chiusa' && r.giorni_rimanenti !== null && r.giorni_rimanenti <= 3 ? 'row-warn' : ''),
       emptyLabel: 'Nessuna criticità in questo filtro.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
 

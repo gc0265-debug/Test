@@ -5,7 +5,7 @@
 // a mano.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, scopeParams, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -69,13 +69,18 @@ function tile(label, value, cls) {
 }
 
 export async function renderDecisioni(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
+  if (soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare. Il cruscotto numerico sopra la tabella richiede una singola commessa.'));
+  }
 
   const dashHost = el('div', { class: 'tiles' });
-  container.appendChild(dashHost);
+  if (!soloLettura) container.appendChild(dashHost);
 
   let lastRows = [];
   let selectedId = null;
@@ -101,9 +106,9 @@ export async function renderDecisioni(container) {
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => stampaDecisioni() }, 'Stampa'),
-      el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
-      el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
+      soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
+      soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova decisione'),
       settingsGear(),
     ]),
   ]);
@@ -124,7 +129,7 @@ export async function renderDecisioni(container) {
         righe.push([`<span style="padding-left:22px;color:#666;font-size:11px">↳ ${AZIONE_LABEL[h.azione] || h.azione}${h.dettaglio ? ' — ' + h.dettaglio : ''} · ${quando} · ${h.utente || 'utente non registrato'}</span>`, '', '', '', '', '']);
       });
     });
-    printReport('Registro Decisioni', state.commesse.find(c => c.id === state.commessaId), [{
+    printReport('Registro Decisioni', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
       heading: 'Decisioni',
       columns: ['Tema', 'A chi', 'Prima richiesta', 'Anzianità', 'Stato', 'Per iscritto'],
       rows: righe,
@@ -133,23 +138,26 @@ export async function renderDecisioni(container) {
 
   async function refresh() {
     const [dash, list, statoList] = await Promise.all([
-      api.get(`/dashboard/${state.commessaId}`),
-      api.get(`/decisioni?commessa_id=${state.commessaId}`),
+      soloLettura ? Promise.resolve(null) : api.get(`/dashboard/${state.commessaId}`),
+      api.get(`/decisioni?${queryScopeCommessa()}`),
       getCategoria('decisioni_stato'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = list.data;
-    const d = dash.decisioni;
-    dashHost.innerHTML = '';
-    dashHost.appendChild(tile('Richieste totali', d.richieste_totali));
-    dashHost.appendChild(tile('Decise', d.decise));
-    dashHost.appendChild(tile('Tasso di resa', `${d.tasso_resa_pct}%`));
-    dashHost.appendChild(tile('Pendenze aperte', d.pendenze_aperte));
-    dashHost.appendChild(tile('Oltre 21 giorni', d.oltre_21gg, d.oltre_21gg > 0 ? 'alert' : ''));
-    dashHost.appendChild(tile('Anzianità media aperte', `${d.anzianita_media_gg} gg`, d.anzianita_media_gg > 21 ? 'warn' : ''));
-    dashHost.appendChild(tile('Confermate per iscritto', `${d.confermate_iscritto_pct}%`));
+    if (dash) {
+      const d = dash.decisioni;
+      dashHost.innerHTML = '';
+      dashHost.appendChild(tile('Richieste totali', d.richieste_totali));
+      dashHost.appendChild(tile('Decise', d.decise));
+      dashHost.appendChild(tile('Tasso di resa', `${d.tasso_resa_pct}%`));
+      dashHost.appendChild(tile('Pendenze aperte', d.pendenze_aperte));
+      dashHost.appendChild(tile('Oltre 21 giorni', d.oltre_21gg, d.oltre_21gg > 0 ? 'alert' : ''));
+      dashHost.appendChild(tile('Anzianità media aperte', `${d.anzianita_media_gg} gg`, d.anzianita_media_gg > 21 ? 'warn' : ''));
+      dashHost.appendChild(tile('Confermate per iscritto', `${d.confermate_iscritto_pct}%`));
+    }
 
     renderTable(tableHost, [
+      ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' }] : []),
       {
         key: 'tema', label: 'Tema',
         render: (r) => el('div', {}, [r.tema, r.requisito_wbs ? el('div', { class: 'muted', style: 'font-size:10.5px' }, `approvazione requisito ${r.requisito_wbs}`) : null]),
@@ -163,7 +171,7 @@ export async function renderDecisioni(container) {
       },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       { key: 'conferma_scritta', label: 'Per iscritto', render: (r) => r.conferma_scritta ? pill('Sì', 'verde') : pill('No', 'outline') },
-      {
+      ...(soloLettura ? [] : [{
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           row.stato !== 'decisa' ? el('button', {
@@ -182,10 +190,10 @@ export async function renderDecisioni(container) {
             },
           }, 'Elimina'),
         ]),
-      },
+      }]),
     ], list.data, {
       emptyLabel: 'Nessuna decisione registrata per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

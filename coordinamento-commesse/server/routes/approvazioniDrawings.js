@@ -13,6 +13,7 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -146,17 +147,18 @@ function normalizzaStatoImport(statoRaw, haRicevimentoApprovazione) {
 }
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, stato, search } = req.query;
+  const { wp_id, stato, search } = req.query;
   let sql = `
     SELECT a.*, w.codice AS wp_codice, w.nome AS wp_nome,
-           r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo
+           r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo, cm.codice AS commessa_codice
     FROM approvazioni_drawings a
     LEFT JOIN work_packages w ON a.wp_id = w.id
     LEFT JOIN requisiti r ON a.rif_requisito_id = r.id
+    LEFT JOIN commesse cm ON a.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND a.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'a.commessa_id');
   if (wp_id) { sql += ' AND a.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND a.stato = ?'; params.push(stato); }
   if (search) { sql += ' AND (a.codice LIKE ? OR a.titolo LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }

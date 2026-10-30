@@ -4,6 +4,7 @@ const ExcelJS = require('exceljs');
 const db = require('../db/database');
 const { daysBetween, todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -38,16 +39,17 @@ function arricchisci(row) {
 }
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, stato, a_chi, search } = req.query;
+  const { wp_id, stato, a_chi, search } = req.query;
   let sql = `
-    SELECT d.*, w.codice AS wp_codice, w.nome AS wp_nome, r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo
+    SELECT d.*, w.codice AS wp_codice, w.nome AS wp_nome, r.codice_wbs AS requisito_wbs, r.titolo AS requisito_titolo, cm.codice AS commessa_codice
     FROM decisioni d
     LEFT JOIN work_packages w ON d.wp_id = w.id
     LEFT JOIN requisiti r ON d.rif_requisito_id = r.id
+    LEFT JOIN commesse cm ON d.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND d.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'd.commessa_id');
   if (wp_id) { sql += ' AND d.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND d.stato = ?'; params.push(stato); }
   if (a_chi) { sql += ' AND d.a_chi = ?'; params.push(a_chi); }

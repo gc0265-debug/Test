@@ -1,14 +1,20 @@
 const express = require('express');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { commessa_id, categoria, stato } = req.query;
-  let sql = 'SELECT * FROM stakeholder WHERE 1=1';
+  const { categoria, stato } = req.query;
+  let sql = `
+    SELECT s.*, cm.codice AS commessa_codice
+    FROM stakeholder s
+    LEFT JOIN commesse cm ON s.commessa_id = cm.id
+    WHERE 1=1
+  `;
   const params = [];
-  if (commessa_id) { sql += ' AND commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 's.commessa_id');
   if (categoria) { sql += ' AND categoria = ?'; params.push(categoria); }
   if (stato) { sql += ' AND stato = ?'; params.push(stato); }
   sql += ' ORDER BY nome ASC';

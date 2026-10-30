@@ -4,7 +4,7 @@
 // da gestire) con un'azione rapida per segnalarle nel Registro Allert.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate, settingsGear,
 } from '../components/ui.js';
@@ -130,7 +130,7 @@ async function segnalaVariazione(contratto, variazione, onDone) {
   }
 }
 
-async function renderContrattoCard(c, refreshAll) {
+async function renderContrattoCard(c, refreshAll, soloLettura) {
   const [variazioni, atti] = await Promise.all([
     c.stato === 'attivo' && c.capitolato_baseline_data
       ? api.get(`/contratti/${c.id}/variazioni`).then((r) => r.data)
@@ -144,11 +144,11 @@ async function renderContrattoCard(c, refreshAll) {
     el('div', { class: 'section__head' }, [
       el('div', {}, [
         el('h2', {}, c.titolo),
-        el('div', { class: 'muted' }, [c.controparte, c.data_stipula && `stipulato il ${formatDate(c.data_stipula)}`,
+        el('div', { class: 'muted' }, [soloLettura && c.commessa_codice ? c.commessa_codice : null, c.controparte, c.data_stipula && `stipulato il ${formatDate(c.data_stipula)}`,
           atti.length ? `base ${formatValore(c.valore)} + atti ${formatValore(valoreAtti)} = ${formatValore(valoreTotale)}` : formatValore(c.valore)]
           .filter(Boolean).join(' · ')),
       ]),
-      el('div', { style: 'display:flex;gap:6px' }, [
+      soloLettura ? null : el('div', { style: 'display:flex;gap:6px' }, [
         el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(c, refreshAll) }, 'Modifica'),
         el('button', {
           class: 'btn btn--sm btn--ghost btn--danger',
@@ -176,11 +176,11 @@ async function renderContrattoCard(c, refreshAll) {
     el('div', { style: 'margin-top:14px' }, [
       el('div', { class: 'section__head' }, [
         el('div', { class: 'eyebrow' }, 'Atti aggiuntivi (varianti/integrazioni economiche)'),
-        el('button', { class: 'btn btn--sm', onclick: () => openAttoForm(c.id, null, refreshAll) }, '+ Nuovo atto'),
+        soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => openAttoForm(c.id, null, refreshAll) }, '+ Nuovo atto'),
       ]),
       atti.length ? el('div', { class: 'reminder-list' }, atti.map((a) => el('div', { class: 'reminder-item' }, [
         el('span', {}, `${a.titolo}${a.data ? ` — ${formatDate(a.data)}` : ''} · ${formatValore(a.valore)}`),
-        el('div', { style: 'display:flex;gap:6px' }, [
+        soloLettura ? null : el('div', { style: 'display:flex;gap:6px' }, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openAttoForm(c.id, a, refreshAll) }, 'Modifica'),
           el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
@@ -198,30 +198,33 @@ async function renderContrattoCard(c, refreshAll) {
       el('div', { class: 'eyebrow' }, 'Variazioni rispetto alla baseline'),
       el('div', { class: 'reminder-list' }, variazioni.map((v) => el('div', { class: 'reminder-item' }, [
         el('span', {}, `${v.codice_wbs} — ${v.titolo} (v${v.numero_versione}, ${formatDate(v.data)})`),
-        el('button', { class: 'btn btn--sm', onclick: () => segnalaVariazione(c, v, refreshAll) }, 'Segnala in Registro Allert'),
+        soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => segnalaVariazione(c, v, refreshAll) }, 'Segnala in Registro Allert'),
       ]))),
     ]) : null,
   ]);
 }
 
 export async function renderContratto(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Il contratto stipulato con la sua baseline di capitolato: ogni modifica ai requisiti successiva alla baseline è segnalata qui come variazione da gestire secondo la procedura concordata.'));
+    soloLettura
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      : 'Il contratto stipulato con la sua baseline di capitolato: ogni modifica ai requisiti successiva alla baseline è segnalata qui come variazione da gestire secondo la procedura concordata.'));
 
   let lastRows = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => printReport('Contratti', state.commesse.find(c => c.id === state.commessaId), [{
+      el('button', { class: 'btn btn--sm', onclick: () => printReport('Contratti', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
         heading: 'Contratti',
         columns: ['Titolo', 'Controparte', 'Data stipula', 'Valore', 'Baseline capitolato', 'Stato'],
         rows: lastRows.map((r) => [r.titolo, r.controparte || '—', formatDate(r.data_stipula), formatValore(r.valore), r.capitolato_baseline_data ? formatDate(r.capitolato_baseline_data) : '—', STATO[r.stato]]),
       }]) }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo contratto'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo contratto'),
       settingsGear(),
     ]),
   ]);
@@ -231,7 +234,7 @@ export async function renderContratto(container) {
 
   async function refresh() {
     const [res, statoList] = await Promise.all([
-      api.get(`/contratti?commessa_id=${state.commessaId}`),
+      api.get(`/contratti?${queryScopeCommessa()}`),
       getCategoria('contratti_stato'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
@@ -242,7 +245,7 @@ export async function renderContratto(container) {
       return;
     }
     for (const c of res.data) {
-      listHost.appendChild(await renderContrattoCard(c, refresh));
+      listHost.appendChild(await renderContrattoCard(c, refresh, soloLettura));
     }
   }
 

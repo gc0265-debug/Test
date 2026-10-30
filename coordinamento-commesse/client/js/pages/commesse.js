@@ -46,6 +46,13 @@ async function openCommessaForm(existing, onSaved) {
   const form = el('form', {});
   form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. 2514RW' })));
   form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Hotel Rosewood Roma' })));
+
+  const gruppoInput = textInput('gruppo', existing?.gruppo ?? '', { placeholder: 'es. RSW Roma', list: 'gruppi-commessa' });
+  const gruppiEsistenti = [...new Set(state.commesse.map((c) => c.gruppo).filter(Boolean))];
+  const gruppoDatalist = el('datalist', { id: 'gruppi-commessa' }, gruppiEsistenti.map((g) => el('option', { value: g })));
+  form.appendChild(field('Gruppo progetto', el('div', {}, [gruppoInput, gruppoDatalist]),
+    'Facoltativo: commesse con lo stesso gruppo (es. "RSW Roma") compaiono insieme in una vista aggregata di sola lettura, mantenendo ciascuna il proprio codice.'));
+
   form.appendChild(field('Cliente', textInput('cliente', existing?.cliente ?? '')));
   form.appendChild(field('Committente finale', textInput('committente_finale', existing?.committente_finale ?? '')));
   form.appendChild(field('General Contractor', textInput('gc', existing?.gc ?? '')));
@@ -152,6 +159,7 @@ export async function renderCommesse(container) {
     renderTable(commesseHost, [
       { key: 'codice', label: 'Codice' },
       { key: 'nome', label: 'Nome' },
+      { key: 'gruppo', label: 'Gruppo progetto', render: (r) => r.gruppo || '—' },
       { key: 'cliente', label: 'Cliente' },
       { key: 'stato', label: 'Stato', render: (r) => pill(r.stato, r.stato === 'attiva' ? 'verde' : (r.stato === 'chiusa' ? 'outline' : 'ambra')) },
       {

@@ -48,7 +48,10 @@ function box(title, tiles, { buildModal, openHref, openLabel } = {}) {
 
 export async function renderCruscotto(container) {
   if (!state.commessaId) {
-    container.appendChild(el('p', { class: 'muted' }, 'Nessuna commessa disponibile: creane una dalla sezione Commesse.'));
+    container.appendChild(el('p', { class: 'muted' },
+      state.gruppoAttivo
+        ? 'Il Cruscotto mostra sempre una singola commessa: seleziona una commessa specifica dal menu a sinistra (invece della vista di gruppo) per vederlo.'
+        : 'Nessuna commessa disponibile: creane una dalla sezione Commesse.'));
     return;
   }
   const commessa = currentCommessa();

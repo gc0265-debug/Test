@@ -26,15 +26,15 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { codice, nome, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note } = req.body;
+  const { codice, nome, gruppo, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note } = req.body;
   if (!codice || !nome) return res.status(400).json({ error: 'codice e nome sono obbligatori' });
 
   try {
     const result = db.prepare(`
-      INSERT INTO commesse (codice, nome, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO commesse (codice, nome, gruppo, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      codice, nome, cliente || null, committente_finale || null, gc || null, dl || null,
+      codice, nome, gruppo || null, cliente || null, committente_finale || null, gc || null, dl || null,
       advisor || null, direttore_cantiere || null, data_apertura || null, stato || 'attiva', note || null
     );
     const row = db.prepare('SELECT * FROM commesse WHERE id = ?').get(result.lastInsertRowid);
@@ -51,10 +51,10 @@ router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM commesse WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'commessa non trovata' });
 
-  const fields = ['codice', 'nome', 'cliente', 'committente_finale', 'gc', 'dl', 'advisor', 'direttore_cantiere', 'data_apertura', 'stato', 'note'];
+  const fields = ['codice', 'nome', 'gruppo', 'cliente', 'committente_finale', 'gc', 'dl', 'advisor', 'direttore_cantiere', 'data_apertura', 'stato', 'note'];
   const next = { ...existing, ...req.body };
   db.prepare(`
-    UPDATE commesse SET codice=?, nome=?, cliente=?, committente_finale=?, gc=?, dl=?, advisor=?, direttore_cantiere=?, data_apertura=?, stato=?, note=?, updated_at=unixepoch()
+    UPDATE commesse SET codice=?, nome=?, gruppo=?, cliente=?, committente_finale=?, gc=?, dl=?, advisor=?, direttore_cantiere=?, data_apertura=?, stato=?, note=?, updated_at=unixepoch()
     WHERE id=?
   `).run(...fields.map(f => next[f] ?? null), req.params.id);
 

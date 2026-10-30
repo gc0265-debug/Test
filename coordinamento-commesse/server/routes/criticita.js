@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db/database');
 const { daysBetween, todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
@@ -27,15 +28,16 @@ function arricchisci(row) {
 }
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, stato, urgenza, search } = req.query;
+  const { wp_id, stato, urgenza, search } = req.query;
   let sql = `
-    SELECT c.*, w.codice AS wp_codice, w.nome AS wp_nome
+    SELECT c.*, w.codice AS wp_codice, w.nome AS wp_nome, cm.codice AS commessa_codice
     FROM criticita c
     LEFT JOIN work_packages w ON c.wp_id = w.id
+    LEFT JOIN commesse cm ON c.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND c.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'c.commessa_id');
   if (wp_id) { sql += ' AND c.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND c.stato = ?'; params.push(stato); }
   if (urgenza) { sql += ' AND c.urgenza = ?'; params.push(urgenza); }

@@ -4,6 +4,7 @@
 
 const express = require('express');
 const db = require('../db/database');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { daysBetween, todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
 
@@ -25,15 +26,16 @@ function arricchisci(row) {
 }
 
 router.get('/', (req, res) => {
-  const { commessa_id, wp_id, stato, piano, zona } = req.query;
+  const { wp_id, stato, piano, zona } = req.query;
   let sql = `
-    SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome
+    SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome, cm.codice AS commessa_codice
     FROM milestone m
     LEFT JOIN work_packages w ON m.wp_id = w.id
+    LEFT JOIN commesse cm ON m.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND m.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'm.commessa_id');
   if (wp_id) { sql += ' AND m.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND m.stato = ?'; params.push(stato); }
   if (piano) { sql += ' AND m.piano = ?'; params.push(piano); }

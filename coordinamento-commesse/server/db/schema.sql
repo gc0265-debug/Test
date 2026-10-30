@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS commesse (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     codice TEXT NOT NULL UNIQUE,              -- es. 2514RW
     nome TEXT NOT NULL,                        -- es. Hotel Rosewood Roma
+    gruppo TEXT,                                -- progetto padre condiviso da più commesse (es. "RSW Roma"): abilita la vista aggregata nel selettore, mantenendo ciascuna commessa col proprio codice
     cliente TEXT,                              -- committente diretto (es. GILI Creations Srl)
     committente_finale TEXT,                   -- es. Colliers
     gc TEXT,                                   -- General Contractor

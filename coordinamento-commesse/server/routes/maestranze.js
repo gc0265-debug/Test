@@ -1,19 +1,22 @@
 const express = require('express');
 const db = require('../db/database');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { commessa_id, stato, search } = req.query;
+  const { stato, search } = req.query;
   let sql = `
-    SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome,
+    SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome, cm.codice AS commessa_codice,
            (SELECT GROUP_CONCAT(s.nome, ', ') FROM maestranze_fornitori mf
             JOIN stakeholder s ON mf.stakeholder_id = s.id WHERE mf.maestranza_id = m.id) AS fornitori_nomi
-    FROM maestranze m LEFT JOIN work_packages w ON m.wp_id = w.id
+    FROM maestranze m
+    LEFT JOIN work_packages w ON m.wp_id = w.id
+    LEFT JOIN commesse cm ON m.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND m.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'm.commessa_id');
   if (stato) { sql += ' AND m.stato = ?'; params.push(stato); }
   if (search) { sql += ' AND (m.nome LIKE ? OR m.azienda LIKE ? OR m.ruolo LIKE ?)'; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
   sql += ' ORDER BY m.nome ASC';

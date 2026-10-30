@@ -6,20 +6,21 @@
 const express = require('express');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
+const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { commessa_id } = req.query;
   let sql = `
     SELECT c.*, (SELECT COUNT(*) FROM requisiti r WHERE r.rif_capitolato_voce_id = c.id) AS n_requisiti,
-           ct.titolo AS contratto_titolo, ct.controparte AS contratto_controparte
+           ct.titolo AS contratto_titolo, ct.controparte AS contratto_controparte, cm.codice AS commessa_codice
     FROM capitolato_voci c
     LEFT JOIN contratti ct ON c.contratto_id = ct.id
+    LEFT JOIN commesse cm ON c.commessa_id = cm.id
     WHERE 1=1
   `;
   const params = [];
-  if (commessa_id) { sql += ' AND c.commessa_id = ?'; params.push(commessa_id); }
+  sql = applicaFiltroCommessa(sql, params, req.query, 'c.commessa_id');
   sql += ' ORDER BY c.codice_wbs ASC';
   res.json({ data: db.prepare(sql).all(...params), total: 0 });
 });

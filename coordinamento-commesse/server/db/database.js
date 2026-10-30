@@ -147,6 +147,7 @@ dropColumnCheck('processi_comunicazione', "CHECK(frequenza IN", `
 `);
 
 ensureColumns('users', [{ name: 'sezioni_consentite', def: 'TEXT' }]);
+ensureColumns('commesse', [{ name: 'gruppo', def: 'TEXT' }]);
 
 dropColumnCheck('users', "CHECK(ruolo IN", `
   CREATE TABLE __TABLE__ (

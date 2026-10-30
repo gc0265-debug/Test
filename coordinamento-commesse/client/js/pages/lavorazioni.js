@@ -2,7 +2,7 @@
 // grafici in alto: barre con % e torta con i valori, entrambi per stato.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -243,7 +243,7 @@ function renderCharts(rows) {
 }
 
 export async function renderLavorazioni(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
@@ -253,13 +253,17 @@ export async function renderLavorazioni(container) {
 
   let lastRows = [];
   let selectedId = null;
-  const soloLettura = state.currentUser?.ruolo === 'cliente';
+  const soloLettura = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
+  if (inVistaGruppo()) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'));
+  }
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Lavorazioni', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Lavorazioni', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Lavorazioni',
           columns: ['Titolo', 'WP', 'Piano/Zona', 'Stato', 'Priorità', 'Inizio', 'Fine', 'Impresa'],
           rows: rows.map((r) => [r.titolo, r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—', [r.piano, r.zona].filter(Boolean).join(' · ') || '—', STATO[r.stato][0], PRIORITA[r.priorita][0], formatDate(r.data_inizio), formatDate(r.data_fine), r.contratto_controparte || r.impresa || '—']),
@@ -275,7 +279,7 @@ export async function renderLavorazioni(container) {
 
   async function refresh() {
     const [res, statoList, prioritaList] = await Promise.all([
-      api.get(`/lavorazioni?commessa_id=${state.commessaId}`),
+      api.get(`/lavorazioni?${queryScopeCommessa()}`),
       getCategoria('lavorazioni_stato'),
       getCategoria('lavorazioni_priorita'),
     ]);
@@ -286,6 +290,7 @@ export async function renderLavorazioni(container) {
     chartsHost.appendChild(renderCharts(res.data));
 
     renderTable(tableHost, [
+      inVistaGruppo() ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'titolo', label: 'Titolo' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'pianozona', label: 'Piano / Zona', render: (r) => [r.piano, r.zona].filter(Boolean).join(' · ') || '—' },

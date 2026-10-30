@@ -3,7 +3,7 @@
 // e una matrice RACI verso gli stakeholder della commessa.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
@@ -83,12 +83,15 @@ async function openRaci(processo, stakeholderList, onSaved) {
 }
 
 export async function renderComunicazione(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Un processo di gestione per riga, con la matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli stakeholder registrati.'));
+    soloLettura
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      : 'Un processo di gestione per riga, con la matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli stakeholder registrati.'));
 
   let lastRows = [];
   let frequenzaMap = {};
@@ -98,13 +101,13 @@ export async function renderComunicazione(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Piano Comunicazioni', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Piano Comunicazioni', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Processi di comunicazione',
           columns: ['Processo', 'Frequenza', 'Canale', 'Output atteso', 'Ruolo responsabile'],
           rows: rows.map((r) => [r.nome, frequenzaMap[r.frequenza] || r.frequenza, r.canale || '—', r.output || '—', r.ruolo_responsabile || '—']),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo processo'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo processo'),
       settingsGear(),
     ]),
   ]);
@@ -114,8 +117,8 @@ export async function renderComunicazione(container) {
 
   async function refresh() {
     const [processiRes, stakeholderRes, frequenzaList] = await Promise.all([
-      api.get(`/comunicazione/processi?commessa_id=${state.commessaId}`),
-      api.get(`/stakeholder?commessa_id=${state.commessaId}`),
+      api.get(`/comunicazione/processi?${queryScopeCommessa()}`),
+      soloLettura ? Promise.resolve({ data: [] }) : api.get(`/stakeholder?${queryScopeCommessa()}`),
       getCategoria('comunicazione_frequenza'),
     ]);
     frequenzaMap = toMap(frequenzaList);
@@ -124,12 +127,13 @@ export async function renderComunicazione(container) {
     const stakeholderAttivi = stakeholderRes.data.filter((s) => s.stato === 'attivo');
 
     renderTable(tableHost, [
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'nome', label: 'Processo' },
       { key: 'frequenza', label: 'Frequenza', render: (r) => FREQUENZA[r.frequenza] || r.frequenza },
       { key: 'canale', label: 'Canale' },
       { key: 'output', label: 'Output atteso' },
       { key: 'ruolo_responsabile', label: 'Ruolo responsabile' },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openRaci(row, stakeholderAttivi, refresh) }, 'Matrice RACI'),
@@ -145,9 +149,9 @@ export async function renderComunicazione(container) {
           }, 'Elimina'),
         ]),
       },
-    ], processiRes.data, {
+    ].filter(Boolean), processiRes.data, {
       emptyLabel: 'Nessun processo di comunicazione registrato per questa commessa.',
-      onRowClick: (row) => openForm(row, refresh),
+      onRowClick: soloLettura ? null : (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
   }

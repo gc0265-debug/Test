@@ -3,7 +3,7 @@
 // errori sulla prossima commessa.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, formatDate, todayISO, settingsGear,
@@ -60,17 +60,13 @@ async function openForm(existing, onSaved) {
   openModal(existing ? 'Modifica lezione appresa' : 'Nuova lezione appresa', form);
 }
 
-function openDettaglio(l, numero, onSaved) {
+function openDettaglio(l, numero, onSaved, soloLettura) {
   const collegata = l.criticita_tema || l.decisione_tema || l.allert_descrizione;
-  const body = el('div', {}, [
-    el('div', { class: 'muted', style: 'margin-bottom:14px' },
-      `${formatDate(l.data)} · ${CATEGORIA[l.categoria] || l.categoria}${collegata ? ' · collegata a: ' + collegata : ''}`),
-    l.cosa_e_successo ? el('p', {}, [el('b', {}, 'Cosa è successo: '), l.cosa_e_successo]) : null,
-    l.cosa_abbiamo_imparato ? el('p', {}, [el('b', {}, 'Cosa abbiamo imparato: '), l.cosa_abbiamo_imparato]) : null,
-    l.azione_futura ? el('p', {}, [el('b', {}, 'Azione per il futuro: '), l.azione_futura]) : null,
-    l.note ? el('p', {}, [el('b', {}, 'Note: '), l.note]) : null,
-    el('div', { class: 'modal__actions' }, [
-      el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('lezioni_apprese', l.id, l.titolo) }, 'Storico'),
+  const azioni = [
+    el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('lezioni_apprese', l.id, l.titolo) }, 'Storico'),
+  ];
+  if (!soloLettura) {
+    azioni.push(
       el('button', { class: 'btn', onclick: () => { closeModal(); openForm(l, onSaved); } }, 'Modifica'),
       el('button', {
         class: 'btn btn--danger',
@@ -82,23 +78,35 @@ function openDettaglio(l, numero, onSaved) {
           onSaved();
         },
       }, 'Elimina'),
-    ]),
+    );
+  }
+  const body = el('div', {}, [
+    el('div', { class: 'muted', style: 'margin-bottom:14px' },
+      `${soloLettura && l.commessa_codice ? l.commessa_codice + ' · ' : ''}${formatDate(l.data)} · ${CATEGORIA[l.categoria] || l.categoria}${collegata ? ' · collegata a: ' + collegata : ''}`),
+    l.cosa_e_successo ? el('p', {}, [el('b', {}, 'Cosa è successo: '), l.cosa_e_successo]) : null,
+    l.cosa_abbiamo_imparato ? el('p', {}, [el('b', {}, 'Cosa abbiamo imparato: '), l.cosa_abbiamo_imparato]) : null,
+    l.azione_futura ? el('p', {}, [el('b', {}, 'Azione per il futuro: '), l.azione_futura]) : null,
+    l.note ? el('p', {}, [el('b', {}, 'Note: '), l.note]) : null,
+    el('div', { class: 'modal__actions' }, azioni),
   ]);
   openModal(`Lezione ${numero} — ${l.titolo}`, body);
 }
 
 export async function renderLezioniApprese(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Raccoglie quanto imparato da criticità, decisioni e allert già registrati — per non ripetere gli stessi errori sulla prossima commessa.'));
+    soloLettura
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per modificare.'
+      : 'Raccoglie quanto imparato da criticità, decisioni e allert già registrati — per non ripetere gli stessi errori sulla prossima commessa.'));
 
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lezione'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lezione'),
       settingsGear(),
     ]),
   ]);
@@ -107,13 +115,14 @@ export async function renderLezioniApprese(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const res = await api.get(`/lezioni-apprese?commessa_id=${state.commessaId}`);
+    const res = await api.get(`/lezioni-apprese?${queryScopeCommessa()}`);
     const rows = [...res.data].sort((a, b) => a.id - b.id).map((l, i) => ({ ...l, numero: i + 1 }));
     renderTable(tableHost, [
       { key: 'numero', label: 'N.', numeric: true },
+      soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (l) => l.commessa_codice || '—' } : null,
       { key: 'data', label: 'Data', render: (l) => formatDate(l.data) },
       { key: 'titolo', label: 'Descrizione' },
-      {
+      soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (l) => el('div', {}, [
           el('button', {
@@ -127,9 +136,9 @@ export async function renderLezioniApprese(container) {
           }, 'Elimina'),
         ]),
       },
-    ], rows, {
+    ].filter(Boolean), rows, {
       emptyLabel: 'Nessuna lezione appresa registrata.',
-      onRowClick: (l) => openDettaglio(l, l.numero, refresh),
+      onRowClick: (l) => openDettaglio(l, l.numero, refresh, soloLettura),
     });
   }
 

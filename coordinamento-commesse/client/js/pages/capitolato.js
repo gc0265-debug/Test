@@ -9,7 +9,7 @@
 // Contratti tramite i Requisiti stessi.
 
 import { api } from '../api.js';
-import { state } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -161,13 +161,14 @@ async function openVoceDocument(voce, refreshList) {
   openModal(`${voce.codice_wbs} — ${voce.titolo}`, body);
 }
 
-function voceColumns(refresh) {
+function voceColumns(refresh, soloLettura) {
   return [
+    soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
     { key: 'codice_wbs', label: 'WBS' },
     { key: 'titolo', label: 'Titolo' },
     { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },
     { key: 'n_requisiti', label: 'Requisiti', render: (r) => pill(String(r.n_requisiti), r.n_requisiti > 0 ? 'verde' : 'outline') },
-    {
+    soloLettura ? null : {
       key: 'actions', label: '', className: 'actions',
       render: (row) => el('div', {}, [
         el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openVoceDocument(row, refresh) }, 'Apri'),
@@ -184,16 +185,19 @@ function voceColumns(refresh) {
         }, 'Elimina'),
       ]),
     },
-  ];
+  ].filter(Boolean);
 }
 
 export async function renderCapitolato(container) {
-  if (!state.commessaId) {
+  if (!state.commessaId && !state.gruppoAttivo) {
     container.appendChild(el('p', { class: 'muted' }, 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
+  const soloLettura = inVistaGruppo();
   container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-    'Il capitolato requisiti raccoglie tutti i requisiti definiti dalla Direzione Lavori, raggruppati per contratto: ogni voce è un documento che si apre per vedere e modificare i Requisiti collegati, restando agganciata ai registri di Coordinamento e Contratti.'));
+    soloLettura
+      ? 'Vista aggregata di gruppo: sola lettura. Seleziona una singola commessa dal menu a sinistra per aprire o modificare una voce.'
+      : 'Il capitolato requisiti raccoglie tutti i requisiti definiti dalla Direzione Lavori, raggruppati per contratto: ogni voce è un documento che si apre per vedere e modificare i Requisiti collegati, restando agganciata ai registri di Coordinamento e Contratti.'));
 
   let lastRows = [];
   let selectedId = null;
@@ -202,13 +206,13 @@ export async function renderCapitolato(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Capitolato Requisiti', state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Capitolato Requisiti', soloLettura ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Voci di capitolato',
           columns: ['WBS', 'Titolo', 'Data', 'Contratto', 'Descrizione', 'Requisiti collegati'],
           rows: rows.map((r) => [r.codice_wbs, r.titolo, formatDate(r.data), r.contratto_controparte || r.contratto_titolo || '—', r.descrizione || '—', r.n_requisiti]),
         }]);
       } }, 'Stampa'),
-      el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova voce'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova voce'),
       settingsGear(),
     ]),
   ]);
@@ -217,7 +221,7 @@ export async function renderCapitolato(container) {
   container.appendChild(groupsHost);
 
   async function refresh() {
-    const res = await api.get(`/capitolato?commessa_id=${state.commessaId}`);
+    const res = await api.get(`/capitolato?${queryScopeCommessa()}`);
     lastRows = res.data;
     groupsHost.innerHTML = '';
 
@@ -244,9 +248,9 @@ export async function renderCapitolato(container) {
         el('h2', { style: 'margin:0 0 10px' }, titolo),
         tableHost,
       ]));
-      renderTable(tableHost, voceColumns(refresh), voci, {
+      renderTable(tableHost, voceColumns(refresh, soloLettura), voci, {
         emptyLabel: 'Nessuna voce.',
-        onRowClick: (row) => openVoceDocument(row, refresh),
+        onRowClick: soloLettura ? null : (row) => openVoceDocument(row, refresh),
         selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
       });
     });
@@ -257,9 +261,9 @@ export async function renderCapitolato(container) {
         el('h2', { style: 'margin:0 0 10px' }, 'Senza contratto collegato'),
         tableHost,
       ]));
-      renderTable(tableHost, voceColumns(refresh), senzaContratto, {
+      renderTable(tableHost, voceColumns(refresh, soloLettura), senzaContratto, {
         emptyLabel: 'Nessuna voce.',
-        onRowClick: (row) => openVoceDocument(row, refresh),
+        onRowClick: soloLettura ? null : (row) => openVoceDocument(row, refresh),
         selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
       });
     }
