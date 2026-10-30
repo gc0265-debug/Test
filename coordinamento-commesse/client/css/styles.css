@@ -70,7 +70,6 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
   border-right:1px solid var(--rule);box-shadow:var(--side-shadow);
   display:flex;flex-direction:column;padding:20px 0 16px;
   position:sticky;top:0;height:100vh;overflow-y:auto;
-  position:relative;
 }
 .side__resize{
   position:fixed;top:0;bottom:0;left:var(--side-w);width:6px;margin-left:-3px;

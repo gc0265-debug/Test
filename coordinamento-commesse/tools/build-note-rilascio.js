@@ -28,13 +28,19 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.14';
+const VERSIONE_ATTUALE = '1.15';
 const DATA_ATTUALE = '30 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.14', title: 'Righe modificabili nella vista aggregata di gruppo', date: '30 ottobre 2026', attuale: true,
+    v: '1.15', title: 'Menu laterale fisso durante lo scorrimento', date: '30 ottobre 2026', attuale: true,
+    points: [
+      'Corretto un refuso nel foglio di stile che annullava l\'effetto "fisso" del menu a sinistra: scorrendo una pagina lunga (es. un elenco con molte righe), il menu ora resta sempre visibile e nella stessa posizione, invece di scorrere via insieme al contenuto.',
+    ],
+  },
+  {
+    v: '1.14', title: 'Righe modificabili nella vista aggregata di gruppo', date: '30 ottobre 2026',
     points: [
       'Finora, selezionando la vista aggregata di gruppo (es. "RSW Roma — tutte"), tutti i registri diventavano di sola lettura: ora si può cliccare una riga e modificarla direttamente, senza dover prima tornare a selezionare una singola commessa dal menu a sinistra.',
       'La modifica resta sempre sulla commessa a cui la riga appartiene, mostrata nella colonna "Commessa": non è possibile spostare per errore un dato da una commessa all\'altra semplicemente modificandolo dalla vista di gruppo.',

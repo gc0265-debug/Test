@@ -16,6 +16,15 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Menu laterale fisso durante lo scorrimento (30 ottobre 2026)
+
+- Corretto un refuso nel foglio di stile che annullava l'effetto
+  "fisso" del menu a sinistra: scorrendo una pagina lunga (es. un
+  elenco con molte righe), il menu ora resta sempre visibile e nella
+  stessa posizione, invece di scorrere via insieme al contenuto.
+
+---
+
 ## Righe modificabili nella vista aggregata di gruppo (30 ottobre 2026)
 
 - Finora, selezionando la vista aggregata di gruppo (es. "RSW Roma —
