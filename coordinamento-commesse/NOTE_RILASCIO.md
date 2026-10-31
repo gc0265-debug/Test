@@ -16,6 +16,17 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Report: sei sezioni in più (31 ottobre 2026)
+
+- La scheda Report copre ora tutti i registri della commessa: aggiunte
+  **Documenti, Note di Coordinamento, Diario di Cantiere, Capitolato
+  Requisiti, Maestranze e Piano Comunicazioni** alle sezioni già
+  disponibili — 18 in totale.
+- Nessuna modifica ai report già configurati: le nuove sezioni compaiono
+  tra quelle disponibili la prossima volta che se ne crea o modifica uno.
+
+---
+
 ## Nuova scheda Report: configurabili, in PDF/Word/Excel (31 ottobre 2026)
 
 - Nuova voce **"Report"** in sidebar, sotto Commessa: si configura un

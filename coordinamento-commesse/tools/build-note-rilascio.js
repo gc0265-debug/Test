@@ -28,13 +28,20 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.34';
+const VERSIONE_ATTUALE = '1.35';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.34', title: 'Nuova scheda Report: configurabili, in PDF/Word/Excel', date: '31 ottobre 2026', attuale: true,
+    v: '1.35', title: 'Report: sei sezioni in più', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'La scheda Report copre ora tutti i registri della commessa: aggiunte Documenti, Note di Coordinamento, Diario di Cantiere, Capitolato Requisiti, Maestranze e Piano Comunicazioni alle sezioni già disponibili — 18 in totale.',
+      'Nessuna modifica ai report già configurati: le nuove sezioni compaiono tra quelle disponibili la prossima volta che se ne crea o modifica uno.',
+    ],
+  },
+  {
+    v: '1.34', title: 'Nuova scheda Report: configurabili, in PDF/Word/Excel', date: '31 ottobre 2026',
     points: [
       'Nuova voce "Report" in sidebar, sotto Commessa: si configura un report scegliendo quali sezioni includere (Criticità, Decisioni, Lavorazioni, SAL, Timeline, Approvazioni Drawings, Response Matrix, Requisiti, Contratti, Stakeholder, Lezioni Apprese...), con filtro opzionale per Work Package e per periodo.',
       'Ogni report salvato si scarica in un click in PDF, Word o Excel — tre formati, stessi dati, sempre coerenti fra loro.',

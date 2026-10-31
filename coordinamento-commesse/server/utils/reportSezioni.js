@@ -200,6 +200,88 @@ const SEZIONI = [
       };
     },
   },
+  {
+    key: 'documenti', label: 'Documenti', colonnaWp: null, colonnaData: null,
+    raccogli(commessaId) {
+      const rows = db.prepare('SELECT * FROM documenti WHERE commessa_id = ? ORDER BY titolo ASC').all(commessaId);
+      return {
+        heading: 'Documenti',
+        columns: ['Titolo', 'Tipo', 'Link', 'File', 'Note'],
+        rows: rows.map((r) => [r.titolo, humanize(r.tipo), r.url || '—', r.file_nome || '—', r.note || '—']),
+      };
+    },
+  },
+  {
+    key: 'note_coordinamento', label: 'Note di Coordinamento', colonnaWp: null, colonnaData: 'data',
+    raccogli(commessaId, filtri) {
+      const params = [commessaId];
+      const sql = condizioni('SELECT * FROM note_coordinamento WHERE commessa_id = ?', params, filtri, this);
+      const rows = db.prepare(`${sql} ORDER BY note_coordinamento.data DESC`).all(...params);
+      return {
+        heading: 'Note di Coordinamento',
+        columns: ['Data', 'Oggetto', 'Destinatari', 'Punti', 'Stato'],
+        rows: rows.map((r) => {
+          let nPunti = 0;
+          try { nPunti = JSON.parse(r.punti_json || '[]').length; } catch { /* json non leggibile */ }
+          return [r.data, r.oggetto, r.destinatari || '—', nPunti, humanize(r.stato)];
+        }),
+      };
+    },
+  },
+  {
+    key: 'diario', label: 'Diario di Cantiere', colonnaWp: null, colonnaData: 'data',
+    raccogli(commessaId, filtri) {
+      const params = [commessaId];
+      const sql = condizioni('SELECT * FROM diario WHERE commessa_id = ?', params, filtri, this);
+      const rows = db.prepare(`${sql} ORDER BY diario.data DESC`).all(...params);
+      return {
+        heading: 'Diario di Cantiere',
+        columns: ['Data', 'Squadre', 'Attività', 'Eventi'],
+        rows: rows.map((r) => [r.data, r.squadre || '—', r.attivita || '—', r.eventi || '—']),
+      };
+    },
+  },
+  {
+    key: 'capitolato', label: 'Capitolato Requisiti', colonnaWp: null, colonnaData: 'data',
+    raccogli(commessaId, filtri) {
+      const params = [commessaId];
+      const sql = condizioni('SELECT * FROM capitolato_voci WHERE commessa_id = ?', params, filtri, this);
+      const rows = db.prepare(`${sql} ORDER BY capitolato_voci.codice_wbs ASC`).all(...params);
+      return {
+        heading: 'Capitolato Requisiti',
+        columns: ['WBS', 'Titolo', 'Data', 'Note'],
+        rows: rows.map((r) => [r.codice_wbs, r.titolo, r.data || '—', r.note || '—']),
+      };
+    },
+  },
+  {
+    key: 'maestranze', label: 'Maestranze', colonnaWp: 'wp_id', colonnaData: null,
+    raccogli(commessaId, filtri) {
+      const params = [commessaId];
+      const sql = condizioni(`
+        SELECT m.*, w.codice AS wp_codice,
+          (SELECT GROUP_CONCAT(s.nome, ', ') FROM maestranze_fornitori mf JOIN stakeholder s ON mf.stakeholder_id = s.id WHERE mf.maestranza_id = m.id) AS fornitori_nomi
+        FROM maestranze m LEFT JOIN work_packages w ON m.wp_id = w.id
+        WHERE m.commessa_id = ?`, params, filtri, this);
+      const rows = db.prepare(`${sql} ORDER BY m.nome ASC`).all(...params);
+      return {
+        heading: 'Maestranze',
+        columns: ['Nome', 'Ruolo', 'Fornitori', 'WP', 'Stato'],
+        rows: rows.map((r) => [r.nome, r.ruolo || '—', r.fornitori_nomi || r.azienda || '—', r.wp_codice || '—', humanize(r.stato)]),
+      };
+    },
+  },
+  {
+    key: 'comunicazione', label: 'Piano Comunicazioni', colonnaWp: null, colonnaData: null,
+    raccogli(commessaId) {
+      const rows = db.prepare('SELECT * FROM processi_comunicazione WHERE commessa_id = ? ORDER BY nome ASC').all(commessaId);
+      return {
+        heading: 'Piano Comunicazioni',
+        columns: ['Processo', 'Frequenza', 'Canale', 'Responsabile'],
+        rows: rows.map((r) => [r.nome, humanize(r.frequenza), r.canale || '—', r.ruolo_responsabile || '—']),
+      };
+    },
+  },
 ];
 
 const SEZIONI_MAP = Object.fromEntries(SEZIONI.map((s) => [s.key, s]));
