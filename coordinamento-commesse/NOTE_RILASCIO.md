@@ -16,6 +16,20 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Intestazione delle tabelle sempre visibile durante lo scorrimento (31 ottobre 2026)
+
+- In tutte le schede con un elenco (Criticità, Decisioni, Allert,
+  Requisiti, Approvazioni Drawings, Registro Stakeholder, Maestranze,
+  Capitolato Requisiti, Documenti, Diario, Lezioni Apprese, Note di
+  Coordinamento, Commesse, Utenti...), la riga con i nomi delle colonne
+  ora resta visibile in alto mentre si scorre l'elenco, invece di
+  sparire scorrendo verso il basso.
+- **Approvazioni Drawings**: la colonna unica "Invio → Approvazione" è
+  stata divisa in due colonne distinte, "Data invio" e "Data
+  approvazione".
+
+---
+
 ## Timeline Montaggi: raggruppamento per Piano e sotto-attività stile MPP (31 ottobre 2026)
 
 - La Timeline Montaggi raggruppa ora automaticamente le attività per

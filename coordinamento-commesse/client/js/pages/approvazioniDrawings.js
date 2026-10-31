@@ -140,7 +140,8 @@ export async function renderApprovazioniDrawings(container) {
       { key: 'titolo', label: 'Titolo' },
       { key: 'revisione', label: 'Rev.', render: (r) => r.revisione || '—' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
-      { key: 'date', label: 'Invio → Approvazione', render: (r) => `${formatDate(r.data_invio)} → ${formatDate(r.data_approvazione)}` },
+      { key: 'data_invio', label: 'Data invio', render: (r) => formatDate(r.data_invio) },
+      { key: 'data_approvazione', label: 'Data approvazione', render: (r) => formatDate(r.data_approvazione) },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       { key: 'requisito', label: 'Requisito collegato', render: (r) => r.requisito_wbs || '—' },
       {

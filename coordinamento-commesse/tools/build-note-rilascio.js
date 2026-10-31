@@ -28,13 +28,20 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.19';
+const VERSIONE_ATTUALE = '1.20';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.19', title: 'Timeline Montaggi: raggruppamento per Piano e sotto-attività stile MPP', date: '31 ottobre 2026', attuale: true,
+    v: '1.20', title: 'Intestazione delle tabelle sempre visibile durante lo scorrimento', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'In tutte le schede con un elenco (Criticità, Decisioni, Allert, Requisiti, Approvazioni Drawings, Registro Stakeholder, Maestranze, Capitolato Requisiti, Documenti, Diario, Lezioni Apprese, Note di Coordinamento, Commesse, Utenti...), la riga con i nomi delle colonne ora resta visibile in alto mentre si scorre l\'elenco, invece di sparire scorrendo verso il basso.',
+      'Approvazioni Drawings: la colonna unica "Invio → Approvazione" è stata divisa in due colonne distinte, "Data invio" e "Data approvazione".',
+    ],
+  },
+  {
+    v: '1.19', title: 'Timeline Montaggi: raggruppamento per Piano e sotto-attività stile MPP', date: '31 ottobre 2026',
     points: [
       'La Timeline Montaggi raggruppa ora automaticamente le attività per Piano (es. tutte le voci "P+5" insieme): ogni gruppo è un\'intestazione comprimibile, con una barra riassuntiva che copre l\'intero periodo del piano e il conteggio delle attività al suo interno.',
       'Una lavorazione può avere delle sotto-attività, in stile MS Project: dal pulsante "+ sotto-attività" che compare passando sul nome di una lavorazione, o scegliendo una "Lavorazione madre" dal modulo di Lavorazioni o della Timeline stessa.',
