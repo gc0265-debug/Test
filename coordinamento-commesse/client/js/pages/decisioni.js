@@ -92,6 +92,9 @@ export async function renderDecisioni(container) {
 
   let lastRows = [];
   let selectedId = null;
+  let raggruppaWp = false;
+  const filtri = { wp: '', stato: '', urgenti: '' };
+  const wpList = soloLettura ? [] : (await api.get(`/commesse/${state.commessaId}/wp`)).data;
 
   const fileInput = el('input', { type: 'file', accept: '.xlsx,.xls', style: 'display:none' });
   fileInput.addEventListener('change', async () => {
@@ -110,8 +113,25 @@ export async function renderDecisioni(container) {
     }
   });
 
+  const wpFilterOptions = [['', 'Tutti i WP'], ...wpList.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const statoFilterOptions = [['', 'Tutti gli stati'], ['pendenti', 'Pendenti (richiesta/parziale)'], ['decisa', 'Decise']];
+  const urgentiFilterOptions = [['', 'Tutte'], ['1', 'Solo urgenti (oltre 21gg)']];
+
+  const filterRow = el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:center' }, [
+    soloLettura ? null : select('filtro_wp', wpFilterOptions, '', { class: 'filter-select', onchange: (e) => { filtri.wp = e.target.value; refresh(); } }),
+    select('filtro_stato', statoFilterOptions, '', { class: 'filter-select', onchange: (e) => { filtri.stato = e.target.value; refresh(); } }),
+    select('filtro_urgenti', urgentiFilterOptions, '', { class: 'filter-select', onchange: (e) => { filtri.urgenti = e.target.value; refresh(); } }),
+    soloLettura ? null : el('label', { class: 'filter-group', style: 'cursor:pointer' }, [
+      el('input', {
+        type: 'checkbox',
+        onchange: (e) => { raggruppaWp = e.target.checked; refresh(); },
+      }),
+      'Raggruppa per WP',
+    ]),
+  ]);
+
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div'),
+    filterRow,
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => stampaDecisioni() }, 'Stampa'),
       soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/decisioni/${state.commessaId}` }, 'Esporta Excel'),
@@ -164,13 +184,21 @@ export async function renderDecisioni(container) {
       dashHost.appendChild(tile('Confermate per iscritto', `${d.confermate_iscritto_pct}%`));
     }
 
-    renderTable(tableHost, [
+    const filtered = lastRows.filter((r) => {
+      if (filtri.wp && String(r.wp_id) !== String(filtri.wp)) return false;
+      if (filtri.stato === 'pendenti' && r.stato === 'decisa') return false;
+      if (filtri.stato === 'decisa' && r.stato !== 'decisa') return false;
+      if (filtri.urgenti && !r.oltre_21gg) return false;
+      return true;
+    });
+
+    const columns = (includeWp) => [
       ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' }] : []),
       {
         key: 'tema', label: 'Tema',
         render: (r) => el('div', {}, [r.tema, r.requisito_wbs ? el('div', { class: 'muted', style: 'font-size:10.5px' }, `approvazione requisito ${r.requisito_wbs}`) : null]),
       },
-      { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
+      ...(includeWp ? [{ key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' }] : []),
       { key: 'a_chi', label: 'A chi' },
       { key: 'data_prima_richiesta', label: 'Prima richiesta', render: (r) => formatDate(r.data_prima_richiesta) },
       {
@@ -199,11 +227,51 @@ export async function renderDecisioni(container) {
           }, 'Elimina'),
         ]),
       }]),
-    ], list.data, {
+    ];
+
+    const tableOpts = {
       emptyLabel: 'Nessuna decisione registrata per questa commessa.',
       onRowClick: (row) => openForm(row, refresh),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
-    });
+    };
+
+    tableHost.innerHTML = '';
+    if (!raggruppaWp || soloLettura) {
+      const flatHost = el('div');
+      tableHost.appendChild(flatHost);
+      renderTable(flatHost, columns(true), filtered, tableOpts);
+    } else {
+      const gruppi = new Map();
+      const senzaWp = [];
+      filtered.forEach((r) => {
+        if (r.wp_id) {
+          if (!gruppi.has(r.wp_id)) gruppi.set(r.wp_id, { titolo: r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : r.wp_nome, righe: [] });
+          gruppi.get(r.wp_id).righe.push(r);
+        } else {
+          senzaWp.push(r);
+        }
+      });
+      if (!filtered.length) {
+        tableHost.appendChild(el('p', { class: 'muted' }, 'Nessuna decisione corrispondente ai filtri.'));
+      }
+      gruppi.forEach(({ titolo, righe }) => {
+        const groupTableHost = el('div');
+        tableHost.appendChild(el('div', { class: 'section card card--compact' }, [
+          el('div', { class: 'eyebrow' }, 'Work package'),
+          el('h2', { style: 'margin:0 0 10px' }, titolo),
+          groupTableHost,
+        ]));
+        renderTable(groupTableHost, columns(false), righe, tableOpts);
+      });
+      if (senzaWp.length) {
+        const groupTableHost = el('div');
+        tableHost.appendChild(el('div', { class: 'section card card--compact' }, [
+          el('h2', { style: 'margin:0 0 10px' }, 'Senza WP'),
+          groupTableHost,
+        ]));
+        renderTable(groupTableHost, columns(false), senzaWp, tableOpts);
+      }
+    }
   }
 
   await refresh();

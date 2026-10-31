@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.21';
+const VERSIONE_ATTUALE = '1.22';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.21', title: 'Cruscotto ridisegnato: più compatto e immediato', date: '31 ottobre 2026', attuale: true,
+    v: '1.22', title: 'Registro Decisioni: raggruppamento per WP e filtri rapidi', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuova riga di filtri a tendina sopra la tabella del Registro Decisioni: per Work Package, per stato (Pendenti / Decise) e per urgenza (solo le decisioni oltre 21 giorni di anzianità), combinabili tra loro.',
+      'Nuovo interruttore "Raggruppa per WP": attivandolo, la tabella viene divisa in un blocco separato per ciascun Work Package (con un blocco "Senza WP" per le decisioni non ancora assegnate a un WP), sullo stesso modello già usato in Capitolato Requisiti per il raggruppamento per contratto.',
+      'Filtri e raggruppamento sono disponibili con una singola commessa selezionata; nella vista aggregata di gruppo restano solo i filtri per stato e urgenza.',
+    ],
+  },
+  {
+    v: '1.21', title: 'Cruscotto ridisegnato: più compatto e immediato', date: '31 ottobre 2026',
     points: [
       '"Scadenze della settimana" è ora una fascia a tutta larghezza in cima al Cruscotto, con l\'elenco delle scadenze subito visibile (non più dietro un click) in una fila di schede scorrevole, evidenziando in rosso quelle già scadute.',
       '"Attività recente" è ora una fascia a tutta larghezza in fondo al Cruscotto, con la cronologia delle ultime modifiche mostrata come elenco scorrevole, anch\'essa subito visibile.',

@@ -16,6 +16,22 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Registro Decisioni: raggruppamento per WP e filtri rapidi (31 ottobre 2026)
+
+- Nuova riga di filtri a tendina sopra la tabella del Registro Decisioni:
+  per Work Package, per stato (Pendenti / Decise) e per urgenza (solo le
+  decisioni oltre 21 giorni di anzianità), combinabili tra loro.
+- Nuovo interruttore **"Raggruppa per WP"**: attivandolo, la tabella viene
+  divisa in un blocco separato per ciascun Work Package (con un blocco
+  "Senza WP" per le decisioni non ancora assegnate a un WP), sullo stesso
+  modello già usato in Capitolato Requisiti per il raggruppamento per
+  contratto.
+- Filtri e raggruppamento sono disponibili con una singola commessa
+  selezionata; nella vista aggregata di gruppo restano solo i filtri per
+  stato e urgenza.
+
+---
+
 ## Cruscotto ridisegnato: più compatto e immediato (31 ottobre 2026)
 
 - **"Scadenze della settimana"** è ora una fascia a tutta larghezza in
