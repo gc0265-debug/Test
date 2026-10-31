@@ -281,6 +281,12 @@ td.select input{cursor:pointer;}
   overflow-y:auto;padding:24px 26px 32px;
   padding-top:calc(24px + env(safe-area-inset-top, 0px));
 }
+.modal--wide{width:min(900px,100%);}
+
+.doc-editor{border:1px solid var(--rule);background:#fff;}
+.doc-editor .ql-toolbar{border:none;border-bottom:1px solid var(--rule);font-family:inherit;}
+.doc-editor .ql-container{border:none;font-family:'Montserrat',Arial,sans-serif;font-size:13.5px;min-height:420px;}
+.doc-editor .ql-editor{min-height:420px;}
 .modal__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px;}
 .modal__head h3{margin:0;font-size:16px;font-weight:700;}
 .modal__close{

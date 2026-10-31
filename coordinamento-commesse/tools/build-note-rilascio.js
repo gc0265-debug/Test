@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.32';
+const VERSIONE_ATTUALE = '1.33';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.32', title: 'Cruscotto: riquadro Response Matrix', date: '31 ottobre 2026', attuale: true,
+    v: '1.33', title: 'Documenti: scrivere un Word direttamente in app', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuovo pulsante "+ Scrivi documento Word" in Documenti: un editor di testo con titoli, grassetto/corsivo/sottolineato, elenchi puntati e numerati, citazioni — niente di più di quanto serve a una nota o un verbale, ma abbastanza per scriverlo senza uscire dall\'app.',
+      'Il documento scritto qui è un vero file .docx: si scarica e si apre normalmente in Word, esattamente come un documento caricato da file.',
+      'Resta anche modificabile da dentro l\'app: riaprendolo si ritrova il testo con tutta la formattazione, pronto per essere corretto e risalvato — un documento caricato da fuori invece si sostituisce sempre con un nuovo file, perché l\'app non ne conosce il contenuto.',
+    ],
+  },
+  {
+    v: '1.32', title: 'Cruscotto: riquadro Response Matrix', date: '31 ottobre 2026',
     points: [
       'Nuovo riquadro "Response Matrix" sul Cruscotto, accanto agli altri registri: commenti aperti, Change Order ancora aperti e commenti totali su tutte le revisioni di Approvazioni Drawings della commessa.',
       'I Change Order aperti sono evidenziati in rosso: segnalano richieste che cambiano lo scope concordato, da congelare in attesa di una variante economica approvata.',

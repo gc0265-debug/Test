@@ -29,6 +29,10 @@ ensureColumns('documenti', [
   { name: 'file_path', def: 'TEXT' },
   { name: 'file_mime', def: 'TEXT' },
   { name: 'file_size', def: 'INTEGER' },
+  // Contenuto Delta (Quill) dei documenti Word scritti direttamente in
+  // app: permette di riaprirli nell'editor per modificarli, a differenza
+  // di un file caricato dall'esterno di cui l'app non conosce il contenuto.
+  { name: 'contenuto_editor', def: 'TEXT' },
 ]);
 ensureColumns('decisioni', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
 ensureColumns('allert', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);

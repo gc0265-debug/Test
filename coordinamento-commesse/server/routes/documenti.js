@@ -10,6 +10,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const db = require('../db/database');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { deltaToDocxBuffer } = require('../utils/deltaToDocx');
 
 const router = express.Router();
 
@@ -81,6 +82,66 @@ router.put('/:id', upload.single('file'), (req, res) => {
   `).run(next.titolo, next.tipo, next.url, next.note, next.file_nome, next.file_path, next.file_mime, next.file_size, req.params.id);
 
   res.json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id));
+});
+
+// Documenti Word scritti direttamente nell'editor in app (contenuto in
+// formato Delta di Quill), invece che caricati da file esterno. Il
+// risultato è un vero file .docx salvato come un documento normale — si
+// scarica e si riapre nell'editor esattamente come un documento caricato,
+// con in più la possibilità di modificarne il testo restando nell'app.
+function nomeFileGenerato() {
+  return `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.docx`;
+}
+
+router.post('/autore', async (req, res) => {
+  const { commessa_id, titolo, tipo, note, delta } = req.body;
+  if (!commessa_id || !titolo) return res.status(400).json({ error: 'commessa_id e titolo sono obbligatori' });
+  if (!delta || !Array.isArray(delta.ops)) return res.status(400).json({ error: 'contenuto del documento mancante o non valido' });
+
+  try {
+    const buffer = await deltaToDocxBuffer(delta);
+    const fileName = nomeFileGenerato();
+    fs.writeFileSync(path.join(uploadDir, fileName), buffer);
+
+    const result = db.prepare(`
+      INSERT INTO documenti (commessa_id, titolo, tipo, note, file_nome, file_path, file_mime, file_size, contenuto_editor)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      commessa_id, titolo, tipo || 'altro', note || null,
+      `${titolo}.docx`, fileName, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.length,
+      JSON.stringify(delta)
+    );
+    res.status(201).json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(result.lastInsertRowid));
+  } catch (err) {
+    res.status(500).json({ error: `generazione del documento Word fallita: ${err.message}` });
+  }
+});
+
+router.put('/:id/autore', async (req, res) => {
+  const existing = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'documento non trovato' });
+  const { titolo, tipo, note, delta } = req.body;
+  if (!delta || !Array.isArray(delta.ops)) return res.status(400).json({ error: 'contenuto del documento mancante o non valido' });
+
+  try {
+    const buffer = await deltaToDocxBuffer(delta);
+    const fileName = nomeFileGenerato();
+    fs.writeFileSync(path.join(uploadDir, fileName), buffer);
+    if (existing.file_path) fs.unlink(path.join(uploadDir, existing.file_path), () => {});
+
+    const titoloFinale = titolo ?? existing.titolo;
+    db.prepare(`
+      UPDATE documenti SET titolo=?, tipo=?, note=?, file_nome=?, file_path=?, file_mime=?, file_size=?, contenuto_editor=?, updated_at=unixepoch()
+      WHERE id=?
+    `).run(
+      titoloFinale, tipo || existing.tipo, note !== undefined ? (note || null) : existing.note,
+      `${titoloFinale}.docx`, fileName, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.length,
+      JSON.stringify(delta), req.params.id
+    );
+    res.json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id));
+  } catch (err) {
+    res.status(500).json({ error: `aggiornamento del documento Word fallito: ${err.message}` });
+  }
 });
 
 router.get('/:id/file', (req, res) => {

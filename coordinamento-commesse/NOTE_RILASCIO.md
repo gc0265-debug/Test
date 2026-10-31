@@ -16,6 +16,21 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Documenti: scrivere un Word direttamente in app (31 ottobre 2026)
+
+- Nuovo pulsante **"+ Scrivi documento Word"** in Documenti: un editor di
+  testo con titoli, grassetto/corsivo/sottolineato, elenchi puntati e
+  numerati, citazioni — niente di più di quanto serve a una nota o un
+  verbale, ma abbastanza per scriverlo senza uscire dall'app.
+- Il documento scritto qui è un vero file **.docx**: si scarica e si apre
+  normalmente in Word, esattamente come un documento caricato da file.
+- Resta anche modificabile da dentro l'app: riaprendolo si ritrova il
+  testo con tutta la formattazione, pronto per essere corretto e
+  risalvato — un documento caricato da fuori invece si sostituisce sempre
+  con un nuovo file, perché l'app non ne conosce il contenuto.
+
+---
+
 ## Cruscotto: riquadro Response Matrix (31 ottobre 2026)
 
 - Nuovo riquadro **"Response Matrix"** sul Cruscotto, accanto agli altri
