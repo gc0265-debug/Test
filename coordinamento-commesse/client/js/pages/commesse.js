@@ -73,6 +73,32 @@ async function openCommessaForm(existing, onSaved) {
     'Una commessa chiusa resta consultabile ma non compare come predefinita nel menu laterale.'));
   form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
     'Annotazioni libere, visibili solo qui.'));
+
+  const emailInput = textInput('email_notifiche', existing?.email_notifiche ?? '', { placeholder: 'es. direttore@fieldproject.it, pm@gili.it' });
+  form.appendChild(field('Email notifiche scadenze', emailInput,
+    'Uno o più indirizzi separati da virgola. Ogni giorno ricevono un riepilogo delle criticità urgenti e dei cut-off Approvazioni Drawings in scadenza nei prossimi 7 giorni, più un avviso immediato appena uno di questi risulta scaduto. Richiede un server SMTP configurato (vedi .env.example); lascia vuoto per non ricevere nulla.'));
+  if (existing) {
+    const provaBtn = el('button', {
+      type: 'button', class: 'btn btn--sm', style: 'margin:0 0 14px',
+      onclick: async () => {
+        if (!emailInput.value.trim()) { toast('Inserisci prima almeno un indirizzo email.', { error: true }); return; }
+        provaBtn.disabled = true;
+        try {
+          if (emailInput.value !== (existing.email_notifiche || '')) {
+            await api.put(`/commesse/${existing.id}`, { ...formData(form), email_notifiche: emailInput.value });
+          }
+          const res = await api.post(`/commesse/${existing.id}/notifica-test`, {});
+          toast(`Email di prova inviata a: ${res.destinatari.join(', ')}`);
+        } catch (err) {
+          toast(err.message, { error: true });
+        } finally {
+          provaBtn.disabled = false;
+        }
+      },
+    }, 'Invia notifica di prova');
+    form.appendChild(provaBtn);
+  }
+
   if (existing) {
     form.appendChild(el('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'Work package collegati'));
     const { host: wpHost } = await renderWpMiniList(existing, () => onSaved());

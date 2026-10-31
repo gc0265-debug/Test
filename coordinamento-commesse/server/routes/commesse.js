@@ -1,5 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
+const { calcolaScadenze, corpoDigest, testoSemplice } = require('../utils/notificheScadenze');
+const { inviaEmail } = require('../utils/mailer');
 
 const router = express.Router();
 
@@ -26,16 +28,16 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { codice, nome, gruppo, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note } = req.body;
+  const { codice, nome, gruppo, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note, email_notifiche } = req.body;
   if (!codice || !nome) return res.status(400).json({ error: 'codice e nome sono obbligatori' });
 
   try {
     const result = db.prepare(`
-      INSERT INTO commesse (codice, nome, gruppo, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO commesse (codice, nome, gruppo, cliente, committente_finale, gc, dl, advisor, direttore_cantiere, data_apertura, stato, note, email_notifiche)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       codice, nome, gruppo || null, cliente || null, committente_finale || null, gc || null, dl || null,
-      advisor || null, direttore_cantiere || null, data_apertura || null, stato || 'attiva', note || null
+      advisor || null, direttore_cantiere || null, data_apertura || null, stato || 'attiva', note || null, email_notifiche || null
     );
     const row = db.prepare('SELECT * FROM commesse WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(row);
@@ -51,10 +53,10 @@ router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM commesse WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'commessa non trovata' });
 
-  const fields = ['codice', 'nome', 'gruppo', 'cliente', 'committente_finale', 'gc', 'dl', 'advisor', 'direttore_cantiere', 'data_apertura', 'stato', 'note'];
+  const fields = ['codice', 'nome', 'gruppo', 'cliente', 'committente_finale', 'gc', 'dl', 'advisor', 'direttore_cantiere', 'data_apertura', 'stato', 'note', 'email_notifiche'];
   const next = { ...existing, ...req.body };
   db.prepare(`
-    UPDATE commesse SET codice=?, nome=?, gruppo=?, cliente=?, committente_finale=?, gc=?, dl=?, advisor=?, direttore_cantiere=?, data_apertura=?, stato=?, note=?, updated_at=unixepoch()
+    UPDATE commesse SET codice=?, nome=?, gruppo=?, cliente=?, committente_finale=?, gc=?, dl=?, advisor=?, direttore_cantiere=?, data_apertura=?, stato=?, note=?, email_notifiche=?, updated_at=unixepoch()
     WHERE id=?
   `).run(...fields.map(f => next[f] ?? null), req.params.id);
 
@@ -65,6 +67,27 @@ router.delete('/:id', (req, res) => {
   const result = db.prepare('DELETE FROM commesse WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'commessa non trovata' });
   res.status(204).end();
+});
+
+// Invia subito il contenuto del digest corrente all'indirizzo configurato
+// per questa commessa, ignorando la deduplica giornaliera — serve a
+// verificare che la configurazione SMTP funzioni davvero, senza aspettare
+// la prossima esecuzione pianificata (server/scripts/invia-notifiche-scadenze.js).
+router.post('/:id/notifica-test', async (req, res) => {
+  const commessa = db.prepare('SELECT * FROM commesse WHERE id = ?').get(req.params.id);
+  if (!commessa) return res.status(404).json({ error: 'commessa non trovata' });
+  const destinatari = (commessa.email_notifiche || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (!destinatari.length) return res.status(400).json({ error: 'nessun indirizzo email di notifica configurato per questa commessa' });
+
+  try {
+    const scadenze = calcolaScadenze(commessa.id);
+    const html = corpoDigest(commessa, scadenze);
+    await inviaEmail({ to: destinatari, subject: `[Prova] Scadenze della settimana — ${commessa.codice}`, html, text: testoSemplice(html) });
+    res.json({ ok: true, destinatari });
+  } catch (err) {
+    const status = err.code === 'SMTP_NOT_CONFIGURED' ? 503 : 502;
+    res.status(status).json({ error: err.message, code: err.code });
+  }
 });
 
 // ---------- work package (sotto-risorsa di commessa) ----------

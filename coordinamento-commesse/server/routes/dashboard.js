@@ -119,6 +119,19 @@ router.get('/:commessaId', (req, res) => {
   });
   const contratto = { attivi: contrattiAttivi.length, variazioni_da_gestire: variazioniDaGestire };
 
+  // ---- response matrix (commenti sulle revisioni di Approvazioni Drawings) ----
+  const commentiRows = db.prepare(`
+    SELECT dc.* FROM drawing_commenti dc
+    JOIN approvazioni_drawings a ON dc.elaborato_id = a.id
+    WHERE a.commessa_id = ?
+  `).all(commessaId);
+  const commentiAperti = commentiRows.filter(c => c.stato === 'aperto');
+  const responseMatrix = {
+    totali: commentiRows.length,
+    aperti: commentiAperti.length,
+    change_order_aperti: commentiAperti.filter(c => c.change_order).length,
+  };
+
   // ---- stakeholder ----
   const stakeholderRows = db.prepare("SELECT * FROM stakeholder WHERE commessa_id = ? AND stato = 'attivo'").all(commessaId);
   const stakeholder = {
@@ -127,7 +140,7 @@ router.get('/:commessaId', (req, res) => {
   };
 
   res.json({
-    commessa, criticita, decisioni, lavorazioni, allert, milestone, requisiti, contratto, stakeholder,
+    commessa, criticita, decisioni, lavorazioni, allert, milestone, requisiti, contratto, stakeholder, response_matrix: responseMatrix,
     attivita_recente: attivitaRecente, scadenze_settimana: scadenzeSettimana,
   });
 });

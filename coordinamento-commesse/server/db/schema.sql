@@ -538,3 +538,20 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires);
+
+-- Registro delle notifiche email di scadenza già inviate (cut-off
+-- Approvazioni Drawings, criticità urgenti), per non rimandare lo stesso
+-- avviso ad ogni esecuzione dello script pianificato — vedi
+-- server/scripts/invia-notifiche-scadenze.js. "chiave" identifica
+-- l'elemento (es. "criticita:12") per il tipo 'immediato', oppure è una
+-- costante fissa per il tipo 'digest' (un solo invio al giorno).
+CREATE TABLE IF NOT EXISTS notifiche_inviate (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    tipo TEXT NOT NULL CHECK(tipo IN ('immediato', 'digest')),
+    chiave TEXT NOT NULL,
+    giorno TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    UNIQUE(commessa_id, tipo, chiave, giorno)
+);
+CREATE INDEX IF NOT EXISTS idx_notifiche_inviate_commessa ON notifiche_inviate(commessa_id);

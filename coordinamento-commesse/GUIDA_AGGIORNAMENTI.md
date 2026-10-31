@@ -104,6 +104,39 @@ vengono cancellati.
 
 ---
 
+## 3ter. Notifiche email sulle scadenze (facoltativo)
+
+L'app segnala già in pagina le criticità urgenti e i cut-off Approvazioni
+Drawings in scadenza; questo passo aggiunge anche un'email automatica,
+così non serve tenere l'app aperta per accorgersene.
+
+1. Serve un server SMTP — quello del tuo provider email, o un servizio
+   come Gmail con una "password per le app". Apri
+   `coordinamento-commesse/.env.example`, copialo in `.env` nella stessa
+   cartella (`coordinamento-commesse/.env`) e compila `SMTP_HOST`,
+   `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`.
+2. In app, apri **Commesse**, modifica la commessa e compila il campo
+   **"Email notifiche scadenze"** con uno o più indirizzi (separati da
+   virgola) — resta vuoto finché non lo imposti, e nessuna commessa
+   riceve nulla senza questo passo.
+3. Nella stessa scheda, premi **"Invia notifica di prova"** per
+   verificare subito che SMTP sia configurato correttamente.
+4. Apri `coordinamento-commesse/deploy/macos` e fai doppio click su
+   **`installa-notifiche-scadenze.command`**.
+
+Da quel momento, ogni ora: un avviso immediato appena una criticità
+urgente o un cut-off risulta scaduto, più un riepilogo giornaliero (dalle
+7:00) di tutte le scadenze dei prossimi 7 giorni, scadute comprese — solo
+alle commesse con un indirizzo configurato.
+
+**Per un controllo subito, a mano**, doppio click su
+`deploy/macos/invia-notifiche-ora.command`.
+
+**Per disinstallarlo**: doppio click su
+`deploy/macos/ferma-notifiche-scadenze.command`.
+
+---
+
 ## 4. Tornare indietro o disinstallare
 
 - **Disinstallare l'avvio automatico**: doppio click su

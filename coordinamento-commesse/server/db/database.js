@@ -152,7 +152,10 @@ ensureColumns('approvazioni_drawings', [
   { name: 'data_limite_approvazione', def: 'TEXT' },
 ]);
 ensureColumns('users', [{ name: 'sezioni_consentite', def: 'TEXT' }]);
-ensureColumns('commesse', [{ name: 'gruppo', def: 'TEXT' }]);
+ensureColumns('commesse', [
+  { name: 'gruppo', def: 'TEXT' },
+  { name: 'email_notifiche', def: 'TEXT' },
+]);
 
 dropColumnCheck('users', "CHECK(ruolo IN", `
   CREATE TABLE __TABLE__ (

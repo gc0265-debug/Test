@@ -172,6 +172,12 @@ export async function renderCruscotto(container) {
     tile('Variazioni da gestire', dash.contratto.variazioni_da_gestire, dash.contratto.variazioni_da_gestire > 0 ? 'alert' : ''),
   ], { openHref: '#/requisiti', openLabel: 'Apri i requisiti →' }));
 
+  grid.appendChild(box('Response Matrix', [
+    tile('Commenti aperti', dash.response_matrix.aperti, dash.response_matrix.aperti > 0 ? 'warn' : ''),
+    tile('Change Order aperti', dash.response_matrix.change_order_aperti, dash.response_matrix.change_order_aperti > 0 ? 'alert' : ''),
+    tile('Commenti totali', dash.response_matrix.totali),
+  ], { openHref: '#/approvazioni-drawings', openLabel: 'Apri Approvazioni Drawings →' }));
+
   grid.appendChild(box('Stakeholder', [
     tile('Attivi', dash.stakeholder.totali),
     tile('Interesse e influenza alti', dash.stakeholder.chiave, dash.stakeholder.chiave > 0 ? 'warn' : ''),

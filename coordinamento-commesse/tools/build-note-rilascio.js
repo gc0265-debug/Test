@@ -28,13 +28,28 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.30';
+const VERSIONE_ATTUALE = '1.32';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.30', title: 'Lezioni Apprese: ragionamento IA e stampa filtrabile', date: '31 ottobre 2026', attuale: true,
+    v: '1.32', title: 'Cruscotto: riquadro Response Matrix', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuovo riquadro "Response Matrix" sul Cruscotto, accanto agli altri registri: commenti aperti, Change Order ancora aperti e commenti totali su tutte le revisioni di Approvazioni Drawings della commessa.',
+      'I Change Order aperti sono evidenziati in rosso: segnalano richieste che cambiano lo scope concordato, da congelare in attesa di una variante economica approvata.',
+    ],
+  },
+  {
+    v: '1.31', title: 'Notifiche email sulle scadenze', date: '31 ottobre 2026',
+    points: [
+      'Oltre all\'evidenza visiva già presente in app, le scadenze critiche (cut-off Approvazioni Drawings, criticità urgenti) possono ora essere notificate via email: un avviso immediato appena una scadenza viene superata, più un riepilogo giornaliero di quelle nei prossimi 7 giorni.',
+      'Nuovo campo "Email notifiche scadenze" nella scheda di ogni commessa (uno o più indirizzi, separati da virgola) e pulsante "Invia notifica di prova" per verificare subito che l\'invio funzioni.',
+      'Richiede un server SMTP configurato nel file .env (vedi .env.example) e, sul Mac, l\'installazione di un controllo orario (deploy/macos/installa-notifiche-scadenze.command) — vedi GUIDA_AGGIORNAMENTI.md. Senza questi passaggi l\'app continua a funzionare come prima, semplicemente non invia email.',
+    ],
+  },
+  {
+    v: '1.30', title: 'Lezioni Apprese: ragionamento IA e stampa filtrabile', date: '31 ottobre 2026',
     points: [
       'Il pulsante "+ Genera da registri" ora chiede al modello di linguaggio di ragionare sui dati della criticità, decisione o allert chiuso, invece di limitarsi a ricopiarne i campi: scrive una proposta di "Cosa è successo", "Cosa abbiamo imparato" e "Azione per il futuro", che restano comunque modificabili prima di confermare.',
       'Se sul server non è configurata la chiave del servizio IA (file .env, vedi .env.example), il generatore lo segnala chiaramente invece di inventare un testo finto: titolo e collegamento restano precompilati dai registri, gli altri campi si completano a mano.',
