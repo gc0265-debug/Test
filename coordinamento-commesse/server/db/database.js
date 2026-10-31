@@ -50,6 +50,7 @@ ensureColumns('lavorazioni', [
   { name: 'data_inizio', def: 'TEXT' },
   { name: 'data_fine', def: 'TEXT' },
   { name: 'contratto_id', def: 'INTEGER REFERENCES contratti(id) ON DELETE SET NULL' },
+  { name: 'parent_id', def: 'INTEGER REFERENCES lavorazioni(id) ON DELETE SET NULL' },
 ]);
 // scadenza era l'unica data prima dell'introduzione di data_inizio/data_fine:
 // la si riporta come data_fine così le lavorazioni esistenti non perdono la scadenza già registrata.

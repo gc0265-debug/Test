@@ -16,6 +16,31 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Timeline Montaggi: raggruppamento per Piano e sotto-attività stile MPP (31 ottobre 2026)
+
+- La Timeline Montaggi raggruppa ora automaticamente le attività per
+  **Piano** (es. tutte le voci "P+5" insieme): ogni gruppo è
+  un'intestazione comprimibile, con una barra riassuntiva che copre
+  l'intero periodo del piano e il conteggio delle attività al suo
+  interno.
+- Una lavorazione può avere delle **sotto-attività**, in stile MS
+  Project: dal pulsante "+ sotto-attività" che compare passando sul
+  nome di una lavorazione, o scegliendo una "Lavorazione madre" dal
+  modulo di Lavorazioni o della Timeline stessa.
+- Una lavorazione con sotto-attività diventa una riga di riepilogo: la
+  sua barra copre da sola l'intervallo minimo-massimo di tutte le sue
+  sotto-attività, mostrate rientrate subito sotto di essa e
+  comprimibili singolarmente col proprio triangolino, indipendentemente
+  dal gruppo Piano.
+- La gerarchia resta volutamente a due soli livelli (lavorazione →
+  sotto-attività), per restare semplice da leggere: una lavorazione
+  che ha già delle sotto-attività non può a sua volta diventare
+  sotto-attività di un'altra.
+- Nella scheda Lavorazioni, ogni sotto-attività mostra sotto il titolo
+  a quale lavorazione madre appartiene.
+
+---
+
 ## Storico con dettaglio delle modifiche, Dashboard Finanziaria per fornitore (31 ottobre 2026)
 
 - Lo storico di **Approvazioni Drawings**, **Capitolato Requisiti** e

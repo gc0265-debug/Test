@@ -28,13 +28,23 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.18';
+const VERSIONE_ATTUALE = '1.19';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.18', title: 'Storico con dettaglio delle modifiche, Dashboard Finanziaria per fornitore', date: '31 ottobre 2026', attuale: true,
+    v: '1.19', title: 'Timeline Montaggi: raggruppamento per Piano e sotto-attività stile MPP', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'La Timeline Montaggi raggruppa ora automaticamente le attività per Piano (es. tutte le voci "P+5" insieme): ogni gruppo è un\'intestazione comprimibile, con una barra riassuntiva che copre l\'intero periodo del piano e il conteggio delle attività al suo interno.',
+      'Una lavorazione può avere delle sotto-attività, in stile MS Project: dal pulsante "+ sotto-attività" che compare passando sul nome di una lavorazione, o scegliendo una "Lavorazione madre" dal modulo di Lavorazioni o della Timeline stessa.',
+      'Una lavorazione con sotto-attività diventa una riga di riepilogo: la sua barra copre da sola l\'intervallo minimo-massimo di tutte le sue sotto-attività, mostrate rientrate subito sotto di essa e comprimibili singolarmente col proprio triangolino, indipendentemente dal gruppo Piano.',
+      'La gerarchia resta volutamente a due soli livelli (lavorazione → sotto-attività), per restare semplice da leggere: una lavorazione che ha già delle sotto-attività non può a sua volta diventare sotto-attività di un\'altra.',
+      'Nella scheda Lavorazioni, ogni sotto-attività mostra sotto il titolo a quale lavorazione madre appartiene.',
+    ],
+  },
+  {
+    v: '1.18', title: 'Storico con dettaglio delle modifiche, Dashboard Finanziaria per fornitore', date: '31 ottobre 2026',
     points: [
       'Lo storico di Approvazioni Drawings, Capitolato Requisiti e Registro Stakeholder mostra ora esattamente cosa è cambiato ad ogni modifica (es. "Stato: In attesa → Approvato"), come già avveniva per Criticità, Decisioni e Allert — prima si vedeva solo che una modifica era avvenuta, non il dettaglio.',
       'Dashboard Finanziaria: aggiunta una nuova tabella "Contratti fornitori" con ogni singolo contratto registrato, su tutte le commesse — fornitore, stato, data di stipula, valore e atti aggiuntivi già sommati — accanto al riepilogo già esistente per commessa.',

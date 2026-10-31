@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS lavorazioni (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
     wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    parent_id INTEGER REFERENCES lavorazioni(id) ON DELETE SET NULL,  -- lavorazione madre, per sotto-attività stile MPP nella Timeline; limitato a 2 livelli (vedi server/routes/lavorazioni.js)
     titolo TEXT NOT NULL,
     descrizione TEXT,
     stato TEXT NOT NULL DEFAULT 'da-fare'

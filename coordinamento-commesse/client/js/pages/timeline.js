@@ -128,26 +128,34 @@ function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
   return segments;
 }
 
-async function openForm(existing, onSaved) {
-  const isLavorazione = existing ? existing.type === 'lavorazione' : false;
+async function openForm(existing, onSaved, presets = {}) {
+  const isLavorazione = existing ? existing.type === 'lavorazione' : presets.type === 'lavorazione';
   // In vista aggregata di gruppo la riga può appartenere a una commessa
   // diversa da quella (eventuale) selezionata in sidebar.
-  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
-  const wpRes = await api.get(`/commesse/${commessaIdForm}/wp`);
+  const commessaIdForm = existing?.commessa_id ?? presets.commessa_id ?? state.commessaId;
+  const [wpRes, lavorazioniRes] = await Promise.all([
+    api.get(`/commesse/${commessaIdForm}/wp`),
+    api.get(`/lavorazioni?commessa_id=${commessaIdForm}`),
+  ]);
   const form = el('form', {});
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  // Solo lavorazioni di primo livello (senza a loro volta una madre) e
+  // diverse da questa: la gerarchia resta a 2 soli livelli.
+  const parentOptions = [['', '— nessuna (lavorazione autonoma)'],
+    ...lavorazioniRes.data.filter((l) => !l.parent_id && l.id !== existing?.id).map((l) => [l.id, l.titolo])];
 
-  const tipoCheckbox = el('input', { type: 'checkbox', checked: isLavorazione, disabled: !!existing });
+  const tipoCheckbox = el('input', { type: 'checkbox', checked: isLavorazione, disabled: !!existing || !!presets.parent_id });
   form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin-bottom:6px;cursor:pointer' }, [
     tipoCheckbox, 'È una Lavorazione (lascia vuoto per una Milestone)',
   ]));
   form.appendChild(el('div', { class: 'field__hint', style: 'margin:0 0 16px' },
-    existing ? 'Il tipo non si può cambiare dopo la creazione.' : 'Scegli il tipo di riga prima di compilare i campi sotto.'));
+    existing ? 'Il tipo non si può cambiare dopo la creazione.'
+      : (presets.parent_id ? `Sotto-attività di "${presets.parent_titolo}".` : 'Scegli il tipo di riga prima di compilare i campi sotto.')));
 
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Montaggio boiserie corridoio' })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Piano', textInput('piano', existing?.piano ?? '', { placeholder: 'es. Piano 3' })),
+    field('Piano', textInput('piano', existing?.piano ?? presets.piano ?? '', { placeholder: 'es. Piano 3' })),
     field('Zona', textInput('zona', existing?.zona ?? '', { placeholder: 'es. Ala nord' })),
   ]));
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -163,6 +171,9 @@ async function openForm(existing, onSaved) {
     if (tipoCheckbox.checked) {
       extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO_LAVORAZIONE_LABEL).map(([k, v]) => [k, v]), existing?.statoReale ?? 'da-fare')));
       extraHost.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA), existing?.priorita ?? 'media')));
+      extraHost.appendChild(field('Lavorazione madre', select('parent_id', parentOptions, existing?.parent_id ?? presets.parent_id ?? '', { disabled: !!presets.parent_id }),
+        'Scegli una lavorazione madre per renderla una sotto-attività, mostrata rientrata sotto di essa nella Timeline.'));
+      if (presets.parent_id) extraHost.appendChild(el('input', { type: 'hidden', name: 'parent_id', value: presets.parent_id }));
       extraHost.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
     } else {
       extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata')));
@@ -190,7 +201,7 @@ async function openForm(existing, onSaved) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = formData(form);
-    if (!existing) data.commessa_id = state.commessaId;
+    if (!existing) data.commessa_id = presets.commessa_id ?? state.commessaId;
     const lavorazione = tipoCheckbox.checked;
     try {
       if (lavorazione) {
@@ -265,6 +276,11 @@ export async function renderTimeline(container) {
   let granularity = 'week';
   let zoom = 1;
   let items = [];
+  // Stato di espansione dei gruppi "Piano" e delle lavorazioni madre con
+  // sotto-attività — persiste tra un draw() e l'altro (zoom, refresh...)
+  // ma si azzera riaprendo la pagina.
+  const collapsedGroups = new Set();
+  const collapsedParents = new Set();
   const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
   const soloLettura = clienteSoloLettura || inVistaGruppo();
   if (inVistaGruppo() && !clienteSoloLettura) {
@@ -319,17 +335,55 @@ export async function renderTimeline(container) {
     const milestoneItems = milestoneRes.data.map((m) => ({
       ...m, type: 'milestone', statoLabel: STATO[m.stato][0],
     }));
-    const lavorazioneItems = lavorazioniRes.data
-      .filter((l) => l.data_inizio && l.data_fine)
-      .map((l) => ({
-        ...l, type: 'lavorazione',
-        statoReale: l.stato,
-        stato: STATO_LAVORAZIONE_CLS[l.stato] || 'pianificata',
-        statoLabel: STATO_LAVORAZIONE_LABEL[l.stato] || l.stato,
-        in_ritardo: l.stato !== 'completata' && l.data_fine < oggi,
+
+    // Le sotto-attività (parent_id valorizzato) di una lavorazione madre
+    // entrano in Gantt solo con le proprie date; la madre, se ha almeno
+    // una sotto-attività con date, diventa una riga "riepilogo" stile MPP:
+    // la sua barra copre sempre l'intervallo minimo-massimo delle
+    // sotto-attività (più le proprie date, se presenti), non è trascinabile
+    // a mano e le date sottostanti restano quelle vere, modificabili solo
+    // aprendo la singola sotto-attività o la madre stessa.
+    const tutte = lavorazioniRes.data.map((l) => ({
+      ...l, type: 'lavorazione',
+      statoReale: l.stato,
+      stato: STATO_LAVORAZIONE_CLS[l.stato] || 'pianificata',
+      statoLabel: STATO_LAVORAZIONE_LABEL[l.stato] || l.stato,
+      impresa_label: l.contratto_controparte || l.impresa || null,
+    }));
+    const figliPerMadre = new Map();
+    tutte.forEach((l) => {
+      if (!l.parent_id) return;
+      if (!figliPerMadre.has(l.parent_id)) figliPerMadre.set(l.parent_id, []);
+      figliPerMadre.get(l.parent_id).push(l);
+    });
+
+    const lavorazioneItems = [];
+    tutte.forEach((l) => {
+      if (l.parent_id) {
+        if (l.data_inizio && l.data_fine) {
+          lavorazioneItems.push({ ...l, in_ritardo: l.stato !== 'completata' && l.data_fine < oggi, ha_scostamento: false });
+        }
+        return;
+      }
+      const figli = (figliPerMadre.get(l.id) || []).filter((f) => f.data_inizio && f.data_fine);
+      const isSummary = figli.length > 0;
+      let dataInizio = l.data_inizio;
+      let dataFine = l.data_fine;
+      if (isSummary) {
+        const starts = figli.map((f) => f.data_inizio).concat(l.data_inizio ? [l.data_inizio] : []);
+        const ends = figli.map((f) => f.data_fine).concat(l.data_fine ? [l.data_fine] : []);
+        dataInizio = starts.reduce((m, d) => (d < m ? d : m), starts[0]);
+        dataFine = ends.reduce((m, d) => (d > m ? d : m), ends[0]);
+      }
+      if (!dataInizio || !dataFine) return;
+      lavorazioneItems.push({
+        ...l, data_inizio: dataInizio, data_fine: dataFine,
+        in_ritardo: !isSummary && l.stato !== 'completata' && dataFine < oggi,
         ha_scostamento: false,
-        impresa_label: l.contratto_controparte || l.impresa || null,
-      }));
+        isSummary, nFigli: figli.length,
+      });
+    });
+
     items = [...milestoneItems, ...lavorazioneItems].sort((a, b) => (a.data_inizio < b.data_inizio ? -1 : 1));
     draw();
   }
@@ -352,7 +406,9 @@ export async function renderTimeline(container) {
     const todayOffsetPx = Math.max(0, daysBetween(rangeStart, oggi)) * ppd;
 
     const axis = buildAxis(rangeStart, rangeEnd, granularity, zoom);
-    const nomeWidth = computeNomeWidth(items);
+    // +40px: spazio per il rientro dei due livelli (sotto-attività dentro
+    // una lavorazione madre, dentro un gruppo Piano) più lo chevron.
+    const nomeWidth = computeNomeWidth(items) + 40;
 
     const labelCols = (nome, meta, inizio, fine, onEdit) => el('div', {
       class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : ''),
@@ -389,7 +445,20 @@ export async function renderTimeline(container) {
       });
     }
 
-    const rows = items.map((it) => {
+    // Figli (sotto-attività) indicizzati per id della lavorazione madre —
+    // le righe di primo livello sono tutte le milestone più le lavorazioni
+    // senza madre; le sotto-attività si trovano solo annidate sotto la
+    // propria madre, mai come riga di primo livello a sé stante.
+    const figliPerMadre = new Map();
+    items.forEach((it) => {
+      if (it.type === 'lavorazione' && it.parent_id) {
+        if (!figliPerMadre.has(it.parent_id)) figliPerMadre.set(it.parent_id, []);
+        figliPerMadre.get(it.parent_id).push(it);
+      }
+    });
+    const primoLivello = items.filter((it) => it.type === 'milestone' || !it.parent_id);
+
+    function buildItemRow(it, livello) {
       const isLavorazione = it.type === 'lavorazione';
       const cls = it.in_ritardo ? 'ritardo' : it.stato;
       const track = el('div', { class: 'gantt__track', style: `width:${totalWidthPx}px` });
@@ -401,26 +470,119 @@ export async function renderTimeline(container) {
       }
       const onEdit = clienteSoloLettura ? null : (() => openForm(it, refresh));
       track.appendChild(bar(
-        it.data_inizio, it.data_fine, `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}`,
-        `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}`,
+        it.data_inizio, it.data_fine,
+        `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}${it.isSummary ? ' gantt__bar--summary' : ''}`,
+        `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}${it.isSummary ? ' · riepilogo sotto-attività' : ''}`,
         onEdit
       ));
+
+      const figli = isLavorazione ? figliPerMadre.get(it.id) : null;
+      const haFigli = !!(figli && figli.length);
+      const collassata = haFigli && collapsedParents.has(it.id);
 
       const metaParts = (isLavorazione
         ? [it.piano, it.zona, it.wp_codice, it.impresa_label]
         : [it.piano, it.zona, it.wp_codice]
       ).concat(inVistaGruppo() ? [it.commessa_codice] : []).filter(Boolean);
 
-      return el('div', { class: 'gantt__row' + (it.ha_scostamento ? ' gantt__row--scostamento' : '') + (isLavorazione ? ' gantt__row--lavorazione' : '') }, [
-        labelCols(
-          [it.titolo, el('span', { class: 'gantt__type-tag' }, isLavorazione ? 'Lavorazione' : 'Milestone'),
-            it.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null],
-          metaParts.join(' · ') || '—',
-          formatDate(it.data_inizio), formatDate(it.data_fine),
-          onEdit
-        ),
-        track,
+      const nomeChildren = [
+        haFigli ? el('span', {
+          class: 'gantt__chevron' + (collassata ? ' gantt__chevron--collapsed' : ''),
+          onclick: (e) => { e.stopPropagation(); if (collapsedParents.has(it.id)) collapsedParents.delete(it.id); else collapsedParents.add(it.id); draw(); },
+        }, '▾') : null,
+        it.titolo,
+        el('span', { class: 'gantt__type-tag' }, isLavorazione ? (it.isSummary ? `LAVORAZIONE · ${it.nFigli} sotto-attività` : 'Lavorazione') : 'Milestone'),
+        it.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null,
+        (isLavorazione && !it.parent_id && !clienteSoloLettura) ? el('button', {
+          type: 'button', class: 'gantt__add-child', title: 'Aggiungi sotto-attività',
+          onclick: (e) => { e.stopPropagation(); openForm(null, refresh, { type: 'lavorazione', parent_id: it.id, parent_titolo: it.titolo, piano: it.piano, commessa_id: it.commessa_id }); },
+        }, '+ sotto-attività') : null,
+      ];
+
+      const label = el('div', {
+        class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : '') + (livello ? ` gantt__label--indent-${livello}` : ''),
+        onclick: onEdit || null,
+      }, [
+        el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
+          el('div', { class: 'gantt__label-titolo' }, nomeChildren),
+          metaParts.length ? el('div', { class: 'gantt__label-meta' }, metaParts.join(' · ')) : null,
+        ]),
+        el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(it.data_inizio)),
+        el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(it.data_fine)),
       ]);
+
+      const rowEl = el('div', {
+        class: 'gantt__row'
+          + (it.ha_scostamento ? ' gantt__row--scostamento' : '')
+          + (isLavorazione ? ' gantt__row--lavorazione' : '')
+          + (it.isSummary ? ' gantt__row--summary' : '')
+          + (livello ? ' gantt__row--child' : ''),
+      }, [label, track]);
+
+      const out = [rowEl];
+      if (haFigli && !collassata) {
+        figli
+          .slice()
+          .sort((a, b) => (a.data_inizio < b.data_inizio ? -1 : 1))
+          .forEach((f) => out.push(...buildItemRow(f, 1)));
+      }
+      return out;
+    }
+
+    // Raggruppamento di primo livello per Piano, in stile MPP: un gruppo
+    // per ogni valore di "Piano" (le voci senza piano finiscono in un
+    // gruppo unico in coda), ordinati per la data di inizio più vicina.
+    const gruppiMap = new Map();
+    primoLivello.forEach((it) => {
+      const chiave = it.piano && it.piano.trim() ? it.piano.trim() : '';
+      if (!gruppiMap.has(chiave)) gruppiMap.set(chiave, []);
+      gruppiMap.get(chiave).push(it);
+    });
+    const gruppi = [...gruppiMap.entries()].map(([piano, arr]) => {
+      arr.sort((a, b) => (a.data_inizio < b.data_inizio ? -1 : 1));
+      const starts = arr.map((x) => x.data_inizio);
+      const ends = arr.map((x) => x.data_fine);
+      return {
+        piano, items: arr,
+        dataInizio: starts.reduce((m, d) => (d < m ? d : m), starts[0]),
+        dataFine: ends.reduce((m, d) => (d > m ? d : m), ends[0]),
+      };
+    }).sort((a, b) => {
+      if (!a.piano) return 1;
+      if (!b.piano) return -1;
+      return a.dataInizio < b.dataInizio ? -1 : 1;
+    });
+
+    const mostraGruppi = gruppi.length > 1 || (gruppi.length === 1 && gruppi[0].piano);
+    const rows = [];
+    gruppi.forEach((g) => {
+      if (mostraGruppi) {
+        const label = g.piano || 'Senza piano';
+        const chiave = g.piano || '\u0000senza-piano';
+        const collassato = collapsedGroups.has(chiave);
+        const nTotale = g.items.reduce((n, it) => n + 1 + (figliPerMadre.get(it.id)?.length || 0), 0);
+        const track = el('div', { class: 'gantt__track', style: `width:${totalWidthPx}px` });
+        track.appendChild(bar(g.dataInizio, g.dataFine, 'gantt__bar gantt__bar--group',
+          `${label} · ${formatDate(g.dataInizio)} → ${formatDate(g.dataFine)} · ${nTotale} attività`, null));
+        rows.push(el('div', { class: 'gantt__row gantt__row--group' }, [
+          el('div', {
+            class: 'gantt__label gantt__label--clickable',
+            onclick: () => { if (collassato) collapsedGroups.delete(chiave); else collapsedGroups.add(chiave); draw(); },
+          }, [
+            el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
+              el('div', { class: 'gantt__label-titolo' }, [
+                el('span', { class: 'gantt__chevron' + (collassato ? ' gantt__chevron--collapsed' : '') }, '▾'),
+                `${label} (${nTotale})`,
+              ]),
+            ]),
+            el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(g.dataInizio)),
+            el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(g.dataFine)),
+          ]),
+          track,
+        ]));
+        if (collassato) return;
+      }
+      g.items.forEach((it) => rows.push(...buildItemRow(it, 0)));
     });
 
     const chart = el('div', { class: 'gantt__chart' }, [
@@ -436,6 +598,7 @@ export async function renderTimeline(container) {
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dot gantt__legend-dot--baseline' }), 'Baseline (scostamento)']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__type-tag' }, 'Lavorazione'), 'riga più sottile = lavorazione, non milestone']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--group' }), 'Gruppo Piano / riepilogo sotto-attività']),
     ]));
   }
 

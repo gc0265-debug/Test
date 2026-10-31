@@ -156,12 +156,17 @@ async function openForm(existing, onSaved) {
   // In vista aggregata di gruppo la lavorazione può appartenere a una
   // commessa diversa da quella (eventuale) selezionata in sidebar.
   const commessaIdForm = existing?.commessa_id ?? state.commessaId;
-  const [contrattiRes, stakeholderRes, wpRes] = await Promise.all([
+  const [contrattiRes, stakeholderRes, wpRes, lavorazioniRes] = await Promise.all([
     api.get(`/contratti?commessa_id=${commessaIdForm}`),
     api.get(`/stakeholder?commessa_id=${commessaIdForm}`),
     api.get(`/commesse/${commessaIdForm}/wp`),
+    api.get(`/lavorazioni?commessa_id=${commessaIdForm}`),
   ]);
   const contrattoOptions = [['', '— nessuna (seleziona dal Registro Stakeholder sotto)'], ...contrattiRes.data.map((c) => [c.id, `${c.controparte || c.titolo}`])];
+  // Solo lavorazioni "di primo livello" (senza a loro volta una madre) e
+  // diverse da questa: la gerarchia resta a 2 soli livelli, come in Timeline.
+  const parentOptions = [['', '— nessuna (lavorazione autonoma)'],
+    ...lavorazioniRes.data.filter((l) => !l.parent_id && l.id !== existing?.id).map((l) => [l.id, l.titolo])];
   const impresaOptions = [['', '—'], ...stakeholderRes.data.filter((s) => s.stato === 'attivo').map((s) => [s.nome, s.nome])];
   if (existing?.impresa && !impresaOptions.some(([v]) => v === existing.impresa)) {
     impresaOptions.push([existing.impresa, `${existing.impresa} (non più nel Registro Stakeholder)`]);
@@ -186,6 +191,8 @@ async function openForm(existing, onSaved) {
     'Se l\'impresa ha un contratto registrato in Contratti, collegalo qui invece di scriverlo a mano.'));
   form.appendChild(field('Impresa / squadra (da Registro Stakeholder)', select('impresa', impresaOptions, existing?.impresa ?? ''),
     'Usato solo se non è collegato un contratto sopra.'));
+  form.appendChild(field('Lavorazione madre', select('parent_id', parentOptions, existing?.parent_id ?? ''),
+    'Scegli una lavorazione madre per renderla una sotto-attività, mostrata rientrata sotto di essa nella Timeline Montaggi.'));
 
   if (existing) {
     const soloLettura = state.currentUser?.ruolo === 'cliente';
@@ -296,7 +303,10 @@ export async function renderLavorazioni(container) {
 
     renderTable(tableHost, [
       inVistaGruppo() ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
-      { key: 'titolo', label: 'Titolo' },
+      {
+        key: 'titolo', label: 'Titolo',
+        render: (r) => el('div', {}, [r.titolo, r.parent_titolo ? el('div', { class: 'muted', style: 'font-size:10.5px' }, `↳ sotto-attività di ${r.parent_titolo}`) : null]),
+      },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'pianozona', label: 'Piano / Zona', render: (r) => [r.piano, r.zona].filter(Boolean).join(' · ') || '—' },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },

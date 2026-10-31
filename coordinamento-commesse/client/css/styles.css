@@ -349,6 +349,30 @@ td.select input{cursor:pointer;}
 .gantt__label--clickable{cursor:pointer;}
 .gantt__label--clickable:hover{background:var(--paper-2);}
 
+/* gruppi "Piano" (riga di intestazione collassabile) e sotto-attività
+   rientrate sotto la propria lavorazione madre, in stile MS Project. */
+.gantt__row--group{background:var(--paper-3);}
+.gantt__row--group .gantt__label{background:var(--paper-3);}
+.gantt__row--group .gantt__label-titolo{font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.04em;}
+.gantt__row--summary .gantt__label-titolo{font-weight:700;}
+.gantt__row--child .gantt__label-col--nome{padding-left:22px;}
+.gantt__label--indent-1 .gantt__label-col--nome{padding-left:22px;}
+.gantt__chevron{
+  display:inline-block;width:14px;flex:none;color:var(--ink-3);font-size:10px;
+  transition:transform .12s ease;cursor:pointer;margin-right:2px;
+}
+.gantt__chevron--collapsed{transform:rotate(-90deg);}
+.gantt__add-child{
+  border:none;background:none;color:var(--red);font-size:10px;font-weight:600;
+  cursor:pointer;margin-left:8px;padding:2px 4px;opacity:0;white-space:nowrap;
+}
+.gantt__label:hover .gantt__add-child{opacity:1;}
+.gantt__bar--group{
+  position:absolute;top:50%;transform:translateY(-50%);height:6px;border-radius:3px;
+  background:var(--ink);opacity:.55;cursor:default;
+}
+.gantt__bar--summary{background:var(--ink) !important;opacity:.85;}
+
 /* barra baseline: posizione/durata originali, in trasparenza, non cliccabile */
 .gantt__bar-baseline{
   position:absolute;top:9px;height:9px;border-radius:2px;pointer-events:none;
@@ -364,6 +388,7 @@ td.select input{cursor:pointer;}
 .gantt__legend-dot--completata{background:var(--verde);}
 .gantt__legend-dot--ritardo{background:var(--red);}
 .gantt__legend-dot--baseline{background:var(--ink-3);opacity:.3;border:1px dashed var(--ink-2);border-radius:2px;}
+.gantt__legend-bar{width:16px;height:6px;border-radius:3px;background:var(--ink);opacity:.6;display:inline-block;}
 .gantt__zoom{width:110px;vertical-align:middle;}
 
 /* ---------- matrice interesse/influenza (stakeholder) ---------- */
