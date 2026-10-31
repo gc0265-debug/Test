@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.20';
+const VERSIONE_ATTUALE = '1.21';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.20', title: 'Intestazione delle tabelle sempre visibile durante lo scorrimento', date: '31 ottobre 2026', attuale: true,
+    v: '1.21', title: 'Cruscotto ridisegnato: più compatto e immediato', date: '31 ottobre 2026', attuale: true,
+    points: [
+      '"Scadenze della settimana" è ora una fascia a tutta larghezza in cima al Cruscotto, con l\'elenco delle scadenze subito visibile (non più dietro un click) in una fila di schede scorrevole, evidenziando in rosso quelle già scadute.',
+      '"Attività recente" è ora una fascia a tutta larghezza in fondo al Cruscotto, con la cronologia delle ultime modifiche mostrata come elenco scorrevole, anch\'essa subito visibile.',
+      'La griglia centrale con i numeri per registro (Criticità, Milestone, Decisioni, Lavorazioni, Requisiti & Contratti, Stakeholder, Allert) è più compatta, per una pagina d\'insieme più immediata da leggere in un unico colpo d\'occhio.',
+    ],
+  },
+  {
+    v: '1.20', title: 'Intestazione delle tabelle sempre visibile durante lo scorrimento', date: '31 ottobre 2026',
     points: [
       'In tutte le schede con un elenco (Criticità, Decisioni, Allert, Requisiti, Approvazioni Drawings, Registro Stakeholder, Maestranze, Capitolato Requisiti, Documenti, Diario, Lezioni Apprese, Note di Coordinamento, Commesse, Utenti...), la riga con i nomi delle colonne ora resta visibile in alto mentre si scorre l\'elenco, invece di sparire scorrendo verso il basso.',
       'Approvazioni Drawings: la colonna unica "Invio → Approvazione" è stata divisa in due colonne distinte, "Data invio" e "Data approvazione".',

@@ -16,6 +16,22 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Cruscotto ridisegnato: più compatto e immediato (31 ottobre 2026)
+
+- **"Scadenze della settimana"** è ora una fascia a tutta larghezza in
+  cima al Cruscotto, con l'elenco delle scadenze subito visibile (non
+  più dietro un click) in una fila di schede scorrevole, evidenziando
+  in rosso quelle già scadute.
+- **"Attività recente"** è ora una fascia a tutta larghezza in fondo
+  al Cruscotto, con la cronologia delle ultime modifiche mostrata come
+  elenco scorrevole, anch'essa subito visibile.
+- La griglia centrale con i numeri per registro (Criticità, Milestone,
+  Decisioni, Lavorazioni, Requisiti & Contratti, Stakeholder, Allert)
+  è più compatta, per una pagina d'insieme più immediata da leggere in
+  un unico colpo d'occhio.
+
+---
+
 ## Intestazione delle tabelle sempre visibile durante lo scorrimento (31 ottobre 2026)
 
 - In tutte le schede con un elenco (Criticità, Decisioni, Allert,
