@@ -35,10 +35,11 @@ async function openForm(existing, onSaved) {
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(field('Nome', select('nome', nomeOptions, existing?.nome ?? '', { required: true }),
     'Scelto dal Registro Stakeholder della commessa.'));
-  form.appendChild(field('Ruolo', textInput('ruolo', existing?.ruolo ?? '')));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
-  form.appendChild(field('Telefono', textInput('telefono', existing?.telefono ?? '')));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'attivo')));
+  form.appendChild(field('Ruolo', textInput('ruolo', existing?.ruolo ?? ''), 'La funzione in cantiere, es. "Preposto".'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''), 'A quale WP è assegnata questa maestranza.'));
+  form.appendChild(field('Telefono', textInput('telefono', existing?.telefono ?? ''), 'Recapito diretto in cantiere.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'attivo'),
+    'Solo le maestranze attive compaiono nei filtri predefiniti.'));
   form.appendChild(field('Qualifiche', textarea('qualifiche', existing?.qualifiche ?? ''), 'Attestati, abilitazioni, scadenze note.'));
 
   form.appendChild(el('label', {}, 'Fornitori collegati'));

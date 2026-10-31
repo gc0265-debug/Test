@@ -33,19 +33,31 @@ async function openForm(existing, onSaved) {
   const form = el('form', {});
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
-  form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
+  form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true }),
+    'Titolo breve della decisione da prendere.'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP si riferisce la decisione.'));
   form.appendChild(field('Domanda chiusa (SI/NO)', textarea('domanda_chiusa', existing?.domanda_chiusa ?? ''), 'Formulata come domanda a risposta SÌ/NO, mai aperta.'));
-  form.appendChild(field('A chi', textInput('a_chi', existing?.a_chi ?? '', { placeholder: 'es. DL, SAC, GC' })));
-  form.appendChild(field('Approvazione del requisito', select('rif_requisito_id', requisitiOptions, existing?.rif_requisito_id ?? '')));
-  form.appendChild(field('Prima richiesta il', dateInput('data_prima_richiesta', existing?.data_prima_richiesta || todayISO(), { required: true })));
-  form.appendChild(field('Impatto se non decisa', textarea('impatto_se_non_decisa', existing?.impatto_se_non_decisa ?? '')));
-  form.appendChild(field('Esito ultima riunione', textarea('esito_ultima_riunione', existing?.esito_ultima_riunione ?? '')));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'richiesta')));
-  form.appendChild(field('Decisa il', dateInput('data_decisione', existing?.data_decisione || '')));
-  form.appendChild(field('Confermata per iscritto', select('conferma_scritta', [[0, 'No'], [1, 'Sì']], existing?.conferma_scritta ? 1 : 0)));
-  form.appendChild(field('Riferimento conferma', textInput('rif_conferma', existing?.rif_conferma ?? '', { placeholder: 'es. mail del 12/10, verbale riunione' })));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('A chi', textInput('a_chi', existing?.a_chi ?? '', { placeholder: 'es. DL, SAC, GC' }),
+    'Chi deve dare la risposta.'));
+  form.appendChild(field('Approvazione del requisito', select('rif_requisito_id', requisitiOptions, existing?.rif_requisito_id ?? ''),
+    'Collega questa decisione a un requisito del Capitolato, se la domanda nasce da un\'approvazione richiesta lì.'));
+  form.appendChild(field('Prima richiesta il', dateInput('data_prima_richiesta', existing?.data_prima_richiesta || todayISO(), { required: true }),
+    'Data della prima richiesta: da qui si calcola l\'anzianità in giorni mostrata in tabella.'));
+  form.appendChild(field('Impatto se non decisa', textarea('impatto_se_non_decisa', existing?.impatto_se_non_decisa ?? ''),
+    'Cosa succede al programma o alla produzione se la risposta tarda ad arrivare.'));
+  form.appendChild(field('Esito ultima riunione', textarea('esito_ultima_riunione', existing?.esito_ultima_riunione ?? ''),
+    'L\'ultimo aggiornamento verbale o informale ricevuto, anche se non ancora una decisione formale.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'richiesta'),
+    'Parziale = risposta arrivata ma incompleta o condizionata; Decisa = risposta definitiva ricevuta.'));
+  form.appendChild(field('Decisa il', dateInput('data_decisione', existing?.data_decisione || ''),
+    'Data in cui è arrivata la risposta definitiva — lasciare vuoto finché lo stato non è "Decisa".'));
+  form.appendChild(field('Confermata per iscritto', select('conferma_scritta', [[0, 'No'], [1, 'Sì']], existing?.conferma_scritta ? 1 : 0),
+    'Se la decisione verbale è stata anche confermata per iscritto (mail, verbale): conta per il tasso di conferma mostrato nel cruscotto.'));
+  form.appendChild(field('Riferimento conferma', textInput('rif_conferma', existing?.rif_conferma ?? '', { placeholder: 'es. mail del 12/10, verbale riunione' }),
+    'Dove si trova la conferma scritta, per ritrovarla in caso di contestazione.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

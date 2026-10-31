@@ -72,14 +72,19 @@ async function openMisuraForm(lavorazione, existing, onSaved) {
   const documentoOptions = [['', '— nessuno'], ...documentiRes.data.map((d) => [d.id, d.titolo])];
 
   const form = el('form', {});
-  form.appendChild(field('Tratta / Posizione', textInput('tratta', existing?.tratta ?? '', { required: true, placeholder: 'es. Corridoio Nord, lato dx' })));
+  form.appendChild(field('Tratta / Posizione', textInput('tratta', existing?.tratta ?? '', { required: true, placeholder: 'es. Corridoio Nord, lato dx' }),
+    'La porzione di lavorazione misurata, identificabile anche da chi non era presente al sopralluogo.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Quota di progetto', textInput('quota_progetto', existing?.quota_progetto ?? '', { type: 'number', step: '0.01' })),
-    field('Quota rilevata', textInput('quota_rilevata', existing?.quota_rilevata ?? '', { type: 'number', step: '0.01' })),
+    field('Quota di progetto', textInput('quota_progetto', existing?.quota_progetto ?? '', { type: 'number', step: '0.01' }),
+      'Il valore previsto dal disegno esecutivo.'),
+    field('Quota rilevata', textInput('quota_rilevata', existing?.quota_rilevata ?? '', { type: 'number', step: '0.01' }),
+      'Il valore misurato in opera: da qui si calcolano delta e percentuale di scostamento.'),
   ]));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Unità', select('unita', [['m', 'Metri lineari'], ['m2', 'Metri quadri'], ['pz', 'Pezzi']], existing?.unita ?? 'm')),
-    field('Data rilievo', dateInput('data_rilievo', existing?.data_rilievo || todayISO())),
+    field('Unità', select('unita', [['m', 'Metri lineari'], ['m2', 'Metri quadri'], ['pz', 'Pezzi']], existing?.unita ?? 'm'),
+      'Deve essere la stessa per quota di progetto e quota rilevata.'),
+    field('Data rilievo', dateInput('data_rilievo', existing?.data_rilievo || todayISO()),
+      'Quando è stata presa la misura in cantiere.'),
   ]));
   form.appendChild(field('Nota tecnica', textarea('nota_tecnica', existing?.nota_tecnica ?? ''),
     'Perché c\'è differenza: es. "muro non a piombo", "variazione massetto", "spostamento traccia elettrica".'));
@@ -177,18 +182,26 @@ async function openForm(existing, onSaved) {
 
   const form = el('form', {});
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Il nome mostrato nella Timeline Montaggi e nella lista Lavorazioni.'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP appartiene questa lavorazione.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Piano', textInput('piano', existing?.piano ?? '', { placeholder: 'es. P+5' })),
-    field('Zona (Key Plan)', textInput('zona', existing?.zona ?? '', { placeholder: 'es. 5.1' })),
+    field('Piano', textInput('piano', existing?.piano ?? '', { placeholder: 'es. P+5' }),
+      'Determina il gruppo in cui compare nella Timeline Montaggi, in stile MPP.'),
+    field('Zona (Key Plan)', textInput('zona', existing?.zona ?? '', { placeholder: 'es. 5.1' }),
+      'Riferimento alla planimetria, se disponibile.'),
   ]));
-  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'da-fare')));
-  form.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA).map(([k, v]) => [k, v[0]]), existing?.priorita ?? 'media')));
+  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''),
+    'Dettagli aggiuntivi, non mostrati nel Gantt ma visibili aprendo la lavorazione.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'da-fare'),
+    'Determina il colore della barra nella Timeline e conta nei grafici di avanzamento e nel SAL.'));
+  form.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA).map(([k, v]) => [k, v[0]]), existing?.priorita ?? 'media'),
+    'Solo informativa: non influisce sul calcolo delle date.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data inizio', dateInput('data_inizio', existing?.data_inizio ?? '')),
-    field('Data fine', dateInput('data_fine', existing?.data_fine ?? '')),
+    field('Data inizio', dateInput('data_inizio', existing?.data_inizio ?? ''),
+      'Lasciare vuoto se la lavorazione non ha ancora una pianificazione: non comparirà nella Timeline Montaggi finché non ha entrambe le date.'),
+    field('Data fine', dateInput('data_fine', existing?.data_fine ?? ''), 'Data entro cui la lavorazione deve concludersi.'),
   ]));
   form.appendChild(field('Impresa (collegata a un contratto)', select('contratto_id', contrattoOptions, existing?.contratto_id ?? ''),
     'Se l\'impresa ha un contratto registrato in Contratti, collegalo qui invece di scriverlo a mano.'));

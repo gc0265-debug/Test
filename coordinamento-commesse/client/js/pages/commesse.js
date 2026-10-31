@@ -44,8 +44,10 @@ async function renderWpMiniList(existing, onChanged) {
 
 async function openCommessaForm(existing, onSaved) {
   const form = el('form', {});
-  form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. 2514RW' })));
-  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Hotel Rosewood Roma' })));
+  form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. 2514RW' }),
+    'Codice univoco della commessa, usato in tutta l\'app (stampe, nomi file, menu commessa).'));
+  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Hotel Rosewood Roma' }),
+    'Il nome esteso della commessa.'));
 
   const gruppoInput = textInput('gruppo', existing?.gruppo ?? '', { placeholder: 'es. RSW Roma', list: 'gruppi-commessa' });
   const gruppiEsistenti = [...new Set(state.commesse.map((c) => c.gruppo).filter(Boolean))];
@@ -53,15 +55,24 @@ async function openCommessaForm(existing, onSaved) {
   form.appendChild(field('Gruppo progetto', el('div', {}, [gruppoInput, gruppoDatalist]),
     'Facoltativo: commesse con lo stesso gruppo (es. "RSW Roma") compaiono insieme in una vista aggregata di sola lettura, mantenendo ciascuna il proprio codice.'));
 
-  form.appendChild(field('Cliente', textInput('cliente', existing?.cliente ?? '')));
-  form.appendChild(field('Committente finale', textInput('committente_finale', existing?.committente_finale ?? '')));
-  form.appendChild(field('General Contractor', textInput('gc', existing?.gc ?? '')));
-  form.appendChild(field('Direzione Lavori', textInput('dl', existing?.dl ?? '')));
-  form.appendChild(field('Advisor', textInput('advisor', existing?.advisor ?? '')));
-  form.appendChild(field('Direttore di Cantiere', textInput('direttore_cantiere', existing?.direttore_cantiere ?? '')));
-  form.appendChild(field('Data apertura', textInput('data_apertura', existing?.data_apertura ?? '', { type: 'date' })));
-  form.appendChild(field('Stato', select('stato', [['attiva', 'Attiva'], ['sospesa', 'Sospesa'], ['chiusa', 'Chiusa']], existing?.stato ?? 'attiva')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Cliente', textInput('cliente', existing?.cliente ?? ''),
+    'Il committente diretto della commessa.'));
+  form.appendChild(field('Committente finale', textInput('committente_finale', existing?.committente_finale ?? ''),
+    'Il proprietario finale, se diverso dal cliente diretto.'));
+  form.appendChild(field('General Contractor', textInput('gc', existing?.gc ?? ''),
+    'L\'impresa che coordina l\'intero cantiere.'));
+  form.appendChild(field('Direzione Lavori', textInput('dl', existing?.dl ?? ''),
+    'Lo studio o il professionista incaricato della Direzione Lavori.'));
+  form.appendChild(field('Advisor', textInput('advisor', existing?.advisor ?? ''),
+    'Eventuale advisor tecnico della committenza.'));
+  form.appendChild(field('Direttore di Cantiere', textInput('direttore_cantiere', existing?.direttore_cantiere ?? ''),
+    'Chi coordina le attività in cantiere per questa commessa.'));
+  form.appendChild(field('Data apertura', textInput('data_apertura', existing?.data_apertura ?? '', { type: 'date' }),
+    'Data di avvio della commessa.'));
+  form.appendChild(field('Stato', select('stato', [['attiva', 'Attiva'], ['sospesa', 'Sospesa'], ['chiusa', 'Chiusa']], existing?.stato ?? 'attiva'),
+    'Una commessa chiusa resta consultabile ma non compare come predefinita nel menu laterale.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   if (existing) {
     form.appendChild(el('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'Work package collegati'));
     const { host: wpHost } = await renderWpMiniList(existing, () => onSaved());
@@ -99,10 +110,14 @@ function openWpForm(commessaId, existing, onSaved) {
     form.appendChild(field('Commessa', select('commessa_id', commessaOptions, existing.commessa_id),
       'Sposta il work package su un\'altra commessa, se serve.'));
   }
-  form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. WP1' })));
-  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. FOH' })));
-  form.appendChild(field('PM responsabile', textInput('pm_responsabile', existing?.pm_responsabile ?? '')));
-  form.appendChild(field('Ordine', textInput('ordine', existing?.ordine ?? 0, { type: 'number' })));
+  form.appendChild(field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. WP1' }),
+    'Codice del Work Package, usato ovunque nell\'app (es. WP1, WP2).'));
+  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. FOH' }),
+    'Il nome esteso del Work Package (es. FOH, CORRIDOI, SUITE, SCALA B).'));
+  form.appendChild(field('PM responsabile', textInput('pm_responsabile', existing?.pm_responsabile ?? ''),
+    'Chi segue questo WP, solo informativo.'));
+  form.appendChild(field('Ordine', textInput('ordine', existing?.ordine ?? 0, { type: 'number' }),
+    'Determina l\'ordine di comparsa nei menu a tendina WP: numeri più bassi vengono prima.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

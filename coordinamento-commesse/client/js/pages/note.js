@@ -21,11 +21,11 @@ function renderPuntiEditor(punti, onChange) {
     punti.forEach((p, i) => {
       const row = el('div', { style: 'border:1px solid var(--rule);padding:10px 12px;margin-bottom:8px;' }, [
         el('div', { class: 'field--row' }, [
-          field('WP', textInput(`p-wp-${i}`, p.wp || '', { oninput: (e) => { p.wp = e.target.value; } })),
-          field('Stato', textInput(`p-stato-${i}`, p.stato || '', { oninput: (e) => { p.stato = e.target.value; } })),
+          field('WP', textInput(`p-wp-${i}`, p.wp || '', { oninput: (e) => { p.wp = e.target.value; } }), 'Testo libero, non collegato al Work Package della commessa.'),
+          field('Stato', textInput(`p-stato-${i}`, p.stato || '', { oninput: (e) => { p.stato = e.target.value; } }), 'Testo libero, es. "Aperto", "Risolto".'),
         ]),
-        field('Tema', textInput(`p-tema-${i}`, p.tema || '', { oninput: (e) => { p.tema = e.target.value; } })),
-        field('Testo', textarea(`p-testo-${i}`, p.testo || '', { oninput: (e) => { p.testo = e.target.value; } })),
+        field('Tema', textInput(`p-tema-${i}`, p.tema || '', { oninput: (e) => { p.tema = e.target.value; } }), 'Titolo del punto in agenda.'),
+        field('Testo', textarea(`p-testo-${i}`, p.testo || '', { oninput: (e) => { p.testo = e.target.value; } }), 'Il contenuto del punto come verrà stampato.'),
         el('button', {
           type: 'button', class: 'btn btn--sm btn--ghost btn--danger',
           onclick: () => { punti.splice(i, 1); draw(); onChange(); },
@@ -45,13 +45,18 @@ function renderPuntiEditor(punti, onChange) {
 function openForm(existing, onSaved) {
   const punti = existing ? JSON.parse(JSON.stringify(existing.punti)) : [];
   const form = el('form', {});
-  form.appendChild(field('Data', textInput('data', existing?.data || todayISO(), { type: 'date', required: true })));
-  form.appendChild(field('Oggetto', textInput('oggetto', existing?.oggetto ?? 'Punti aperti per il coordinamento', { required: true })));
-  form.appendChild(field('Destinatari', textInput('destinatari', existing?.destinatari ?? '')));
-  form.appendChild(field('Per conoscenza', textInput('per_conoscenza', existing?.per_conoscenza ?? '')));
+  form.appendChild(field('Data', textInput('data', existing?.data || todayISO(), { type: 'date', required: true }),
+    'Data della nota, mostrata in stampa e nell\'elenco.'));
+  form.appendChild(field('Oggetto', textInput('oggetto', existing?.oggetto ?? 'Punti aperti per il coordinamento', { required: true }),
+    'Il titolo della nota, usato anche come oggetto se la invii per mail.'));
+  form.appendChild(field('Destinatari', textInput('destinatari', existing?.destinatari ?? ''),
+    'A chi è indirizzata la nota.'));
+  form.appendChild(field('Per conoscenza', textInput('per_conoscenza', existing?.per_conoscenza ?? ''),
+    'Destinatari in copia conoscenza.'));
   form.appendChild(el('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'Punti dell\'agenda'));
   form.appendChild(renderPuntiEditor(punti, () => {}));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza')));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza'),
+    'Segna "Inviata" una volta che la nota è stata effettivamente trasmessa: resta comunque modificabile.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -78,10 +83,14 @@ function openForm(existing, onSaved) {
 function openGeneraBozza(onSaved) {
   const form = el('form', {});
   const wpOptions = [['', 'Tutti i work package'], ...state.workPackages.map((w) => [w.id, `${w.codice} ${w.nome}`])];
-  form.appendChild(field('Oggetto', textInput('oggetto', 'Punti aperti per il coordinamento')));
-  form.appendChild(field('Destinatari', textInput('destinatari', '')));
-  form.appendChild(field('Per conoscenza', textInput('per_conoscenza', '')));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, '')));
+  form.appendChild(field('Oggetto', textInput('oggetto', 'Punti aperti per il coordinamento'),
+    'Il titolo della nota generata.'));
+  form.appendChild(field('Destinatari', textInput('destinatari', ''),
+    'A chi è indirizzata la nota.'));
+  form.appendChild(field('Per conoscenza', textInput('per_conoscenza', ''),
+    'Destinatari in copia conoscenza.'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, ''),
+    'Limita i punti generati alle criticità di un solo WP, invece di tutta la commessa.'));
   form.appendChild(el('p', { class: 'muted' }, 'Genera un punto numerato per ogni criticità ancora aperta, ordinato per work package e urgenza. Il testo resta modificabile prima dell\'invio.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),

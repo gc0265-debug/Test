@@ -14,13 +14,19 @@ async function openForm(existing, onSaved) {
   const frequenzaOptions = toOptions(await getCategoria('comunicazione_frequenza'));
 
   const form = el('form', {});
-  form.appendChild(field('Nome processo', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Riunione di coordinamento settimanale' })));
-  form.appendChild(field('Scopo', textarea('scopo', existing?.scopo ?? '')));
-  form.appendChild(field('Frequenza', select('frequenza', frequenzaOptions, existing?.frequenza ?? 'settimanale')));
-  form.appendChild(field('Canale', textInput('canale', existing?.canale ?? '', { placeholder: 'es. Riunione, email, PEC, piattaforma condivisa' })));
-  form.appendChild(field('Output atteso', textInput('output', existing?.output ?? '', { placeholder: 'es. Verbale, Nota di Coordinamento, registro aggiornato' })));
-  form.appendChild(field('Ruolo responsabile', textInput('ruolo_responsabile', existing?.ruolo_responsabile ?? '', { placeholder: 'es. Direttore di Cantiere' })));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Nome processo', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Riunione di coordinamento settimanale' }),
+    'Il nome del processo comunicativo ricorrente.'));
+  form.appendChild(field('Scopo', textarea('scopo', existing?.scopo ?? ''), 'Perché esiste questo processo, cosa deve garantire.'));
+  form.appendChild(field('Frequenza', select('frequenza', frequenzaOptions, existing?.frequenza ?? 'settimanale'),
+    'Con quale cadenza si ripete.'));
+  form.appendChild(field('Canale', textInput('canale', existing?.canale ?? '', { placeholder: 'es. Riunione, email, PEC, piattaforma condivisa' }),
+    'Lo strumento con cui avviene la comunicazione.'));
+  form.appendChild(field('Output atteso', textInput('output', existing?.output ?? '', { placeholder: 'es. Verbale, Nota di Coordinamento, registro aggiornato' }),
+    'Cosa produce questo processo, il documento o l\'azione risultante.'));
+  form.appendChild(field('Ruolo responsabile', textInput('ruolo_responsabile', existing?.ruolo_responsabile ?? '', { placeholder: 'es. Direttore di Cantiere' }),
+    'Chi presidia il processo — distinto dalla matrice RACI verso gli stakeholder, gestita separatamente.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

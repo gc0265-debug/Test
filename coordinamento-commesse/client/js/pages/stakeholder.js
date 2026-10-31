@@ -18,22 +18,28 @@ async function openForm(existing, onSaved) {
   const categoriaOptions = toOptions(await getCategoria('stakeholder_categoria'));
 
   const form = el('form', {});
-  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true })));
+  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true }),
+    'Il nome con cui lo stakeholder compare nei menu di Lavorazioni, Maestranze e Contratti.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Organizzazione', textInput('organizzazione', existing?.organizzazione ?? '')),
-    field('Ruolo', textInput('ruolo', existing?.ruolo ?? '', { placeholder: 'es. Direttore Lavori' })),
+    field('Organizzazione', textInput('organizzazione', existing?.organizzazione ?? ''), 'L\'azienda o ente di appartenenza.'),
+    field('Ruolo', textInput('ruolo', existing?.ruolo ?? '', { placeholder: 'es. Direttore Lavori' }), 'La funzione ricoperta nella commessa.'),
   ]));
-  form.appendChild(field('Categoria', select('categoria', categoriaOptions, existing?.categoria ?? 'interno')));
+  form.appendChild(field('Categoria', select('categoria', categoriaOptions, existing?.categoria ?? 'interno'),
+    'Classificazione libera, personalizzabile da Impostazioni.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Interesse', select('interesse', INTERESSE.map((v) => [v, v[0].toUpperCase() + v.slice(1)]), existing?.interesse ?? 'medio')),
-    field('Influenza', select('influenza', INFLUENZA.map((v) => [v, v[0].toUpperCase() + v.slice(1)]), existing?.influenza ?? 'media')),
+    field('Interesse', select('interesse', INTERESSE.map((v) => [v, v[0].toUpperCase() + v.slice(1)]), existing?.interesse ?? 'medio'),
+      'Quanto è coinvolto dall\'esito della commessa: posiziona lo stakeholder nella matrice qui sotto.'),
+    field('Influenza', select('influenza', INFLUENZA.map((v) => [v, v[0].toUpperCase() + v.slice(1)]), existing?.influenza ?? 'media'),
+      'Quanto può condizionare l\'esito della commessa: posiziona lo stakeholder nella matrice qui sotto.'),
   ]));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Email', textInput('email', existing?.email ?? '', { type: 'email' })),
-    field('Telefono', textInput('telefono', existing?.telefono ?? '')),
+    field('Email', textInput('email', existing?.email ?? '', { type: 'email' }), 'Recapito di contatto.'),
+    field('Telefono', textInput('telefono', existing?.telefono ?? ''), 'Recapito di contatto.'),
   ]));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'attivo')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'attivo'),
+    'Solo gli stakeholder attivi compaiono nella matrice e nei menu a tendina delle altre schede.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

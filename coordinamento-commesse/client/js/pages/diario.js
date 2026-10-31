@@ -8,10 +8,10 @@ export const renderDiario = createCrudPage({
   titleSingular: 'Voce di diario',
   emptyLabel: 'Nessuna voce di diario per questa commessa.',
   fields: [
-    { name: 'data', label: 'Data', type: 'date', default: todayISO(), required: true },
-    { name: 'squadre', label: 'Squadre o soggetti coinvolti', type: 'textarea' },
-    { name: 'attivita', label: 'Attività svolte o discusse', type: 'textarea' },
-    { name: 'eventi', label: 'Eventi', type: 'textarea' },
+    { name: 'data', label: 'Data', type: 'date', default: todayISO(), required: true, hint: 'Un\'unica voce per ogni giornata di cantiere.' },
+    { name: 'squadre', label: 'Squadre o soggetti coinvolti', type: 'textarea', hint: 'Chi era presente in cantiere quel giorno.' },
+    { name: 'attivita', label: 'Attività svolte o discusse', type: 'textarea', hint: 'Cosa è stato fatto o deciso in cantiere quel giorno.' },
+    { name: 'eventi', label: 'Eventi', type: 'textarea', hint: 'Fatti rilevanti non riconducibili alle normali attività (es. sopralluoghi, consegne, interruzioni).' },
     { name: 'criticita_testo', label: 'Criticità rilevate', type: 'textarea', hint: 'Note libere — una criticità che richiede risposta formale va anche nel Registro Criticità.' },
   ],
   columns: [

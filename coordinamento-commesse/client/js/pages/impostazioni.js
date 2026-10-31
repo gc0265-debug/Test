@@ -43,7 +43,8 @@ function openOptionForm(lista, existing, onSaved, { locked = false } = {}) {
     locked ? 'Fisso: questo valore è usato nel codice e non si può cambiare qui.'
       : (existing ? 'Attenzione: cambiare il valore non aggiorna i record che lo usano già.' : 'Solo lettere minuscole, numeri e trattini, senza spazi.')
   ));
-  form.appendChild(field('Etichetta visualizzata', textInput('etichetta', existing?.etichetta ?? '', { required: true, placeholder: 'es. Interno Field Project' })));
+  form.appendChild(field('Etichetta visualizzata', textInput('etichetta', existing?.etichetta ?? '', { required: true, placeholder: 'es. Interno Field Project' }),
+    'Il testo mostrato in app — a differenza del Valore, questo si può rinominare liberamente in qualsiasi momento.'));
   if (!locked) {
     form.appendChild(field('Ordine', textInput('ordine', existing?.ordine ?? 0, { type: 'number' }), 'Determina la posizione nelle liste a tendina.'));
   }

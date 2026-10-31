@@ -48,12 +48,14 @@ function commentoId(index) {
 
 async function openCommentoQuickForm(elaborato, existing, refreshList) {
   const form = el('form', {});
-  form.appendChild(field('Autore', textInput('autore', existing?.autore ?? '', { placeholder: 'es. Interior Designer, MEP Eng., GC' })));
+  form.appendChild(field('Autore', textInput('autore', existing?.autore ?? '', { placeholder: 'es. Interior Designer, MEP Eng., GC' }),
+    'Chi ha fatto il commento — serve a dimostrare la provenienza, non è un elenco controllato.'));
   form.appendChild(field('Richiesta ricevuta', textarea('richiesta', existing?.richiesta ?? '', { required: true }),
     'Il commento così come arrivato, per iscritto o riportato fedelmente — è la base del confronto punto per punto.'));
   form.appendChild(field('Azione intrapresa', textarea('azione', existing?.azione ?? ''),
     'Cosa è stato modificato in risposta, o perché non è stato eseguito.'));
-  form.appendChild(field('Stato', select('stato', [['aperto', 'Aperto'], ['chiuso', 'Chiuso']], existing?.stato ?? 'aperto')));
+  form.appendChild(field('Stato', select('stato', [['aperto', 'Aperto'], ['chiuso', 'Chiuso']], existing?.stato ?? 'aperto'),
+    'Chiudi il commento solo una volta recepita (o rifiutata con motivazione) l\'azione richiesta.'));
   form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:flex-start;font-size:12.5px;margin:-4px 0 14px;cursor:pointer' }, [
     el('input', { type: 'checkbox', name: 'change_order', value: '1', checked: !!existing?.change_order, style: 'margin-top:2px' }),
     el('span', {}, [
@@ -152,23 +154,29 @@ async function openForm(existing, onSaved) {
 
   const form = el('form', {});
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. AD-WP2-014' })),
-    field('Revisione', textInput('revisione', existing?.revisione ?? '', { placeholder: 'es. Rev. 02' })),
+    field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. AD-WP2-014' }),
+      'Identificativo univoco dell\'elaborato, lo stesso usato nel cartiglio del disegno.'),
+    field('Revisione', textInput('revisione', existing?.revisione ?? '', { placeholder: 'es. Rev. 02' }),
+      'Testo libero: aggiornala manualmente ad ogni nuova emissione.'),
   ]));
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Il nome dell\'elaborato, es. "Bancone reception — pianta e sezioni".'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP appartiene l\'elaborato.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data invio', dateInput('data_invio', existing?.data_invio ?? '')),
-    field('Data approvazione', dateInput('data_approvazione', existing?.data_approvazione ?? '')),
+    field('Data invio', dateInput('data_invio', existing?.data_invio ?? ''), 'Quando è stato trasmesso a DL/GC per l\'approvazione.'),
+    field('Data approvazione', dateInput('data_approvazione', existing?.data_approvazione ?? ''), 'Quando è arrivato il visto formale, qualunque sia l\'esito.'),
   ]));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'in-attesa')));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'in-attesa'),
+    'Approvato con riserve richiede comunque una nuova revisione per recepire le riserve.'));
   form.appendChild(field('Emissione', select('emissione', EMISSIONE_OPTIONS, existing?.emissione ?? 'IFA'),
     'Resta IFA — non valido per fabbricazione/taglio — finché non arriva il visto formale: solo allora si passa manualmente a IFC.'));
   form.appendChild(field('Data limite approvazione (cut-off)', dateInput('data_limite_approvazione', existing?.data_limite_approvazione ?? ''),
     'Entro questa data deve arrivare l\'approvazione formale per rispettare la consegna in cantiere: oltre, i tempi di fabbricazione slittano automaticamente giorno per giorno.'));
   form.appendChild(field('Requisito collegato', select('rif_requisito_id', requisitoOptions, existing?.rif_requisito_id ?? ''),
     'Collega questo elaborato a un requisito del Capitolato Requisiti, se pertinente.'));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui — per i commenti ricevuti sulla revisione usa la Response Matrix.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

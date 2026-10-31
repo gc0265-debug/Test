@@ -22,14 +22,19 @@ async function openForm(existing, onSaved) {
   const contrattoOptions = [['', '— nessuno'], ...contrattiRes.data.map((c) => [c.id, c.controparte || c.titolo])];
 
   const form = el('form', {});
-  form.appendChild(field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === state.commessaId)?.codice || '2514RW'}.WP1.03` })));
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
+  form.appendChild(field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === state.commessaId)?.codice || '2514RW'}.WP1.03` }),
+    'Codice univoco della voce, coerente con la struttura WBS della commessa.'));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Il nome della voce di capitolato.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data', dateInput('data', existing?.data ?? '')),
-    field('Contratto', select('contratto_id', contrattoOptions, existing?.contratto_id ?? '')),
+    field('Data', dateInput('data', existing?.data ?? ''), 'Data di emissione o di riferimento della voce.'),
+    field('Contratto', select('contratto_id', contrattoOptions, existing?.contratto_id ?? ''),
+      'Se collegata, la voce compare raggruppata sotto questo contratto invece che in "Senza contratto collegato".'),
   ]));
-  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''),
+    'Il contenuto della voce di capitolato.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -57,10 +62,14 @@ async function openForm(existing, onSaved) {
 // sempre il documento della voce da cui si è partiti.
 function openRequisitoQuickForm(voce, existing, refreshList) {
   const form = el('form', {});
-  form.appendChild(field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? `${voce.codice_wbs}.R`, { required: true })));
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
-  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
-  form.appendChild(field('Stato', select('stato', Object.entries(REQ_STATO_FIXED).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza')));
+  form.appendChild(field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? `${voce.codice_wbs}.R`, { required: true }),
+    'Codice del requisito, di norma quello della voce con un suffisso.'));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Il nome del requisito.'));
+  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''),
+    'Il contenuto del requisito.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(REQ_STATO_FIXED).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza'),
+    '"Richiedi approvazione" nella scheda Requisiti crea una decisione collegata: lo stato qui resta comunque manuale.'));
   const actions = [
     el('button', { type: 'button', class: 'btn', onclick: () => openVoceDocument(voce, refreshList) }, 'Annulla'),
   ];
@@ -115,14 +124,19 @@ async function openVoceDocument(voce, refreshList) {
   const body = el('div', {});
 
   const headerForm = el('form', {});
-  headerForm.appendChild(field('Codice WBS', textInput('codice_wbs', voce.codice_wbs, { required: true })));
-  headerForm.appendChild(field('Titolo', textInput('titolo', voce.titolo, { required: true })));
+  headerForm.appendChild(field('Codice WBS', textInput('codice_wbs', voce.codice_wbs, { required: true }),
+    'Codice univoco della voce, coerente con la struttura WBS della commessa.'));
+  headerForm.appendChild(field('Titolo', textInput('titolo', voce.titolo, { required: true }),
+    'Il nome della voce di capitolato.'));
   headerForm.appendChild(el('div', { class: 'field--row' }, [
-    field('Data', dateInput('data', voce.data ?? '')),
-    field('Contratto', select('contratto_id', contrattoOptions, voce.contratto_id ?? '')),
+    field('Data', dateInput('data', voce.data ?? ''), 'Data di emissione o di riferimento della voce.'),
+    field('Contratto', select('contratto_id', contrattoOptions, voce.contratto_id ?? ''),
+      'Se collegata, la voce compare raggruppata sotto questo contratto invece che in "Senza contratto collegato".'),
   ]));
-  headerForm.appendChild(field('Descrizione', textarea('descrizione', voce.descrizione ?? '')));
-  headerForm.appendChild(field('Note', textarea('note', voce.note ?? '')));
+  headerForm.appendChild(field('Descrizione', textarea('descrizione', voce.descrizione ?? ''),
+    'Il contenuto della voce di capitolato.'));
+  headerForm.appendChild(field('Note', textarea('note', voce.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   headerForm.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn btn--sm btn--ghost', onclick: () => openStorico('capitolato_voci', voce.id, `${voce.codice_wbs} — ${voce.titolo}`) }, 'Storico'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, 'Salva'),

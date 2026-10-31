@@ -26,13 +26,17 @@ function formatSize(bytes) {
 
 function openAttoForm(contrattoId, existing, onSaved) {
   const form = el('form', {});
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Variante n.1 — fornitura aggiuntiva' })));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Variante n.1 — fornitura aggiuntiva' }),
+    'Il nome dell\'atto aggiuntivo (variante, integrazione economica...).'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data', dateInput('data', existing?.data ?? '')),
-    field('Valore (€)', textInput('valore', existing?.valore ?? '', { type: 'number', step: '0.01' })),
+    field('Data', dateInput('data', existing?.data ?? ''), 'Data di sottoscrizione dell\'atto.'),
+    field('Valore (€)', textInput('valore', existing?.valore ?? '', { type: 'number', step: '0.01' }),
+      'Si somma al valore base del contratto nel totale mostrato in scheda.'),
   ]));
-  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''),
+    'Cosa copre l\'atto aggiuntivo.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -76,14 +80,17 @@ async function openForm(existing, onSaved) {
     form.appendChild(field('Commessa', select('commessa_id', commessaOptions, existing.commessa_id),
       'Sposta il contratto su un\'altra commessa se è stato registrato per errore su quella sbagliata.'));
   }
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Contratto di appalto montaggio' })));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Contratto di appalto montaggio' }),
+    'Il nome con cui il contratto compare nell\'elenco e nelle altre schede che lo citano.'));
   form.appendChild(field('Controparte', select('controparte', controparteOptions, existing?.controparte ?? ''),
     'Scelta dal Registro Stakeholder della commessa.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data stipula', dateInput('data_stipula', existing?.data_stipula ?? '')),
-    field('Valore (€)', textInput('valore', existing?.valore ?? '', { type: 'number', step: '0.01' })),
+    field('Data stipula', dateInput('data_stipula', existing?.data_stipula ?? ''), 'Quando il contratto è stato firmato.'),
+    field('Valore (€)', textInput('valore', existing?.valore ?? '', { type: 'number', step: '0.01' }),
+      'Il valore base, senza eventuali atti aggiuntivi: quelli si sommano automaticamente nel totale.'),
   ]));
-  form.appendChild(field('Riferimento capitolato (nota libera)', textInput('riferimento_capitolato', existing?.riferimento_capitolato ?? '', { placeholder: 'es. Capitolato rev. 3 del 15/09/2026' })));
+  form.appendChild(field('Riferimento capitolato (nota libera)', textInput('riferimento_capitolato', existing?.riferimento_capitolato ?? '', { placeholder: 'es. Capitolato rev. 3 del 15/09/2026' }),
+    'Testo libero, utile se la baseline contrattuale non coincide esattamente con una voce di Capitolato Requisiti.'));
 
   form.appendChild(el('label', {}, 'Voci di Capitolato Requisiti collegate'));
   if (!vociCapitolato.length) {
@@ -112,8 +119,10 @@ async function openForm(existing, onSaved) {
     'Procedura di change management', textarea('procedura_change_management', existing?.procedura_change_management ?? ''),
     'Cosa prevede il contratto quando capitolato o requisiti cambiano dopo la stipula.'
   ));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v]), existing?.stato ?? 'attivo')));
-  form.appendChild(field('Link', textInput('url', existing?.url ?? '', { placeholder: 'https://…' })));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v]), existing?.stato ?? 'attivo'),
+    'Solo un contratto Attivo con una data di baseline calcola le variazioni da gestire.'));
+  form.appendChild(field('Link', textInput('url', existing?.url ?? '', { placeholder: 'https://…' }),
+    'Link esterno al documento (es. cartella condivisa), in alternativa o in aggiunta al file caricato sotto.'));
   const fileInput = el('input', { type: 'file', name: 'file' });
   form.appendChild(field('File', fileInput, existing?.file_nome
     ? `File attuale: ${existing.file_nome} (${formatSize(existing.file_size)})`
@@ -123,7 +132,8 @@ async function openForm(existing, onSaved) {
       el('input', { type: 'checkbox', name: 'rimuovi_file' }), 'Rimuovi il file attuale',
     ]));
   }
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

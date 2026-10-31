@@ -152,15 +152,21 @@ async function openForm(existing, onSaved, presets = {}) {
     existing ? 'Il tipo non si può cambiare dopo la creazione.'
       : (presets.parent_id ? `Sotto-attività di "${presets.parent_titolo}".` : 'Scegli il tipo di riga prima di compilare i campi sotto.')));
 
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Montaggio boiserie corridoio' })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Montaggio boiserie corridoio' }),
+    'Il nome mostrato nella colonna Attività del Gantt.'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP appartiene questa riga.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Piano', textInput('piano', existing?.piano ?? presets.piano ?? '', { placeholder: 'es. Piano 3' })),
-    field('Zona', textInput('zona', existing?.zona ?? '', { placeholder: 'es. Ala nord' })),
+    field('Piano', textInput('piano', existing?.piano ?? presets.piano ?? '', { placeholder: 'es. Piano 3' }),
+      'Determina il gruppo "Piano" in cui la riga compare nella Timeline, in stile MPP.'),
+    field('Zona', textInput('zona', existing?.zona ?? '', { placeholder: 'es. Ala nord' }),
+      'Dettaglio della posizione all\'interno del piano.'),
   ]));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data inizio', dateInput('data_inizio', existing?.data_inizio || todayISO(), { required: true })),
-    field('Data fine', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true })),
+    field('Data inizio', dateInput('data_inizio', existing?.data_inizio || todayISO(), { required: true }),
+      'Determina dove inizia la barra nel Gantt.'),
+    field('Data fine', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true }),
+      'Una milestone con data inizio = data fine appare come un punto, non come una barra.'),
   ]));
 
   const extraHost = el('div');
@@ -169,14 +175,18 @@ async function openForm(existing, onSaved, presets = {}) {
   function drawExtra() {
     extraHost.innerHTML = '';
     if (tipoCheckbox.checked) {
-      extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO_LAVORAZIONE_LABEL).map(([k, v]) => [k, v]), existing?.statoReale ?? 'da-fare')));
-      extraHost.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA), existing?.priorita ?? 'media')));
+      extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO_LAVORAZIONE_LABEL).map(([k, v]) => [k, v]), existing?.statoReale ?? 'da-fare'),
+        'Determina il colore della barra nel Gantt; "Bloccata" la mostra in rosso come se fosse in ritardo.'));
+      extraHost.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA), existing?.priorita ?? 'media'),
+        'Solo informativa: non influisce sul calcolo delle date o sull\'ordine in tabella.'));
       extraHost.appendChild(field('Lavorazione madre', select('parent_id', parentOptions, existing?.parent_id ?? presets.parent_id ?? '', { disabled: !!presets.parent_id }),
         'Scegli una lavorazione madre per renderla una sotto-attività, mostrata rientrata sotto di essa nella Timeline.'));
       if (presets.parent_id) extraHost.appendChild(el('input', { type: 'hidden', name: 'parent_id', value: presets.parent_id }));
-      extraHost.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '')));
+      extraHost.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''),
+        'Dettagli aggiuntivi, non mostrati nel Gantt ma visibili aprendo la lavorazione.'));
     } else {
-      extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata')));
+      extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata'),
+        'Determina il colore della barra nel Gantt.'));
       if (existing?.ha_scostamento) {
         extraHost.appendChild(el('label', { style: 'display:flex;gap:6px;align-items:flex-start;font-size:11.5px;color:var(--ink-2);margin:-6px 0 14px' }, [
           el('input', { type: 'checkbox', name: 'reimposta_baseline', style: 'margin-top:2px' }),
@@ -187,7 +197,8 @@ async function openForm(existing, onSaved, presets = {}) {
           ]),
         ]));
       }
-      extraHost.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+      extraHost.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+        'Annotazioni libere, visibili solo qui.'));
     }
   }
   drawExtra();
@@ -245,8 +256,8 @@ function openStampaModal(items, commessa) {
   const form = el('form', {});
   form.appendChild(el('p', { class: 'muted', style: 'margin-top:0' }, 'Lascia vuoto per stampare l\'elenco completo, oppure indica un periodo per stampare solo le attività che vi ricadono.'));
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Da', dateInput('da', '')),
-    field('A', dateInput('a', '')),
+    field('Da', dateInput('da', ''), 'Include le righe ancora in corso o non finite a questa data.'),
+    field('A', dateInput('a', ''), 'Include le righe già iniziate entro questa data.'),
   ]));
   const ganttCheckbox = el('input', { type: 'checkbox' });
   form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin:-6px 0 16px;cursor:pointer' }, [

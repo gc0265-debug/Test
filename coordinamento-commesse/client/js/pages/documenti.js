@@ -17,9 +17,12 @@ async function openForm(existing, onSaved) {
   const tipoOptions = toOptions(await getCategoria('documenti_tipo'));
 
   const form = el('form', {});
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
-  form.appendChild(field('Tipo', select('tipo', tipoOptions, existing?.tipo ?? 'altro')));
-  form.appendChild(field('Link (URL)', textInput('url', existing?.url ?? '', { placeholder: 'https://…' })));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Il nome con cui il documento compare nell\'elenco.'));
+  form.appendChild(field('Tipo', select('tipo', tipoOptions, existing?.tipo ?? 'altro'),
+    'Classificazione libera, personalizzabile da Impostazioni.'));
+  form.appendChild(field('Link (URL)', textInput('url', existing?.url ?? '', { placeholder: 'https://…' }),
+    'Link esterno (es. cartella condivisa), in aggiunta o in alternativa al file caricato sotto.'));
 
   const fileInput = el('input', { type: 'file', name: 'file' });
   form.appendChild(field('File', fileInput, existing?.file_nome
@@ -31,7 +34,8 @@ async function openForm(existing, onSaved) {
       'Rimuovi il file attuale',
     ]));
   }
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

@@ -32,19 +32,25 @@ async function openForm(existing, onSaved) {
   const form = el('form', {});
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(el('div', { class: 'field--row' }, [
-    field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === commessaIdForm)?.codice || '2514RW'}.WP1.03` })),
-    field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')),
+    field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === commessaIdForm)?.codice || '2514RW'}.WP1.03` }),
+      'Codice univoco del requisito.'),
+    field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''), 'A quale WP appartiene.'),
   ]));
-  form.appendChild(field('Fase di esecuzione', select('fase', faseOptions, existing?.fase ?? 'progettazione')));
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
+  form.appendChild(field('Fase di esecuzione', select('fase', faseOptions, existing?.fase ?? 'progettazione'),
+    'In quale fase del progetto si colloca questo requisito.'));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Una modifica qui (o alla descrizione) crea automaticamente una nuova versione.'));
   form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? ''), 'Una modifica qui (o al titolo) crea automaticamente una nuova versione.'));
   if (existing) {
     form.appendChild(field('Motivo della modifica', textInput('motivo_modifica', ''), 'Registrato solo se titolo o descrizione cambiano in questo salvataggio.'));
   }
   form.appendChild(field('Voce di capitolato', select('rif_capitolato_voce_id', capitolatoOptions, existing?.rif_capitolato_voce_id ?? ''), 'Collegamento strutturato al Capitolato Requisiti, se già scritto.'));
-  form.appendChild(field('Fonte nel capitolato (testo libero)', textInput('fonte_capitolato', existing?.fonte_capitolato ?? '', { placeholder: 'es. par. 4.2, pag. 18, rev. 3' })));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Fonte nel capitolato (testo libero)', textInput('fonte_capitolato', existing?.fonte_capitolato ?? '', { placeholder: 'es. par. 4.2, pag. 18, rev. 3' }),
+    'Dove si trova nel documento originale, se non è collegato a una voce di Capitolato Requisiti strutturata.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'bozza'),
+    'In revisione segnala che è in corso una modifica; "Richiedi approvazione" nella tabella crea comunque una decisione a parte, indipendente da questo stato.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

@@ -28,13 +28,20 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.27';
+const VERSIONE_ATTUALE = '1.28';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.27', title: 'Response Matrix su Approvazioni Drawings', date: '31 ottobre 2026', attuale: true,
+    v: '1.28', title: 'Guida in linea su ogni campo di ogni maschera', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Tutti i campi di inserimento dati di tutti i registri — circa 200 in totale — hanno ora una riga di spiegazione sotto l\'etichetta: cosa significa il campo e, dove serve, come usarlo.',
+      'Non sostituisce il "?" già introdotto accanto al titolo di ogni scheda: quello spiega la pagina nel suo insieme, questo entra nel dettaglio di ogni singolo campo mentre si compila una maschera.',
+    ],
+  },
+  {
+    v: '1.27', title: 'Response Matrix su Approvazioni Drawings', date: '31 ottobre 2026',
     points: [
       'Nuovo pulsante "Matrice" su ogni elaborato: una Response Matrix che raccoglie i commenti ricevuti su una revisione (da Interior Designer, impiantisti, GC...), uno per riga, con la risposta data e lo stato (Aperto/Chiuso) — invece di lasciarli sparsi fra email e PDF.',
       'Un commento può essere qualificato come "Change Order": segnala una richiesta che cambia lo scope concordato (quote, essenze, ferramenta, impiantistica) invece di un semplice dettaglio grafico, da congelare in attesa di una variante economica approvata.',

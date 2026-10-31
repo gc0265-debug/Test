@@ -43,15 +43,23 @@ async function openForm(existing, onSaved) {
   function syncScadenza() { scadenzaField.style.display = urgenzaSelect.value === 'viola' ? '' : 'none'; }
   urgenzaSelect.addEventListener('change', syncScadenza);
 
-  form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
-  form.appendChild(field('Cosa serve', textarea('cosa_serve', existing?.cosa_serve ?? '')));
-  form.appendChild(field('Destinatario', textInput('destinatario', existing?.destinatario ?? '', { placeholder: 'es. SAC, DL, interno' })));
-  form.appendChild(field('Urgenza', urgenzaSelect));
+  form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true }),
+    'Titolo breve del punto da chiudere, es. "Finitura corrimano scala B".'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP si riferisce la criticità.'));
+  form.appendChild(field('Cosa serve', textarea('cosa_serve', existing?.cosa_serve ?? ''),
+    'La richiesta vera e propria: cosa deve decidere o fornire la controparte.'));
+  form.appendChild(field('Destinatario', textInput('destinatario', existing?.destinatario ?? '', { placeholder: 'es. SAC, DL, interno' }),
+    'Chi deve rispondere a questa richiesta.'));
+  form.appendChild(field('Urgenza', urgenzaSelect,
+    '"Urgente (3gg)" impone una scadenza di risposta ed entra tra le scadenze della settimana; "Dovuta da controparte" è un sollecito senza termine fisso; "Normale" non ha scadenza.'));
   form.appendChild(scadenzaField);
-  form.appendChild(field('Impatto sul programma', textarea('impatto_programma', existing?.impatto_programma ?? '')));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'aperta')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Impatto sul programma', textarea('impatto_programma', existing?.impatto_programma ?? ''),
+    'Cosa succede al cronoprogramma se la criticità non si chiude in tempo.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'aperta'),
+    'Aperta = in attesa di risposta; In attesa = risposta parziale o sollecito già inviato; Chiusa = risolta.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

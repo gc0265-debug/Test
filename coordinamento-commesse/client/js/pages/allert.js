@@ -36,18 +36,29 @@ async function openForm(existing, onSaved) {
   const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
 
   const form = el('form', {});
-  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '', { required: true })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
-  form.appendChild(field('Data', dateInput('data', existing?.data || todayISO(), { required: true })));
-  form.appendChild(field('Perimetro', select('perimetro', toOptions(perimetroList), existing?.perimetro ?? 'interno')));
-  form.appendChild(field('Classificazione', select('classificazione', Object.entries(CLASSIFICAZIONE).map(([k, v]) => [k, v[0]]), existing?.classificazione ?? 'attenzione')));
+  form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '', { required: true }),
+    'Cosa è successo e perché richiede un presidio: il fatto da segnalare, non la risposta data.'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP si riferisce l\'allert.'));
+  form.appendChild(field('Data', dateInput('data', existing?.data || todayISO(), { required: true }),
+    'Data in cui l\'allert è stato rilevato, non la data dell\'eventuale azione di tutela.'));
+  form.appendChild(field('Perimetro', select('perimetro', toOptions(perimetroList), existing?.perimetro ?? 'interno'),
+    'Se riguarda la tua organizzazione (interno) o una controparte del cantiere (esterno).'));
+  form.appendChild(field('Classificazione', select('classificazione', Object.entries(CLASSIFICAZIONE).map(([k, v]) => [k, v[0]]), existing?.classificazione ?? 'attenzione'),
+    'Critico evidenzia la riga in rosso in tabella finché non è chiusa.'));
   form.appendChild(field('Azione di tutela', textarea('azione_tutela', existing?.azione_tutela ?? ''), 'Cosa è stato fatto per tutelare la posizione: PEC, verbalizzazione, riserva scritta...'));
-  form.appendChild(field('Riferimento documento', textInput('rif_documento', existing?.rif_documento ?? '', { placeholder: 'es. PEC del 12/10, verbale riunione' })));
-  form.appendChild(field('Collegato a criticità', select('rif_criticita_id', criticitaOptions, existing?.rif_criticita_id ?? '')));
-  form.appendChild(field('Collegato a decisione', select('rif_decisione_id', decisioniOptions, existing?.rif_decisione_id ?? '')));
-  form.appendChild(field('Collegato a requisito', select('rif_requisito_id', requisitiOptions, existing?.rif_requisito_id ?? '')));
-  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'aperto')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Riferimento documento', textInput('rif_documento', existing?.rif_documento ?? '', { placeholder: 'es. PEC del 12/10, verbale riunione' }),
+    'Il documento che prova l\'azione di tutela, da ritrovare facilmente in caso di contestazione.'));
+  form.appendChild(field('Collegato a criticità', select('rif_criticita_id', criticitaOptions, existing?.rif_criticita_id ?? ''),
+    'Se l\'allert nasce da una criticità già aperta nel Registro Criticità.'));
+  form.appendChild(field('Collegato a decisione', select('rif_decisione_id', decisioniOptions, existing?.rif_decisione_id ?? ''),
+    'Se l\'allert nasce da una decisione già registrata nel Registro Decisioni.'));
+  form.appendChild(field('Collegato a requisito', select('rif_requisito_id', requisitiOptions, existing?.rif_requisito_id ?? ''),
+    'Se l\'allert nasce da un requisito del Capitolato.'));
+  form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'aperto'),
+    'Monitorato = tenuto d\'occhio senza azioni ulteriori al momento; Chiuso = il rischio non sussiste più.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

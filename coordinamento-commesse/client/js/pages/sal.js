@@ -94,7 +94,8 @@ function stampaSal(commessa, dati, meta) {
 
 function openChiudiForm(commessa, onDone) {
   const form = el('form', {});
-  form.appendChild(field('Data di chiusura', dateInput('data', todayISO(), { required: true })));
+  form.appendChild(field('Data di chiusura', dateInput('data', todayISO(), { required: true }),
+    'La data con cui il SAL resta registrato nello storico.'));
   form.appendChild(field('Note (facoltative)', textarea('note', ''), 'Es. riferimenti alla riunione di cantiere, osservazioni sullo scostamento rispetto al SAL precedente.'));
   form.appendChild(el('p', { class: 'muted', style: 'font-size:11.5px' },
     'Chiudendo il SAL, l\'avanzamento attuale delle Lavorazioni viene congelato in un nuovo numero progressivo e confrontato automaticamente con l\'ultimo SAL chiuso.'));

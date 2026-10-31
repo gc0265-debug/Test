@@ -16,15 +16,17 @@ const SEZIONI_CLIENTE = [
 
 function openForm(existing, onSaved) {
   const form = el('form', {});
-  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true })));
-  form.appendChild(field('Email', textInput('email', existing?.email ?? '', { required: true, type: 'email' })));
+  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true }), 'Il nome visualizzato in app.'));
+  form.appendChild(field('Email', textInput('email', existing?.email ?? '', { required: true, type: 'email' }),
+    'Usata per accedere: deve essere univoca.'));
   form.appendChild(field(
     'Password',
     textInput('password', '', { type: 'password', placeholder: existing ? '••••••••' : '' }),
     existing ? 'Lascia vuoto per mantenere quella attuale.' : 'Password iniziale: l\'utente potrà cambiarla in seguito da qui.'
   ));
   const ruoloSelect = select('ruolo', [['operatore', 'Operatore'], ['admin', 'Amministratore'], ['cliente', 'Cliente (sola lettura)']], existing?.ruolo ?? 'operatore');
-  form.appendChild(field('Ruolo', ruoloSelect));
+  form.appendChild(field('Ruolo', ruoloSelect,
+    'Amministratore vede e modifica tutto, incluse Dashboard Finanziaria e Impostazioni; Operatore ha accesso completo salvo quelle due; Cliente è in sola lettura e limitato alle sezioni scelte sotto.'));
 
   const sezioniHost = el('div');
   form.appendChild(sezioniHost);
@@ -46,7 +48,8 @@ function openForm(existing, onSaved) {
   drawSezioni();
   ruoloSelect.addEventListener('change', drawSezioni);
 
-  form.appendChild(field('Attivo', select('attivo', [[1, 'Sì'], [0, 'No']], existing ? (existing.attivo ? 1 : 0) : 1)));
+  form.appendChild(field('Attivo', select('attivo', [[1, 'Sì'], [0, 'No']], existing ? (existing.attivo ? 1 : 0) : 1),
+    'Un utente disattivato non può più accedere, ma resta nell\'elenco.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),

@@ -31,17 +31,27 @@ async function openForm(existing, onSaved) {
   const allertOptions = [['', '— nessuno'], ...allertRes.data.map((a) => [a.id, a.descrizione])];
 
   const form = el('form', {});
-  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true })));
-  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
-  form.appendChild(field('Data', dateInput('data', existing?.data || todayISO(), { required: true })));
-  form.appendChild(field('Categoria', select('categoria', Object.entries(CATEGORIA).map(([k, v]) => [k, v]), existing?.categoria ?? 'generale')));
-  form.appendChild(field('Cosa è successo', textarea('cosa_e_successo', existing?.cosa_e_successo ?? '')));
-  form.appendChild(field('Cosa abbiamo imparato', textarea('cosa_abbiamo_imparato', existing?.cosa_abbiamo_imparato ?? '')));
+  form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
+    'Riassunto breve della lezione, mostrato in elenco.'));
+  form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
+    'A quale WP si riferisce, se pertinente a uno in particolare.'));
+  form.appendChild(field('Data', dateInput('data', existing?.data || todayISO(), { required: true }),
+    'Quando si è verificato l\'evento, non quando viene registrata la lezione.'));
+  form.appendChild(field('Categoria', select('categoria', Object.entries(CATEGORIA).map(([k, v]) => [k, v]), existing?.categoria ?? 'generale'),
+    'Area a cui appartiene la lezione, utile per ritrovarla su commesse future.'));
+  form.appendChild(field('Cosa è successo', textarea('cosa_e_successo', existing?.cosa_e_successo ?? ''),
+    'Il fatto, descritto in modo oggettivo.'));
+  form.appendChild(field('Cosa abbiamo imparato', textarea('cosa_abbiamo_imparato', existing?.cosa_abbiamo_imparato ?? ''),
+    'La causa di fondo individuata, non solo il sintomo.'));
   form.appendChild(field('Azione per il futuro', textarea('azione_futura', existing?.azione_futura ?? ''), 'Cosa faremo di diverso la prossima volta.'));
-  form.appendChild(field('Collegata a criticità', select('rif_criticita_id', criticitaOptions, existing?.rif_criticita_id ?? '')));
-  form.appendChild(field('Collegata a decisione', select('rif_decisione_id', decisioniOptions, existing?.rif_decisione_id ?? '')));
-  form.appendChild(field('Collegata ad allert', select('rif_allert_id', allertOptions, existing?.rif_allert_id ?? '')));
-  form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
+  form.appendChild(field('Collegata a criticità', select('rif_criticita_id', criticitaOptions, existing?.rif_criticita_id ?? ''),
+    'Se la lezione nasce da una criticità già registrata.'));
+  form.appendChild(field('Collegata a decisione', select('rif_decisione_id', decisioniOptions, existing?.rif_decisione_id ?? ''),
+    'Se la lezione nasce da una decisione già registrata.'));
+  form.appendChild(field('Collegata ad allert', select('rif_allert_id', allertOptions, existing?.rif_allert_id ?? ''),
+    'Se la lezione nasce da un allert già registrato.'));
+  form.appendChild(field('Note', textarea('note', existing?.note ?? ''),
+    'Annotazioni libere, visibili solo qui.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
