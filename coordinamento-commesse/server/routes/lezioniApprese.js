@@ -6,6 +6,7 @@ const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { generaLezioniApprese } = require('../utils/ai');
 
 const router = express.Router();
 
@@ -35,6 +36,28 @@ router.get('/', (req, res) => {
 
   const rows = db.prepare(sql).all(...params);
   res.json({ data: rows, total: rows.length });
+});
+
+// Genera, per una lista di candidati (criticità chiuse, decisioni prese,
+// allert chiusi), una proposta ragionata di lezione appresa tramite il
+// modello — non una concatenazione dei campi del registro. Non scrive
+// nulla sul database: il client propone, l'utente conferma riga per riga
+// e solo allora arriva una vera POST /lezioni-apprese.
+router.post('/genera-ai', async (req, res) => {
+  const { candidati } = req.body;
+  if (!Array.isArray(candidati) || !candidati.length) {
+    return res.status(400).json({ error: 'nessun candidato da elaborare' });
+  }
+  if (candidati.length > 30) {
+    return res.status(400).json({ error: 'troppi elementi in un\'unica richiesta (massimo 30): riprova con una selezione più piccola' });
+  }
+  try {
+    const risultati = await generaLezioniApprese(candidati);
+    res.json({ risultati });
+  } catch (err) {
+    const status = err.code === 'NO_API_KEY' ? 503 : 502;
+    res.status(status).json({ error: err.message, code: err.code });
+  }
 });
 
 router.post('/', (req, res) => {

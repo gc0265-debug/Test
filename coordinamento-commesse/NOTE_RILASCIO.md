@@ -16,6 +16,25 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Lezioni Apprese: ragionamento IA e stampa filtrabile (31 ottobre 2026)
+
+- Il pulsante **"+ Genera da registri"** ora chiede al modello di
+  linguaggio di ragionare sui dati della criticità, decisione o allert
+  chiuso, invece di limitarsi a ricopiarne i campi: scrive una proposta
+  di "Cosa è successo", "Cosa abbiamo imparato" e "Azione per il futuro",
+  che restano comunque modificabili prima di confermare.
+- Se sul server non è configurata la chiave del servizio IA (file
+  `.env`, vedi `.env.example`), il generatore lo segnala chiaramente
+  invece di inventare un testo finto: titolo e collegamento restano
+  precompilati dai registri, gli altri campi si completano a mano.
+- Nuovo pulsante **"Stampa"** in Lezioni Apprese: produce un documento
+  strutturato con tutte le lezioni apprese, filtrabile per commessa
+  (anche "tutte le commesse" insieme) e per Work Package — pensato per
+  essere riletto prima di avviare una nuova commessa, non solo come
+  elenco interno.
+
+---
+
 ## Lezioni Apprese: generazione automatica dai registri (31 ottobre 2026)
 
 - Nuovo pulsante **"+ Genera da registri"** in Lezioni Apprese: propone una

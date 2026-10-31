@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.29';
+const VERSIONE_ATTUALE = '1.30';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.29', title: 'Lezioni Apprese: generazione automatica dai registri', date: '31 ottobre 2026', attuale: true,
+    v: '1.30', title: 'Lezioni Apprese: ragionamento IA e stampa filtrabile', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Il pulsante "+ Genera da registri" ora chiede al modello di linguaggio di ragionare sui dati della criticità, decisione o allert chiuso, invece di limitarsi a ricopiarne i campi: scrive una proposta di "Cosa è successo", "Cosa abbiamo imparato" e "Azione per il futuro", che restano comunque modificabili prima di confermare.',
+      'Se sul server non è configurata la chiave del servizio IA (file .env, vedi .env.example), il generatore lo segnala chiaramente invece di inventare un testo finto: titolo e collegamento restano precompilati dai registri, gli altri campi si completano a mano.',
+      'Nuovo pulsante "Stampa" in Lezioni Apprese: produce un documento strutturato con tutte le lezioni apprese, filtrabile per commessa (anche "tutte le commesse" insieme) e per Work Package — pensato per essere riletto prima di avviare una nuova commessa, non solo come elenco interno.',
+    ],
+  },
+  {
+    v: '1.29', title: 'Lezioni Apprese: generazione automatica dai registri', date: '31 ottobre 2026',
     points: [
       'Nuovo pulsante "+ Genera da registri" in Lezioni Apprese: propone una bozza di lezione per ogni criticità chiusa, decisione presa e allert chiuso non ancora collegato a una lezione esistente, con titolo, Work Package, data e collegamento all\'origine già precompilati.',
       'Ogni proposta si può accettare o scartare singolarmente, con la categoria scelta al volo prima di generarla: nessuna lezione viene creata senza conferma.',

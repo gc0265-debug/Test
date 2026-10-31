@@ -367,6 +367,9 @@ td.select input{cursor:pointer;}
 
 .row-warn{background:var(--ambra-wash);}
 
+.banner{padding:10px 14px;border-radius:4px;font-size:12.5px;line-height:1.5;}
+.banner--warn{background:var(--ambra-wash);color:var(--ink);border-left:3px solid var(--ambra);}
+
 /* ---------- timeline / gantt ---------- */
 /* Attività/Inizio/Fine restano ferme (sticky a sinistra dello scroll
    orizzontale del contenitore .gantt); solo le barre scorrono.
