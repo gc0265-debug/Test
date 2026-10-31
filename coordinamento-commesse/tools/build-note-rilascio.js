@@ -28,13 +28,22 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.25';
+const VERSIONE_ATTUALE = '1.26';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.25', title: 'Guida in linea e cut-off/IFC su Approvazioni Drawings', date: '31 ottobre 2026', attuale: true,
+    v: '1.26', title: 'Timeline: intestazione corretta, colori più chiari, elimina milestone', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Risolto il difetto per cui, con i gruppi Piano espansi, la barra riassuntiva del gruppo finiva nascosta dietro la riga delle settimane: l\'intestazione ora si aggancia correttamente in cima al grafico, senza sovrapposizioni.',
+      'Le settimane in intestazione mostrano ora l\'etichetta abbreviata (es. "S44") invece di "Sett. 44", più leggibile quando lo zoom è ridotto.',
+      'Colori più distinguibili nel Gantt: le barre dei gruppi Piano sono ora viola (prima un grigio simile a quello già usato per baseline e riepiloghi), la barra di baseline è ambra per richiamare il pallino di scostamento già in uso altrove nell\'app. La legenda distingue ora "Gruppo Piano" da "Riepilogo sotto-attività", prima accorpati in una sola voce.',
+      'Una milestone può ora essere eliminata direttamente dal suo modulo di modifica nella Timeline, con lo stesso pulsante "Elimina" già presente per le altre schede.',
+    ],
+  },
+  {
+    v: '1.25', title: 'Guida in linea e cut-off/IFC su Approvazioni Drawings', date: '31 ottobre 2026',
     points: [
       'Ogni scheda ha ora un pulsante "?" accanto al titolo, in alto: un balloon che spiega a cosa serve la pagina e come si usa, senza dover uscire dal lavoro in corso.',
       'Approvazioni Drawings: nuovo stato Emissione IFA/IFC (emesso per approvazione / emesso per costruzione) e nuova Data limite approvazione (cut-off), con evidenza in rosso automatica quando l\'approvazione formale arriva dopo quella data — il programma di fabbricazione slitta e il ritardo è documentato.',

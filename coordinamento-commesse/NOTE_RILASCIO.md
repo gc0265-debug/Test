@@ -16,6 +16,26 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Timeline: intestazione corretta, colori più chiari, elimina milestone (31 ottobre 2026)
+
+- Risolto il difetto per cui, con i gruppi Piano espansi, la barra
+  riassuntiva del gruppo finiva nascosta dietro la riga delle settimane:
+  l'intestazione ora si aggancia correttamente in cima al grafico, senza
+  sovrapposizioni.
+- Le settimane in intestazione mostrano ora l'etichetta abbreviata (es.
+  "S44") invece di "Sett. 44", più leggibile quando lo zoom è ridotto.
+- Colori più distinguibili nel Gantt: le barre dei gruppi Piano sono ora
+  **viola** (prima un grigio simile a quello già usato per baseline e
+  riepiloghi), la barra di baseline è **ambra** per richiamare il
+  pallino di scostamento già in uso altrove nell'app. La legenda
+  distingue ora "Gruppo Piano" da "Riepilogo sotto-attività", prima
+  accorpati in una sola voce.
+- Una milestone può ora essere eliminata direttamente dal suo modulo di
+  modifica nella Timeline, con lo stesso pulsante "Elimina" già presente
+  per le altre schede.
+
+---
+
 ## Guida in linea e cut-off/IFC su Approvazioni Drawings (31 ottobre 2026)
 
 - Ogni scheda ha ora un pulsante **"?"** accanto al titolo, in alto: un

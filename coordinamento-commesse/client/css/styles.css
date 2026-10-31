@@ -369,12 +369,20 @@ td.select input{cursor:pointer;}
 
 /* ---------- timeline / gantt ---------- */
 /* Attività/Inizio/Fine restano ferme (sticky a sinistra dello scroll
-   orizzontale del contenitore .gantt); solo le barre scorrono. */
-.gantt{--gantt-label-w:350px;border:1px solid var(--rule);overflow-x:auto;}
+   orizzontale del contenitore .gantt); solo le barre scorrono.
+   .gantt ha anche uno scroll verticale proprio (non quello di pagina):
+   overflow-x:auto costringe comunque overflow-y a "auto" per specifica
+   CSS (non può restare "visible" quando l'altro asse non lo è), quindi
+   l'intestazione sticky si aggancia già al contenitore .gantt stesso —
+   le si dà qui un'altezza massima esplicita e top:0 coerente con quello,
+   invece di inseguire lo scroll di pagina (che altrimenti la sposta più
+   in basso del previsto, nascondendo la riga sottostante: visto con i
+   gruppi Piano espansi). */
+.gantt{--gantt-label-w:350px;border:1px solid var(--rule);overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 300px);}
 .gantt__chart{position:relative;min-width:1000px;}
 .gantt__row{display:flex;border-bottom:1px solid var(--rule-2);}
 .gantt__row:last-child{border-bottom:0;}
-.gantt__row--head{position:sticky;top:var(--topbar-h);z-index:2;}
+.gantt__row--head{position:sticky;top:0;z-index:2;}
 .gantt__row--head .gantt__axis{background:var(--paper-2);border-bottom:1px solid var(--rule);}
 
 .gantt__label{
@@ -424,9 +432,9 @@ td.select input{cursor:pointer;}
 
 /* gruppi "Piano" (riga di intestazione collassabile) e sotto-attività
    rientrate sotto la propria lavorazione madre, in stile MS Project. */
-.gantt__row--group{background:var(--paper-3);}
-.gantt__row--group .gantt__label{background:var(--paper-3);}
-.gantt__row--group .gantt__label-titolo{font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.04em;}
+.gantt__row--group{background:var(--viola-wash);}
+.gantt__row--group .gantt__label{background:var(--viola-wash);}
+.gantt__row--group .gantt__label-titolo{font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.04em;color:var(--viola);}
 .gantt__row--summary .gantt__label-titolo{font-weight:700;}
 .gantt__row--child .gantt__label-col--nome{padding-left:22px;}
 .gantt__label--indent-1 .gantt__label-col--nome{padding-left:22px;}
@@ -441,15 +449,17 @@ td.select input{cursor:pointer;}
 }
 .gantt__label:hover .gantt__add-child{opacity:1;}
 .gantt__bar--group{
-  position:absolute;top:50%;transform:translateY(-50%);height:6px;border-radius:3px;
-  background:var(--ink);opacity:.55;cursor:default;
+  position:absolute;top:50%;transform:translateY(-50%);height:7px;border-radius:3px;
+  background:var(--viola);opacity:.85;cursor:default;
 }
 .gantt__bar--summary{background:var(--ink) !important;opacity:.85;}
 
-/* barra baseline: posizione/durata originali, in trasparenza, non cliccabile */
+/* barra baseline: posizione/durata originali, in trasparenza, non cliccabile.
+   Colore ambra per legarla visivamente al pallino "scostamento" (stesso
+   accento), distinguendola dalle barre di stato e dal gruppo Piano. */
 .gantt__bar-baseline{
   position:absolute;top:9px;height:9px;border-radius:2px;pointer-events:none;
-  background:var(--ink-3);opacity:.22;border:1px dashed var(--ink-2);
+  background:var(--ambra-wash);opacity:.8;border:1px dashed var(--ambra);
 }
 
 .gantt__today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);opacity:.55;z-index:1;pointer-events:none;}
@@ -460,8 +470,10 @@ td.select input{cursor:pointer;}
 .gantt__legend-dot--in-corso{background:var(--blue);}
 .gantt__legend-dot--completata{background:var(--verde);}
 .gantt__legend-dot--ritardo{background:var(--red);}
-.gantt__legend-dot--baseline{background:var(--ink-3);opacity:.3;border:1px dashed var(--ink-2);border-radius:2px;}
-.gantt__legend-bar{width:16px;height:6px;border-radius:3px;background:var(--ink);opacity:.6;display:inline-block;}
+.gantt__legend-dot--baseline{background:var(--ambra-wash);opacity:.9;border:1px dashed var(--ambra);border-radius:2px;}
+.gantt__legend-bar{width:16px;height:6px;border-radius:3px;display:inline-block;}
+.gantt__legend-bar--group{background:var(--viola);opacity:.85;}
+.gantt__legend-bar--summary{background:var(--ink);opacity:.85;}
 .gantt__zoom{width:110px;vertical-align:middle;}
 
 /* ---------- matrice interesse/influenza (stakeholder) ---------- */
@@ -502,7 +514,7 @@ td.select input{cursor:pointer;}
 @media print{
   body.printing-gantt .content > *:not(.gantt-print-area){display:none !important;}
   body.printing-gantt .gantt-print-area > *:not(.gantt):not(.gantt__legend){display:none !important;}
-  body.printing-gantt .gantt{overflow:visible;border:none;}
+  body.printing-gantt .gantt{overflow:visible;border:none;max-height:none;}
   body.printing-gantt .gantt__chart{box-shadow:none;}
   @page{size:landscape;margin:10mm;}
 }

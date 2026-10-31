@@ -103,7 +103,7 @@ function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
       const startOffset = Math.max(0, daysBetween(rangeStart, cursor));
       const endOffset = daysBetween(rangeStart, segEnd);
       segments.push({
-        label: `Sett. ${isoWeek(cursor)}`,
+        label: `S${isoWeek(cursor)}`,
         sub: `${formatShort(cursor)}–${formatShort(addDays(cursor, 6))}`,
         leftPx: startOffset * ppd,
         widthPx: Math.max(0, endOffset - startOffset) * ppd,
@@ -193,10 +193,23 @@ async function openForm(existing, onSaved, presets = {}) {
   drawExtra();
   tipoCheckbox.addEventListener('change', drawExtra);
 
-  form.appendChild(el('div', { class: 'modal__actions' }, [
+  const azioni = [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
-    el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
-  ]));
+  ];
+  if (existing && !isLavorazione) {
+    azioni.push(el('button', {
+      type: 'button', class: 'btn btn--ghost btn--danger',
+      onclick: async () => {
+        if (!confirmDialog('Eliminare questa milestone?')) return;
+        await api.del(`/milestone/${existing.id}`);
+        closeModal();
+        toast('Milestone eliminata.');
+        onSaved();
+      },
+    }, 'Elimina'));
+  }
+  azioni.push(el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'));
+  form.appendChild(el('div', { class: 'modal__actions' }, azioni));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -598,7 +611,8 @@ export async function renderTimeline(container) {
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dot gantt__legend-dot--baseline' }), 'Baseline (scostamento)']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__type-tag' }, 'Lavorazione'), 'riga più sottile = lavorazione, non milestone']),
-      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--group' }), 'Gruppo Piano / riepilogo sotto-attività']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--group' }), 'Gruppo Piano']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--summary' }), 'Riepilogo sotto-attività']),
     ]));
   }
 
