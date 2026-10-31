@@ -8,13 +8,43 @@ let current = null;
 // difetto" applicato lato server in requireSection).
 const ROTTE_SEMPRE_ACCESSIBILI_CLIENTE = new Set([]);
 
-export function route(name, { title, render }) {
-  routes[name] = { title, render };
+export function route(name, { title, render, help }) {
+  routes[name] = { title, render, help };
 }
 
 function parseHash() {
   const raw = (location.hash || '#/cruscotto').slice(2); // rimuove "#/"
   return raw || 'cruscotto';
+}
+
+// Guida in linea: un pulsante "?" a fianco del titolo di pagina, pilotato
+// da qui invece che da ogni singola pagina — il testo arriva dal campo
+// help passato a route() in app.js. Il balloon si chiude ad ogni cambio
+// di pagina e cliccando fuori da sé.
+function setPageHelp(help) {
+  const wrap = document.getElementById('pageHelp');
+  const bubble = document.getElementById('pageHelpBubble');
+  if (!wrap || !bubble) return;
+  bubble.hidden = true;
+  if (help) {
+    wrap.hidden = false;
+    bubble.textContent = help;
+  } else {
+    wrap.hidden = true;
+    bubble.textContent = '';
+  }
+}
+
+function setupPageHelpToggle() {
+  const btn = document.getElementById('pageHelpBtn');
+  const bubble = document.getElementById('pageHelpBubble');
+  if (!btn || !bubble) return;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    bubble.hidden = !bubble.hidden;
+  });
+  bubble.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => { bubble.hidden = true; });
 }
 
 export async function navigate() {
@@ -27,6 +57,7 @@ export async function navigate() {
   });
   document.getElementById('pageTitle').textContent = r.title;
   document.getElementById('topbarRight').innerHTML = '';
+  setPageHelp(r.help);
 
   const content = document.getElementById('content');
   content.innerHTML = '';
@@ -62,6 +93,7 @@ function renderError(err) {
 }
 
 export function startRouter() {
+  setupPageHelpToggle();
   window.addEventListener('hashchange', navigate);
   navigate();
 }

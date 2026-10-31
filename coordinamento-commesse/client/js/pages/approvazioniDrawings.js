@@ -22,6 +22,19 @@ const STATO_FIXED = {
 };
 let STATO = STATO_FIXED;
 
+const EMISSIONE_OPTIONS = [
+  ['IFA', 'IFA — emesso per approvazione (non valido per fabbricazione)'],
+  ['IFC', 'IFC — emesso per costruzione/produzione'],
+];
+function emissionePill(r) {
+  return pill(r.emissione || 'IFA', r.emissione === 'IFC' ? 'verde' : 'outline');
+}
+function cutoffPill(r) {
+  if (!r.data_limite_approvazione) return pill('—', 'outline');
+  if (r.oltre_cutoff) return pill(`${formatDate(r.data_limite_approvazione)} · +${r.giorni_ritardo_cutoff}gg`, 'rosso');
+  return pill(formatDate(r.data_limite_approvazione), r.data_approvazione ? 'verde' : 'outline');
+}
+
 async function openForm(existing, onSaved) {
   // In vista aggregata di gruppo l'elaborato può appartenere a una
   // commessa diversa da quella (eventuale) selezionata in sidebar.
@@ -45,6 +58,10 @@ async function openForm(existing, onSaved) {
     field('Data approvazione', dateInput('data_approvazione', existing?.data_approvazione ?? '')),
   ]));
   form.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'in-attesa')));
+  form.appendChild(field('Emissione', select('emissione', EMISSIONE_OPTIONS, existing?.emissione ?? 'IFA'),
+    'Resta IFA — non valido per fabbricazione/taglio — finché non arriva il visto formale: solo allora si passa manualmente a IFC.'));
+  form.appendChild(field('Data limite approvazione (cut-off)', dateInput('data_limite_approvazione', existing?.data_limite_approvazione ?? ''),
+    'Entro questa data deve arrivare l\'approvazione formale per rispettare la consegna in cantiere: oltre, i tempi di fabbricazione slittano automaticamente giorno per giorno.'));
   form.appendChild(field('Requisito collegato', select('rif_requisito_id', requisitoOptions, existing?.rif_requisito_id ?? ''),
     'Collega questo elaborato a un requisito del Capitolato Requisiti, se pertinente.'));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '')));
@@ -109,11 +126,12 @@ export async function renderApprovazioniDrawings(container) {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
         printReport('Approvazioni Drawings', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Elaborati',
-          columns: ['Codice', 'Titolo', 'Rev.', 'WP', 'Invio', 'Approvazione', 'Stato', 'Requisito'],
+          columns: ['Codice', 'Titolo', 'Rev.', 'WP', 'Emissione', 'Invio', 'Approvazione', 'Cut-off', 'Stato', 'Requisito'],
           rows: rows.map((r) => [
-            r.codice, r.titolo, r.revisione || '—', r.wp_codice || '—',
-            formatDate(r.data_invio), formatDate(r.data_approvazione), STATO[r.stato][0],
-            r.requisito_wbs || '—',
+            r.codice, r.titolo, r.revisione || '—', r.wp_codice || '—', r.emissione || 'IFA',
+            formatDate(r.data_invio), formatDate(r.data_approvazione),
+            r.data_limite_approvazione ? `${formatDate(r.data_limite_approvazione)}${r.oltre_cutoff ? ` (+${r.giorni_ritardo_cutoff}gg ritardo)` : ''}` : '—',
+            STATO[r.stato][0], r.requisito_wbs || '—',
           ]),
         }]);
       } }, 'Stampa'),
@@ -140,8 +158,10 @@ export async function renderApprovazioniDrawings(container) {
       { key: 'titolo', label: 'Titolo' },
       { key: 'revisione', label: 'Rev.', render: (r) => r.revisione || '—' },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
+      { key: 'emissione', label: 'Emissione', render: emissionePill },
       { key: 'data_invio', label: 'Data invio', render: (r) => formatDate(r.data_invio) },
       { key: 'data_approvazione', label: 'Data approvazione', render: (r) => formatDate(r.data_approvazione) },
+      { key: 'cutoff', label: 'Cut-off', render: cutoffPill },
       { key: 'stato', label: 'Stato', render: (r) => pill(STATO[r.stato][0], STATO[r.stato][1]) },
       { key: 'requisito', label: 'Requisito collegato', render: (r) => r.requisito_wbs || '—' },
       {

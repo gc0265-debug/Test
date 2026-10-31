@@ -147,6 +147,10 @@ dropColumnCheck('processi_comunicazione', "CHECK(frequenza IN", `
   );
 `);
 
+ensureColumns('approvazioni_drawings', [
+  { name: 'emissione', def: "TEXT NOT NULL DEFAULT 'IFA'" },
+  { name: 'data_limite_approvazione', def: 'TEXT' },
+]);
 ensureColumns('users', [{ name: 'sezioni_consentite', def: 'TEXT' }]);
 ensureColumns('commesse', [{ name: 'gruppo', def: 'TEXT' }]);
 

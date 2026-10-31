@@ -114,8 +114,26 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
   backdrop-filter:blur(8px);z-index:5;
 }
 .topbar h1{margin:0;font-size:19px;font-weight:700;letter-spacing:.01em;}
+.topbar__left{display:flex;align-items:center;gap:8px;min-width:0;}
 .topbar__right{display:flex;gap:8px;align-items:center;}
 .content{padding:24px 28px 60px;flex:1;min-width:0;}
+
+.page-help{position:relative;}
+.page-help__btn{
+  width:20px;height:20px;border-radius:50%;flex:none;
+  border:1px solid var(--rule);background:var(--paper);color:var(--ink-3);
+  font-size:11px;font-weight:700;line-height:1;cursor:pointer;
+}
+.page-help__btn:hover{color:var(--ink);border-color:var(--ink-3);}
+.page-help__bubble{
+  position:absolute;top:28px;left:0;z-index:40;width:320px;max-width:min(80vw,320px);
+  background:var(--ink);color:var(--paper);padding:12px 14px;border-radius:4px;
+  font-size:12.5px;line-height:1.5;box-shadow:var(--shadow);
+}
+.page-help__bubble::before{
+  content:'';position:absolute;top:-5px;left:6px;width:9px;height:9px;
+  background:var(--ink);transform:rotate(45deg);
+}
 
 /* ---------- testi di struttura ---------- */
 h2{font-size:14px;font-weight:700;letter-spacing:.02em;margin:0 0 4px;}

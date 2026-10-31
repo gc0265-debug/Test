@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.24';
+const VERSIONE_ATTUALE = '1.25';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.24', title: 'Nuova scheda SAL — Stato Avanzamento Lavori', date: '31 ottobre 2026', attuale: true,
+    v: '1.25', title: 'Guida in linea e cut-off/IFC su Approvazioni Drawings', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Ogni scheda ha ora un pulsante "?" accanto al titolo, in alto: un balloon che spiega a cosa serve la pagina e come si usa, senza dover uscire dal lavoro in corso.',
+      'Approvazioni Drawings: nuovo stato Emissione IFA/IFC (emesso per approvazione / emesso per costruzione) e nuova Data limite approvazione (cut-off), con evidenza in rosso automatica quando l\'approvazione formale arriva dopo quella data — il programma di fabbricazione slitta e il ritardo è documentato.',
+      'L\'import da Excel riconosce già la colonna "Approvazione (data ultima attesa)" dell\'Elenco Deliverable GILI e la usa direttamente come cut-off, invece di lasciarla solo in nota.',
+    ],
+  },
+  {
+    v: '1.24', title: 'Nuova scheda SAL — Stato Avanzamento Lavori', date: '31 ottobre 2026',
     points: [
       'Nuova scheda SAL al posto di Maestranze (ora sotto Stakeholder): un registro di avanzamento fisico delle Lavorazioni, con percentuale di completamento aggregata per Work Package e per Impresa.',
       'Non è un SAL contabile — non calcola quantità, prezzi unitari o acconti, dati che l\'app non traccia ancora — ma un avanzamento operativo, utile per condividere lo stato dei montaggi senza dover aprire un foglio a parte.',

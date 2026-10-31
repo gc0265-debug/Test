@@ -59,7 +59,13 @@
 
     <main class="main">
       <header class="topbar">
-        <h1 id="pageTitle">Cruscotto</h1>
+        <div class="topbar__left">
+          <h1 id="pageTitle">Cruscotto</h1>
+          <div class="page-help" id="pageHelp" hidden>
+            <button type="button" class="page-help__btn" id="pageHelpBtn" aria-label="Guida di questa scheda">?</button>
+            <div class="page-help__bubble" id="pageHelpBubble" hidden></div>
+          </div>
+        </div>
         <div class="topbar__right" id="topbarRight"></div>
       </header>
       <div class="content" id="content" aria-live="polite"></div>

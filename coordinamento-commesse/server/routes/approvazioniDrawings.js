@@ -14,6 +14,7 @@ const ExcelJS = require('exceljs');
 const db = require('../db/database');
 const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { daysBetween, todayStr } = require('../utils/dates');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -23,14 +24,35 @@ const TRACKED = [
   { key: 'titolo', label: 'Titolo' },
   { key: 'revisione', label: 'Revisione' },
   { key: 'stato', label: 'Stato' },
+  { key: 'emissione', label: 'Emissione' },
   { key: 'data_invio', label: 'Data invio' },
   { key: 'data_approvazione', label: 'Data approvazione' },
+  { key: 'data_limite_approvazione', label: 'Data limite approvazione (cut-off)' },
 ];
 
 const STATI_VALIDI = ['in-attesa', 'approvato', 'approvato-con-riserve', 'rigettato'];
 function normalizzaStato(v) {
   const s = String(v || '').trim().toLowerCase().replace(/\s+/g, '-');
   return STATI_VALIDI.includes(s) ? s : 'in-attesa';
+}
+
+const EMISSIONI_VALIDE = ['IFA', 'IFC'];
+function normalizzaEmissione(v) {
+  const s = String(v || '').trim().toUpperCase();
+  return EMISSIONI_VALIDE.includes(s) ? s : 'IFA';
+}
+
+// Scaduto il "Lead Time Freeze": il cut-off è passato senza che
+// l'approvazione formale sia arrivata in tempo. Se l'elaborato è stato
+// approvato dopo il cut-off, il ritardo si misura comunque sulla data di
+// approvazione reale (non su oggi), per restare corretto anche a
+// posteriori una volta che l'elaborato non è più "in attesa".
+function arricchisci(row) {
+  if (!row.data_limite_approvazione) return { ...row, giorni_ritardo_cutoff: null, oltre_cutoff: false };
+  const riferimento = row.data_approvazione || todayStr();
+  const diff = daysBetween(row.data_limite_approvazione, riferimento);
+  const oltre_cutoff = diff > 0;
+  return { ...row, giorni_ritardo_cutoff: oltre_cutoff ? diff : null, oltre_cutoff };
 }
 // Una cella Excel può essere una Date, una stringa, un numero o il
 // risultato di una formula ({formula, result}) — qui si estrae sempre un
@@ -172,19 +194,19 @@ router.get('/', (req, res) => {
   if (stato) { sql += ' AND a.stato = ?'; params.push(stato); }
   if (search) { sql += ' AND (a.codice LIKE ? OR a.titolo LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
   sql += ' ORDER BY a.codice ASC';
-  res.json({ data: db.prepare(sql).all(...params), total: 0 });
+  res.json({ data: db.prepare(sql).all(...params).map(arricchisci), total: 0 });
 });
 
 router.post('/', (req, res) => {
-  const { commessa_id, wp_id, codice, titolo, revisione, data_invio, data_approvazione, stato, rif_requisito_id, note } = req.body;
+  const { commessa_id, wp_id, codice, titolo, revisione, data_invio, data_approvazione, stato, emissione, data_limite_approvazione, rif_requisito_id, note } = req.body;
   if (!commessa_id || !codice || !titolo) return res.status(400).json({ error: 'commessa_id, codice e titolo sono obbligatori' });
   const result = db.prepare(`
-    INSERT INTO approvazioni_drawings (commessa_id, wp_id, codice, titolo, revisione, data_invio, data_approvazione, stato, rif_requisito_id, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(commessa_id, wp_id || null, codice, titolo, revisione || null, data_invio || null, data_approvazione || null, stato || 'in-attesa', rif_requisito_id || null, note || null);
+    INSERT INTO approvazioni_drawings (commessa_id, wp_id, codice, titolo, revisione, data_invio, data_approvazione, stato, emissione, data_limite_approvazione, rif_requisito_id, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(commessa_id, wp_id || null, codice, titolo, revisione || null, data_invio || null, data_approvazione || null, stato || 'in-attesa', normalizzaEmissione(emissione), data_limite_approvazione || null, rif_requisito_id || null, note || null);
   const row = db.prepare('SELECT * FROM approvazioni_drawings WHERE id = ?').get(result.lastInsertRowid);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'approvazioni_drawings', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: `${codice} — ${titolo}` });
-  res.status(201).json(row);
+  res.status(201).json(arricchisci(row));
 });
 
 router.put('/:id', (req, res) => {
@@ -193,16 +215,17 @@ router.put('/:id', (req, res) => {
   const next = { ...existing, ...req.body };
   db.prepare(`
     UPDATE approvazioni_drawings
-    SET wp_id=?, codice=?, titolo=?, revisione=?, data_invio=?, data_approvazione=?, stato=?, rif_requisito_id=?, note=?, updated_at=unixepoch()
+    SET wp_id=?, codice=?, titolo=?, revisione=?, data_invio=?, data_approvazione=?, stato=?, emissione=?, data_limite_approvazione=?, rif_requisito_id=?, note=?, updated_at=unixepoch()
     WHERE id=?
   `).run(
     next.wp_id || null, next.codice, next.titolo, next.revisione || null, next.data_invio || null,
-    next.data_approvazione || null, next.stato, next.rif_requisito_id || null, next.note || null, req.params.id
+    next.data_approvazione || null, next.stato, normalizzaEmissione(next.emissione), next.data_limite_approvazione || null,
+    next.rif_requisito_id || null, next.note || null, req.params.id
   );
   const row = db.prepare('SELECT * FROM approvazioni_drawings WHERE id = ?').get(req.params.id);
   const dettaglio = diffFields(existing, next, TRACKED);
   logAudit({ commessa_id: row.commessa_id, entity_type: 'approvazioni_drawings', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornato' });
-  res.json(row);
+  res.json(arricchisci(row));
 });
 
 router.delete('/:id', (req, res) => {
@@ -247,8 +270,8 @@ router.post('/import', upload.single('file'), async (req, res) => {
   );
 
   const insert = db.prepare(`
-    INSERT INTO approvazioni_drawings (commessa_id, wp_id, codice, titolo, revisione, data_invio, data_approvazione, stato, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO approvazioni_drawings (commessa_id, wp_id, codice, titolo, revisione, data_invio, data_approvazione, stato, data_limite_approvazione, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   let imported = 0;
   let righeSezione = 0;
@@ -282,6 +305,7 @@ router.post('/import', upload.single('file'), async (req, res) => {
       const dataInvio = excelDateToISO(cella(row, 'dataInvio'));
       const rawRicevimento = cella(row, 'dataApprovazione');
       const dataApprovazione = excelDateToISO(rawRicevimento);
+      const dataLimiteApprovazione = excelDateToISO(cella(row, 'dataApprovazioneAttesa'));
       const { stato, originaleDaAnnotare } = normalizzaStatoImport(cella(row, 'stato'), !!dataApprovazione);
 
       const parti = [testo(cella(row, 'note'))];
@@ -294,15 +318,15 @@ router.post('/import', upload.single('file'), async (req, res) => {
       // (es. "Sottomesso", "Da rilevare", "Fissare data")
       const consegnaTxt = !dataInvio ? testo(cella(row, 'dataInvio')) : '';
       if (consegnaTxt) parti.push(`Consegna: ${consegnaTxt}`);
-      const attesaTxt = !dataApprovazione ? testo(cella(row, 'dataApprovazioneAttesa')) : '';
-      if (attesaTxt && !excelDateToISO(cella(row, 'dataApprovazioneAttesa'))) parti.push(`Approvazione attesa: ${attesaTxt}`);
-      else if (excelDateToISO(cella(row, 'dataApprovazioneAttesa')) && !dataApprovazione) {
-        parti.push(`Approvazione attesa: ${excelDateToISO(cella(row, 'dataApprovazioneAttesa'))}`);
-      }
+      // La data di "approvazione attesa" diventa il cut-off vero e proprio
+      // (colonna data_limite_approvazione): solo se non è una data valida
+      // resta come testo libero in nota (es. "Fissare data").
+      const attesaTxt = !dataLimiteApprovazione ? testo(cella(row, 'dataApprovazioneAttesa')) : '';
+      if (attesaTxt) parti.push(`Approvazione attesa: ${attesaTxt}`);
       if (originaleDaAnnotare) parti.push(`Stato originale: ${originaleDaAnnotare}`);
       const note = parti.filter(Boolean).join(' — ') || null;
 
-      insert.run(commessa_id, wpId, codice, titolo, revisione, dataInvio, dataApprovazione, stato, note);
+      insert.run(commessa_id, wpId, codice, titolo, revisione, dataInvio, dataApprovazione, stato, dataLimiteApprovazione, note);
       imported++;
     }
   })();

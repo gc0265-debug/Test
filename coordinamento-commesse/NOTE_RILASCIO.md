@@ -16,6 +16,22 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Guida in linea e cut-off/IFC su Approvazioni Drawings (31 ottobre 2026)
+
+- Ogni scheda ha ora un pulsante **"?"** accanto al titolo, in alto: un
+  balloon che spiega a cosa serve la pagina e come si usa, senza dover
+  uscire dal lavoro in corso.
+- **Approvazioni Drawings**: nuovo stato **Emissione IFA/IFC** (emesso
+  per approvazione / emesso per costruzione) e nuova **Data limite
+  approvazione (cut-off)**, con evidenza in rosso automatica quando
+  l'approvazione formale arriva dopo quella data — il programma di
+  fabbricazione slitta e il ritardo è documentato.
+- L'import da Excel riconosce già la colonna "Approvazione (data ultima
+  attesa)" dell'Elenco Deliverable GILI e la usa direttamente come
+  cut-off, invece di lasciarla solo in nota.
+
+---
+
 ## Nuova scheda SAL — Stato Avanzamento Lavori (31 ottobre 2026)
 
 - Nuova scheda **SAL** al posto di Maestranze (ora sotto Stakeholder): un
