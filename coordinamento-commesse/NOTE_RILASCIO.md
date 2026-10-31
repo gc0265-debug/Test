@@ -16,6 +16,22 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Response Matrix su Approvazioni Drawings (31 ottobre 2026)
+
+- Nuovo pulsante **"Matrice"** su ogni elaborato: una Response Matrix
+  che raccoglie i commenti ricevuti su una revisione (da Interior
+  Designer, impiantisti, GC...), uno per riga, con la risposta data e
+  lo stato (Aperto/Chiuso) — invece di lasciarli sparsi fra email e PDF.
+- Un commento può essere qualificato come **"Change Order"**: segnala
+  una richiesta che cambia lo scope concordato (quote, essenze,
+  ferramenta, impiantistica) invece di un semplice dettaglio grafico,
+  da congelare in attesa di una variante economica approvata.
+- Stampando un singolo elaborato selezionato, la Response Matrix viene
+  inclusa automaticamente nel documento — pronta da portare in
+  riunione di coordinamento con il GC.
+
+---
+
 ## Timeline: intestazione corretta, colori più chiari, elimina milestone (31 ottobre 2026)
 
 - Risolto il difetto per cui, con i gruppi Piano espansi, la barra

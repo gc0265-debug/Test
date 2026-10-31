@@ -35,6 +35,110 @@ function cutoffPill(r) {
   return pill(formatDate(r.data_limite_approvazione), r.data_approvazione ? 'verde' : 'outline');
 }
 
+// Response Matrix: un commento ricevuto su una revisione (da ID, MEP,
+// GC...) con la risposta data e lo stato — formato pensato per obbligare
+// chi commenta a leggere le risposte punto per punto, invece di
+// perderle fra email e PDF sparsi. change_order segnala un commento che
+// tocca lo scope concordato (quote, essenze, ferramenta, impiantistica),
+// congelato in attesa di una variante economica invece di essere
+// recepito in silenzio nel disegno.
+function commentoId(index) {
+  return `C-${String(index + 1).padStart(2, '0')}`;
+}
+
+async function openCommentoQuickForm(elaborato, existing, refreshList) {
+  const form = el('form', {});
+  form.appendChild(field('Autore', textInput('autore', existing?.autore ?? '', { placeholder: 'es. Interior Designer, MEP Eng., GC' })));
+  form.appendChild(field('Richiesta ricevuta', textarea('richiesta', existing?.richiesta ?? '', { required: true }),
+    'Il commento così come arrivato, per iscritto o riportato fedelmente — è la base del confronto punto per punto.'));
+  form.appendChild(field('Azione intrapresa', textarea('azione', existing?.azione ?? ''),
+    'Cosa è stato modificato in risposta, o perché non è stato eseguito.'));
+  form.appendChild(field('Stato', select('stato', [['aperto', 'Aperto'], ['chiuso', 'Chiuso']], existing?.stato ?? 'aperto')));
+  form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:flex-start;font-size:12.5px;margin:-4px 0 14px;cursor:pointer' }, [
+    el('input', { type: 'checkbox', name: 'change_order', value: '1', checked: !!existing?.change_order, style: 'margin-top:2px' }),
+    el('span', {}, [
+      'Qualificato come Change Order (modifica di progetto)',
+      el('div', { class: 'field__hint', style: 'margin-top:2px' },
+        'Spunta se il commento tocca quote, essenze, ferramenta o impiantistica concordate: il dettaglio resta congelato finché non arriva una variante economica approvata, invece di essere recepito tacitamente nella revisione.'),
+    ]),
+  ]));
+  form.appendChild(field('Note contrattuali / impatto', textarea('note', existing?.note ?? ''),
+    'Es. riferimento a una variante (CO-012), impatto su tempi o fornitura — quello che serve per dimostrare la richiesta in sede di SAL o riunione.'));
+
+  const azioni = [
+    el('button', { type: 'button', class: 'btn', onclick: () => openMatriceDocument(elaborato, refreshList) }, 'Annulla'),
+  ];
+  if (existing) {
+    azioni.push(el('button', {
+      type: 'button', class: 'btn btn--ghost btn--danger',
+      onclick: async () => {
+        if (!confirmDialog('Eliminare questo commento?')) return;
+        await api.del(`/drawing-commenti/${existing.id}`);
+        toast('Commento eliminato.');
+        openMatriceDocument(elaborato, refreshList);
+      },
+    }, 'Elimina'));
+  }
+  azioni.push(el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Aggiungi'));
+  form.appendChild(el('div', { class: 'modal__actions' }, azioni));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = formData(form);
+    data.change_order = data.change_order === '1';
+    data.elaborato_id = elaborato.id;
+    try {
+      if (existing) await api.put(`/drawing-commenti/${existing.id}`, data);
+      else await api.post('/drawing-commenti', data);
+      toast(existing ? 'Commento aggiornato.' : 'Commento aggiunto.');
+      openMatriceDocument(elaborato, refreshList);
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  });
+  openModal(existing ? 'Modifica commento' : 'Nuovo commento', form);
+}
+
+async function openMatriceDocument(elaborato, refreshList) {
+  const res = await api.get(`/drawing-commenti?elaborato_id=${elaborato.id}`);
+  const commenti = res.data;
+  const soloLetturaMatrice = state.currentUser?.ruolo === 'cliente' || inVistaGruppo();
+
+  const body = el('div', {});
+  body.appendChild(el('p', { class: 'muted', style: 'margin-top:0' },
+    `${elaborato.codice}${elaborato.revisione ? ` · ${elaborato.revisione}` : ''} — ${elaborato.titolo}`));
+
+  if (!commenti.length) {
+    body.appendChild(el('p', { class: 'muted', style: 'margin:4px 0' }, 'Nessun commento registrato su questo elaborato.'));
+  } else {
+    body.appendChild(el('div', { style: 'border:1px solid var(--rule);margin:6px 0 4px' }, commenti.map((c, i) => el('div', {
+      style: 'padding:9px 10px;font-size:12.5px;border-bottom:1px solid var(--rule-2);' + (soloLetturaMatrice ? '' : 'cursor:pointer'),
+      onclick: soloLetturaMatrice ? null : () => openCommentoQuickForm(elaborato, c, refreshList),
+    }, [
+      el('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:8px' }, [
+        el('div', {}, [
+          el('b', {}, commentoId(i)), ' · ', el('span', { class: 'muted' }, c.autore || 'Autore non indicato'),
+        ]),
+        el('div', { style: 'display:flex;gap:6px' }, [
+          c.change_order ? pill('Change Order', 'rosso') : null,
+          pill(c.stato === 'chiuso' ? 'Chiuso' : 'Aperto', c.stato === 'chiuso' ? 'verde' : 'ambra'),
+        ]),
+      ]),
+      el('div', { style: 'margin-top:4px' }, c.richiesta),
+      c.azione ? el('div', { class: 'muted', style: 'margin-top:4px' }, `↳ ${c.azione}`) : null,
+      c.note ? el('div', { class: 'muted', style: 'margin-top:4px;font-size:11px' }, c.note) : null,
+    ]))));
+  }
+  if (!soloLetturaMatrice) {
+    body.appendChild(el('button', {
+      type: 'button', class: 'btn btn--sm', style: 'margin:8px 0 4px',
+      onclick: () => openCommentoQuickForm(elaborato, null, refreshList),
+    }, '+ Nuovo commento'));
+  }
+
+  openModal(`Response Matrix — ${elaborato.codice}`, body);
+}
+
 async function openForm(existing, onSaved) {
   // In vista aggregata di gruppo l'elaborato può appartenere a una
   // commessa diversa da quella (eventuale) selezionata in sidebar.
@@ -122,9 +226,9 @@ export async function renderApprovazioniDrawings(container) {
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
-      el('button', { class: 'btn btn--sm', onclick: () => {
+      el('button', { class: 'btn btn--sm', onclick: async () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Approvazioni Drawings', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
+        const sections = [{
           heading: 'Elaborati',
           columns: ['Codice', 'Titolo', 'Rev.', 'WP', 'Emissione', 'Invio', 'Approvazione', 'Cut-off', 'Stato', 'Requisito'],
           rows: rows.map((r) => [
@@ -133,7 +237,22 @@ export async function renderApprovazioniDrawings(container) {
             r.data_limite_approvazione ? `${formatDate(r.data_limite_approvazione)}${r.oltre_cutoff ? ` (+${r.giorni_ritardo_cutoff}gg ritardo)` : ''}` : '—',
             STATO[r.stato][0], r.requisito_wbs || '—',
           ]),
-        }]);
+        }];
+        // Con un solo elaborato selezionato, la stampa include anche la
+        // sua Response Matrix: è il documento da portare in riunione per
+        // mostrare i ritardi altrui punto per punto.
+        if (selectedId && rows.length === 1) {
+          const commentiRes = await api.get(`/drawing-commenti?elaborato_id=${rows[0].id}`);
+          sections.push({
+            heading: 'Response Matrix',
+            columns: ['ID', 'Autore', 'Richiesta', 'Azione intrapresa', 'Stato', 'Change Order', 'Note'],
+            rows: commentiRes.data.map((c, i) => [
+              commentoId(i), c.autore || '—', c.richiesta, c.azione || '—',
+              c.stato === 'chiuso' ? 'Chiuso' : 'Aperto', c.change_order ? 'Sì' : 'No', c.note || '—',
+            ]),
+          });
+        }
+        printReport('Approvazioni Drawings', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), sections);
       } }, 'Stampa'),
       soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => fileInput.click() }, 'Importa da Excel'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo elaborato'),
@@ -167,6 +286,7 @@ export async function renderApprovazioniDrawings(container) {
       {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openMatriceDocument(row, refresh) }, 'Matrice'),
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('approvazioni_drawings', row.id, `${row.codice} — ${row.titolo}`) }, 'Storico'),
           clienteSoloLettura ? null : el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openForm(row, refresh) }, 'Modifica'),
           soloLettura ? null : el('button', {

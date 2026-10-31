@@ -464,6 +464,26 @@ CREATE TABLE IF NOT EXISTS approvazioni_drawings (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Response Matrix: i commenti ricevuti su una revisione di un elaborato
+-- (da Interior Designer, MEP, GC...), uno per riga, con la risposta data
+-- dal subappaltatore e lo stato. change_order segnala un commento che
+-- modifica lo scope concordato (quote, essenze, ferramenta...) invece di
+-- un semplice dettaglio grafico: va congelato in attesa di una variante
+-- economica approvata, non recepito tacitamente nel disegno.
+CREATE TABLE IF NOT EXISTS drawing_commenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    elaborato_id INTEGER NOT NULL REFERENCES approvazioni_drawings(id) ON DELETE CASCADE,
+    autore TEXT,
+    richiesta TEXT NOT NULL,
+    azione TEXT,
+    stato TEXT NOT NULL DEFAULT 'aperto'
+          CHECK(stato IN ('aperto','chiuso')),
+    change_order INTEGER NOT NULL DEFAULT 0,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 -- Storico modifiche: traccia creazione/modifica/chiusura/eliminazione su
 -- criticità, decisioni e allert con l'utente autenticato e un riassunto
 -- testuale di cosa è cambiato — ai fini di tracciabilità D.Lgs. 81/2008.
@@ -507,6 +527,7 @@ CREATE INDEX IF NOT EXISTS idx_maestranze_fornitori_m ON maestranze_fornitori(ma
 CREATE INDEX IF NOT EXISTS idx_atti_contratto ON atti_aggiuntivi(contratto_id);
 CREATE INDEX IF NOT EXISTS idx_categorie_lista ON categorie(lista);
 CREATE INDEX IF NOT EXISTS idx_approvazioni_commessa ON approvazioni_drawings(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_drawing_commenti_elaborato ON drawing_commenti(elaborato_id);
 
 -- Sessioni di login persistite su SQLite invece che in memoria: un
 -- riavvio o un aggiornamento del server non disconnette più tutti gli

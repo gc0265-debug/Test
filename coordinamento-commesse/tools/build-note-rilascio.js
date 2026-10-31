@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.26';
+const VERSIONE_ATTUALE = '1.27';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.26', title: 'Timeline: intestazione corretta, colori più chiari, elimina milestone', date: '31 ottobre 2026', attuale: true,
+    v: '1.27', title: 'Response Matrix su Approvazioni Drawings', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuovo pulsante "Matrice" su ogni elaborato: una Response Matrix che raccoglie i commenti ricevuti su una revisione (da Interior Designer, impiantisti, GC...), uno per riga, con la risposta data e lo stato (Aperto/Chiuso) — invece di lasciarli sparsi fra email e PDF.',
+      'Un commento può essere qualificato come "Change Order": segnala una richiesta che cambia lo scope concordato (quote, essenze, ferramenta, impiantistica) invece di un semplice dettaglio grafico, da congelare in attesa di una variante economica approvata.',
+      'Stampando un singolo elaborato selezionato, la Response Matrix viene inclusa automaticamente nel documento — pronta da portare in riunione di coordinamento con il GC.',
+    ],
+  },
+  {
+    v: '1.26', title: 'Timeline: intestazione corretta, colori più chiari, elimina milestone', date: '31 ottobre 2026',
     points: [
       'Risolto il difetto per cui, con i gruppi Piano espansi, la barra riassuntiva del gruppo finiva nascosta dietro la riga delle settimane: l\'intestazione ora si aggancia correttamente in cima al grafico, senza sovrapposizioni.',
       'Le settimane in intestazione mostrano ora l\'etichetta abbreviata (es. "S44") invece di "Sett. 44", più leggibile quando lo zoom è ridotto.',

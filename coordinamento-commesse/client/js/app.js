@@ -60,7 +60,7 @@ route('capitolato', {
 });
 route('approvazioni-drawings', {
   title: 'Approvazioni Drawings', render: renderApprovazioniDrawings,
-  help: 'Elenco elaborati (drawing) sottoposti ad approvazione, a mano o importati da Excel. Lo stato Emissione (IFA/IFC) segue la disciplina shop drawing — IFA = non valido per fabbricazione, IFC = emesso per costruzione dopo il visto formale — e la Data limite approvazione (cut-off) evidenzia in rosso i ritardi della Direzione Lavori rispetto al programma di consegna.',
+  help: 'Elenco elaborati (drawing) sottoposti ad approvazione, a mano o importati da Excel. Lo stato Emissione (IFA/IFC) segue la disciplina shop drawing — IFA = non valido per fabbricazione, IFC = emesso per costruzione dopo il visto formale — e la Data limite approvazione (cut-off) evidenzia in rosso i ritardi della Direzione Lavori rispetto al programma di consegna. Il pulsante "Matrice" apre la Response Matrix: i commenti ricevuti su una revisione, con la risposta data e un flag "Change Order" per le richieste che cambiano lo scope invece di un dettaglio grafico.',
 });
 route('contratto', {
   title: 'Contratti', render: renderContratto,

@@ -37,6 +37,7 @@ const comunicazioneRouter = require('./routes/comunicazione');
 const categorieRouter = require('./routes/categorie');
 const finanziariaRouter = require('./routes/finanziaria');
 const approvazioniDrawingsRouter = require('./routes/approvazioniDrawings');
+const drawingCommentiRouter = require('./routes/drawingCommenti');
 const misureRouter = require('./routes/misure');
 
 // Il secret firma i cookie di sessione: deve restare lo stesso tra un
@@ -109,6 +110,7 @@ app.use('/api/comunicazione', requireAuth, blockWriteForCliente, requireSection(
 app.use('/api/categorie', requireAuth, blockWriteForCliente, categorieRouter);
 app.use('/api/finanziaria', requireAuth, requireAdmin, finanziariaRouter);
 app.use('/api/approvazioni-drawings', requireAuth, blockWriteForCliente, requireSection('approvazioni-drawings'), approvazioniDrawingsRouter);
+app.use('/api/drawing-commenti', requireAuth, blockWriteForCliente, requireSection('approvazioni-drawings'), drawingCommentiRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));
