@@ -28,13 +28,22 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.33';
+const VERSIONE_ATTUALE = '1.34';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.33', title: 'Documenti: scrivere un Word direttamente in app', date: '31 ottobre 2026', attuale: true,
+    v: '1.34', title: 'Nuova scheda Report: configurabili, in PDF/Word/Excel', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuova voce "Report" in sidebar, sotto Commessa: si configura un report scegliendo quali sezioni includere (Criticità, Decisioni, Lavorazioni, SAL, Timeline, Approvazioni Drawings, Response Matrix, Requisiti, Contratti, Stakeholder, Lezioni Apprese...), con filtro opzionale per Work Package e per periodo.',
+      'Ogni report salvato si scarica in un click in PDF, Word o Excel — tre formati, stessi dati, sempre coerenti fra loro.',
+      'Pulsante "Email" per inviarlo come allegato (uno o più formati insieme) a uno o più indirizzi, usando lo stesso server SMTP già configurato per le notifiche di scadenza (file .env).',
+      'Pensato per sostituire gli export ricostruiti a mano ogni volta: una volta configurato, un report si rigenera sempre aggiornato con i dati correnti, senza rifare la selezione.',
+    ],
+  },
+  {
+    v: '1.33', title: 'Documenti: scrivere un Word direttamente in app', date: '31 ottobre 2026',
     points: [
       'Nuovo pulsante "+ Scrivi documento Word" in Documenti: un editor di testo con titoli, grassetto/corsivo/sottolineato, elenchi puntati e numerati, citazioni — niente di più di quanto serve a una nota o un verbale, ma abbastanza per scriverlo senza uscire dall\'app.',
       'Il documento scritto qui è un vero file .docx: si scarica e si apre normalmente in Word, esattamente come un documento caricato da file.',

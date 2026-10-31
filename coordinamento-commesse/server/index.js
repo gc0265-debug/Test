@@ -41,6 +41,7 @@ const finanziariaRouter = require('./routes/finanziaria');
 const approvazioniDrawingsRouter = require('./routes/approvazioniDrawings');
 const drawingCommentiRouter = require('./routes/drawingCommenti');
 const misureRouter = require('./routes/misure');
+const reportConfigRouter = require('./routes/reportConfig');
 
 // Il secret firma i cookie di sessione: deve restare lo stesso tra un
 // riavvio e l'altro, altrimenti ogni riavvio invaliderebbe tutte le
@@ -104,6 +105,7 @@ app.use('/api/audit', requireAuth, blockWriteForCliente, auditRouter);
 app.use('/api/export', requireAuth, blockWriteForCliente, exportRouter);
 app.use('/api/milestone', requireAuth, blockWriteForCliente, requireSection('timeline'), milestoneRouter);
 app.use('/api/lezioni-apprese', requireAuth, blockWriteForCliente, requireSection('lezioni'), lezioniApprese);
+app.use('/api/report-config', requireAuth, blockWriteForCliente, requireSection('report'), reportConfigRouter);
 app.use('/api/requisiti', requireAuth, blockWriteForCliente, requireSection('requisiti', 'capitolato'), requisitiRouter);
 app.use('/api/capitolato', requireAuth, blockWriteForCliente, requireSection('capitolato'), capitolatoRouter);
 app.use('/api/contratti', requireAuth, blockWriteForCliente, requireSection('contratto'), contrattiRouter);

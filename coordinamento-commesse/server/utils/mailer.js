@@ -22,7 +22,7 @@ function configurato() {
   return !!getTransporter();
 }
 
-async function inviaEmail({ to, subject, html, text }) {
+async function inviaEmail({ to, subject, html, text, attachments }) {
   const t = getTransporter();
   if (!t) {
     const err = new Error('SMTP non configurato sul server: imposta SMTP_HOST, SMTP_USER e SMTP_PASS nel file .env (vedi .env.example).');
@@ -31,7 +31,7 @@ async function inviaEmail({ to, subject, html, text }) {
   }
   const from = process.env.SMTP_FROM || process.env.SMTP_USER;
   const destinatari = Array.isArray(to) ? to.join(', ') : to;
-  await t.sendMail({ from, to: destinatari, subject, html, text });
+  await t.sendMail({ from, to: destinatari, subject, html, text, attachments });
 }
 
 module.exports = { configurato, inviaEmail };

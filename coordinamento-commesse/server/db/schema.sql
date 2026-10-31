@@ -555,3 +555,21 @@ CREATE TABLE IF NOT EXISTS notifiche_inviate (
     UNIQUE(commessa_id, tipo, chiave, giorno)
 );
 CREATE INDEX IF NOT EXISTS idx_notifiche_inviate_commessa ON notifiche_inviate(commessa_id);
+
+-- Report configurabili: una selezione salvata di sezioni (registri) con
+-- filtri opzionali (Work Package, periodo), da rigenerare in PDF/Word/
+-- Excel o inviare via email ogni volta che serve, invece di ricostruire
+-- a mano lo stesso export. Vedi server/utils/reportSezioni.js per le
+-- sezioni disponibili e server/utils/reportFile.js per i tre formati.
+CREATE TABLE IF NOT EXISTS report_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    sezioni TEXT NOT NULL,                     -- JSON array di chiavi sezione
+    wp_id INTEGER REFERENCES work_packages(id) ON DELETE SET NULL,
+    periodo_da TEXT,
+    periodo_a TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+CREATE INDEX IF NOT EXISTS idx_report_config_commessa ON report_config(commessa_id);

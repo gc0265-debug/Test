@@ -21,6 +21,7 @@ import { renderLavorazioni } from './pages/lavorazioni.js';
 import { renderSal } from './pages/sal.js';
 import { renderMaestranze } from './pages/maestranze.js';
 import { renderDocumenti } from './pages/documenti.js';
+import { renderReport } from './pages/report.js';
 import { renderCommesse } from './pages/commesse.js';
 import { renderUtenti } from './pages/utenti.js';
 import { renderImpostazioni } from './pages/impostazioni.js';
@@ -97,6 +98,10 @@ route('maestranze', {
 route('documenti', {
   title: 'Documenti', render: renderDocumenti,
   help: 'Un documento può avere un link esterno e/o un file caricato dal browser — in aggiunta, non in alternativa: una riga può avere entrambi, uno solo, o nessuno.',
+});
+route('report', {
+  title: 'Report', render: renderReport,
+  help: 'Configura report salvati che aggregano una o più sezioni (Criticità, Decisioni, Lavorazioni, Timeline...), filtrabili per Work Package e periodo. Ogni report si può scaricare in PDF, Word o Excel, o inviare via email in allegato.',
 });
 route('commesse', {
   title: 'Commesse', render: renderCommesse,

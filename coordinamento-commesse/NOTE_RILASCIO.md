@@ -16,6 +16,24 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Nuova scheda Report: configurabili, in PDF/Word/Excel (31 ottobre 2026)
+
+- Nuova voce **"Report"** in sidebar, sotto Commessa: si configura un
+  report scegliendo quali sezioni includere (Criticità, Decisioni,
+  Lavorazioni, SAL, Timeline, Approvazioni Drawings, Response Matrix,
+  Requisiti, Contratti, Stakeholder, Lezioni Apprese...), con filtro
+  opzionale per Work Package e per periodo.
+- Ogni report salvato si scarica in un click in **PDF, Word o Excel** —
+  tre formati, stessi dati, sempre coerenti fra loro.
+- Pulsante **"Email"** per inviarlo come allegato (uno o più formati
+  insieme) a uno o più indirizzi, usando lo stesso server SMTP già
+  configurato per le notifiche di scadenza (file `.env`).
+- Pensato per sostituire gli export ricostruiti a mano ogni volta: una
+  volta configurato, un report si rigenera sempre aggiornato con i dati
+  correnti, senza rifare la selezione.
+
+---
+
 ## Documenti: scrivere un Word direttamente in app (31 ottobre 2026)
 
 - Nuovo pulsante **"+ Scrivi documento Word"** in Documenti: un editor di
