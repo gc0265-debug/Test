@@ -1,9 +1,19 @@
 const express = require('express');
 const db = require('../db/database');
-const { logAudit } = require('../utils/audit');
+const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
+
+const TRACKED = [
+  { key: 'nome', label: 'Nome' },
+  { key: 'organizzazione', label: 'Organizzazione' },
+  { key: 'ruolo', label: 'Ruolo' },
+  { key: 'categoria', label: 'Categoria' },
+  { key: 'interesse', label: 'Interesse' },
+  { key: 'influenza', label: 'Influenza' },
+  { key: 'stato', label: 'Stato' },
+];
 
 router.get('/', (req, res) => {
   const { categoria, stato } = req.query;
@@ -48,7 +58,8 @@ router.put('/:id', (req, res) => {
     next.email || null, next.telefono || null, next.stato, next.note || null, req.params.id
   );
   const row = db.prepare('SELECT * FROM stakeholder WHERE id = ?').get(req.params.id);
-  logAudit({ commessa_id: row.commessa_id, entity_type: 'stakeholder', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: 'aggiornato' });
+  const dettaglio = diffFields(existing, next, TRACKED);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'stakeholder', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornato' });
   res.json(row);
 });
 

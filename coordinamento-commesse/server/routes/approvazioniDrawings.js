@@ -12,11 +12,20 @@ const express = require('express');
 const multer = require('multer');
 const ExcelJS = require('exceljs');
 const db = require('../db/database');
-const { logAudit } = require('../utils/audit');
+const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+const TRACKED = [
+  { key: 'codice', label: 'Codice' },
+  { key: 'titolo', label: 'Titolo' },
+  { key: 'revisione', label: 'Revisione' },
+  { key: 'stato', label: 'Stato' },
+  { key: 'data_invio', label: 'Data invio' },
+  { key: 'data_approvazione', label: 'Data approvazione' },
+];
 
 const STATI_VALIDI = ['in-attesa', 'approvato', 'approvato-con-riserve', 'rigettato'];
 function normalizzaStato(v) {
@@ -191,7 +200,8 @@ router.put('/:id', (req, res) => {
     next.data_approvazione || null, next.stato, next.rif_requisito_id || null, next.note || null, req.params.id
   );
   const row = db.prepare('SELECT * FROM approvazioni_drawings WHERE id = ?').get(req.params.id);
-  logAudit({ commessa_id: row.commessa_id, entity_type: 'approvazioni_drawings', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: `${row.codice} — ${row.titolo}` });
+  const dettaglio = diffFields(existing, next, TRACKED);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'approvazioni_drawings', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornato' });
   res.json(row);
 });
 

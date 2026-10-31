@@ -5,10 +5,16 @@
 
 const express = require('express');
 const db = require('../db/database');
-const { logAudit } = require('../utils/audit');
+const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 
 const router = express.Router();
+
+const TRACKED = [
+  { key: 'codice_wbs', label: 'Codice WBS' },
+  { key: 'titolo', label: 'Titolo' },
+  { key: 'data', label: 'Data' },
+];
 
 router.get('/', (req, res) => {
   let sql = `
@@ -48,7 +54,8 @@ router.put('/:id', (req, res) => {
     UPDATE capitolato_voci SET codice_wbs=?, titolo=?, data=?, contratto_id=?, descrizione=?, note=?, updated_at=unixepoch() WHERE id=?
   `).run(next.codice_wbs, next.titolo, next.data || null, next.contratto_id || null, next.descrizione || null, next.note || null, req.params.id);
   const row = db.prepare('SELECT * FROM capitolato_voci WHERE id = ?').get(req.params.id);
-  logAudit({ commessa_id: row.commessa_id, entity_type: 'capitolato_voci', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: 'aggiornata' });
+  const dettaglio = diffFields(existing, next, TRACKED);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'capitolato_voci', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornata' });
   res.json(row);
 });
 

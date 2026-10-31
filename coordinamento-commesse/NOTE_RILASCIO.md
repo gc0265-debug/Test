@@ -16,6 +16,21 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Storico con dettaglio delle modifiche, Dashboard Finanziaria per fornitore (31 ottobre 2026)
+
+- Lo storico di **Approvazioni Drawings**, **Capitolato Requisiti** e
+  **Registro Stakeholder** mostra ora esattamente cosa è cambiato ad
+  ogni modifica (es. "Stato: In attesa → Approvato"), come già
+  avveniva per Criticità, Decisioni e Allert — prima si vedeva solo
+  che una modifica era avvenuta, non il dettaglio.
+- **Dashboard Finanziaria**: aggiunta una nuova tabella "Contratti
+  fornitori" con ogni singolo contratto registrato, su tutte le
+  commesse — fornitore, stato, data di stipula, valore e atti
+  aggiuntivi già sommati — accanto al riepilogo già esistente per
+  commessa.
+
+---
+
 ## Maestranze: nome scelto dal Registro Stakeholder (31 ottobre 2026)
 
 - Nella scheda Maestranze, il campo "Nome" è ora un menu a tendina che

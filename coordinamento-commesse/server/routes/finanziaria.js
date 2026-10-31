@@ -50,7 +50,22 @@ router.get('/', (req, res) => {
     valore_totale: acc.valore_totale + c.valore_totale,
   }), { n_commesse: 0, n_contratti: 0, n_atti: 0, valore_contratti: 0, valore_atti: 0, valore_totale: 0 });
 
-  res.json({ commesse, totali });
+  // Elenco piatto dei singoli contratti fornitori, su tutte le commesse,
+  // con gli atti aggiuntivi già aggregati per contratto — per dare un
+  // dettaglio "per fornitore", non solo il riepilogo per commessa sopra.
+  const contratti = db.prepare(`
+    SELECT c.id, c.commessa_id, cm.codice AS commessa_codice, cm.nome AS commessa_nome,
+           c.titolo, c.controparte, c.stato, c.data_stipula,
+           COALESCE(c.valore, 0) AS valore_contratto,
+           COUNT(a.id) AS n_atti, COALESCE(SUM(a.valore), 0) AS valore_atti
+    FROM contratti c
+    LEFT JOIN commesse cm ON c.commessa_id = cm.id
+    LEFT JOIN atti_aggiuntivi a ON a.contratto_id = c.id
+    GROUP BY c.id
+    ORDER BY cm.codice ASC, c.titolo ASC
+  `).all().map((r) => ({ ...r, valore_totale: r.valore_contratto + r.valore_atti }));
+
+  res.json({ commesse, totali, contratti });
 });
 
 module.exports = router;
