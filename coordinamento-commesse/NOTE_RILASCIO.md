@@ -16,6 +16,24 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Lezioni Apprese: generazione automatica dai registri (31 ottobre 2026)
+
+- Nuovo pulsante **"+ Genera da registri"** in Lezioni Apprese: propone una
+  bozza di lezione per ogni criticità chiusa, decisione presa e allert
+  chiuso non ancora collegato a una lezione esistente, con titolo, Work
+  Package, data e collegamento all'origine già precompilati.
+- Ogni proposta si può accettare o scartare singolarmente, con la
+  categoria scelta al volo prima di generarla: nessuna lezione viene
+  creata senza conferma.
+- "Cosa abbiamo imparato" e "Azione per il futuro" restano volutamente da
+  scrivere dopo, voce per voce: l'automatismo raccoglie la materia prima
+  dai registri, non inventa la lezione al posto del Direttore di Cantiere.
+- Una volta generata, una lezione non viene mai riproposta una seconda
+  volta: il generatore ignora le criticità, decisioni e allert già
+  collegati a una lezione esistente.
+
+---
+
 ## Guida in linea su ogni campo di ogni maschera (31 ottobre 2026)
 
 - Tutti i campi di inserimento dati di tutti i registri — circa 200 in

@@ -28,13 +28,22 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.28';
+const VERSIONE_ATTUALE = '1.29';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.28', title: 'Guida in linea su ogni campo di ogni maschera', date: '31 ottobre 2026', attuale: true,
+    v: '1.29', title: 'Lezioni Apprese: generazione automatica dai registri', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuovo pulsante "+ Genera da registri" in Lezioni Apprese: propone una bozza di lezione per ogni criticità chiusa, decisione presa e allert chiuso non ancora collegato a una lezione esistente, con titolo, Work Package, data e collegamento all\'origine già precompilati.',
+      'Ogni proposta si può accettare o scartare singolarmente, con la categoria scelta al volo prima di generarla: nessuna lezione viene creata senza conferma.',
+      '"Cosa abbiamo imparato" e "Azione per il futuro" restano volutamente da scrivere dopo, voce per voce: l\'automatismo raccoglie la materia prima dai registri, non inventa la lezione al posto del Direttore di Cantiere.',
+      'Una volta generata, una lezione non viene mai riproposta una seconda volta: il generatore ignora le criticità, decisioni e allert già collegati a una lezione esistente.',
+    ],
+  },
+  {
+    v: '1.28', title: 'Guida in linea su ogni campo di ogni maschera', date: '31 ottobre 2026',
     points: [
       'Tutti i campi di inserimento dati di tutti i registri — circa 200 in totale — hanno ora una riga di spiegazione sotto l\'etichetta: cosa significa il campo e, dove serve, come usarlo.',
       'Non sostituisce il "?" già introdotto accanto al titolo di ogni scheda: quello spiega la pagina nel suo insieme, questo entra nel dettaglio di ogni singolo campo mentre si compila una maschera.',

@@ -74,6 +74,105 @@ async function openForm(existing, onSaved) {
   openModal(existing ? 'Modifica lezione appresa' : 'Nuova lezione appresa', form);
 }
 
+const TIPO_LABEL = { criticita: 'Criticità', decisione: 'Decisione', allert: 'Allert' };
+
+async function openGeneratore(onSaved) {
+  const [criticitaRes, decisioniRes, allertRes, lezioniRes, wpRes] = await Promise.all([
+    api.get(`/criticita?commessa_id=${state.commessaId}`),
+    api.get(`/decisioni?commessa_id=${state.commessaId}`),
+    api.get(`/allert?commessa_id=${state.commessaId}`),
+    api.get(`/lezioni-apprese?commessa_id=${state.commessaId}`),
+    api.get(`/commesse/${state.commessaId}/wp`),
+  ]);
+  const wpMap = Object.fromEntries(wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`]));
+  const linked = {
+    criticita: new Set(lezioniRes.data.map((l) => l.rif_criticita_id).filter(Boolean)),
+    decisione: new Set(lezioniRes.data.map((l) => l.rif_decisione_id).filter(Boolean)),
+    allert: new Set(lezioniRes.data.map((l) => l.rif_allert_id).filter(Boolean)),
+  };
+  const troncaTitolo = (t) => (t && t.length > 90 ? `${t.slice(0, 87)}…` : t);
+
+  const candidati = [
+    ...criticitaRes.data.filter((c) => c.stato === 'chiusa' && !linked.criticita.has(c.id)).map((c) => ({
+      tipo: 'criticita', origineId: c.id, titolo: troncaTitolo(c.tema),
+      dettaglio: c.cosa_serve || c.impatto_programma || '', data: c.data_apertura, wp_id: c.wp_id,
+    })),
+    ...decisioniRes.data.filter((d) => d.stato === 'decisa' && !linked.decisione.has(d.id)).map((d) => ({
+      tipo: 'decisione', origineId: d.id, titolo: troncaTitolo(d.tema),
+      dettaglio: d.domanda_chiusa || d.impatto_se_non_decisa || '', data: d.data_prima_richiesta, wp_id: d.wp_id,
+    })),
+    ...allertRes.data.filter((a) => a.stato === 'chiuso' && !linked.allert.has(a.id)).map((a) => ({
+      tipo: 'allert', origineId: a.id, titolo: troncaTitolo(a.descrizione),
+      dettaglio: a.descrizione, data: a.data, wp_id: a.wp_id,
+    })),
+  ];
+
+  if (!candidati.length) {
+    openModal('Genera lezioni apprese dai registri', el('div', {}, [
+      el('p', {}, 'Nessun elemento nuovo da proporre: le criticità chiuse, le decisioni prese e gli allert chiusi sono già tutti collegati a una lezione, oppure non ce ne sono ancora.'),
+      el('div', { class: 'modal__actions' }, [el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Chiudi')]),
+    ]));
+    return;
+  }
+
+  const righe = new Map();
+  const list = el('div', { class: 'checkbox-list', style: 'max-height:380px;overflow:auto' }, candidati.map((cand) => {
+    const checkbox = el('input', { type: 'checkbox', checked: true });
+    const catSelect = select(`cat_${cand.tipo}_${cand.origineId}`, Object.entries(CATEGORIA).map(([k, v]) => [k, v]), 'generale');
+    catSelect.style.marginLeft = 'auto';
+    righe.set(cand, { checkbox, catSelect });
+    return el('label', { class: 'checkbox-list__item', style: 'align-items:flex-start;gap:10px' }, [
+      checkbox,
+      el('div', { style: 'flex:1;min-width:0' }, [
+        el('div', {}, [
+          el('b', {}, `${TIPO_LABEL[cand.tipo]}`),
+          cand.wp_id && wpMap[cand.wp_id] ? el('span', { class: 'muted' }, ` · ${wpMap[cand.wp_id]}`) : null,
+          ' — ', cand.titolo,
+        ]),
+        cand.dettaglio ? el('div', { class: 'muted', style: 'font-size:12px;margin-top:2px' }, cand.dettaglio) : null,
+      ]),
+      catSelect,
+    ]);
+  }));
+
+  const body = el('div', {}, [
+    el('p', { class: 'muted', style: 'margin:-4px 0 12px' },
+      'Una bozza di lezione per ogni criticità chiusa, decisione presa e allert chiuso non ancora collegato a una lezione. Titolo e collegamento all\'origine sono precompilati; "Cosa abbiamo imparato" e "Azione per il futuro" restano da scrivere dopo, voce per voce, aprendo ciascuna lezione creata.'),
+    list,
+    el('div', { class: 'modal__actions' }, [
+      el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
+      el('button', { type: 'button', class: 'btn btn--primary', onclick: async (e) => {
+        const selezionati = candidati.filter((c) => righe.get(c).checkbox.checked);
+        if (!selezionati.length) { toast('Seleziona almeno un elemento.', { error: true }); return; }
+        e.target.disabled = true;
+        try {
+          for (const c of selezionati) {
+            const { catSelect } = righe.get(c);
+            await api.post('/lezioni-apprese', {
+              commessa_id: state.commessaId,
+              wp_id: c.wp_id || null,
+              data: c.data || todayISO(),
+              titolo: c.titolo,
+              cosa_e_successo: c.dettaglio || null,
+              categoria: catSelect.value,
+              rif_criticita_id: c.tipo === 'criticita' ? c.origineId : null,
+              rif_decisione_id: c.tipo === 'decisione' ? c.origineId : null,
+              rif_allert_id: c.tipo === 'allert' ? c.origineId : null,
+            });
+          }
+          closeModal();
+          toast(`${selezionati.length} ${selezionati.length === 1 ? 'lezione generata' : 'lezioni generate'} dai registri.`);
+          onSaved();
+        } catch (err) {
+          toast(err.message, { error: true });
+          e.target.disabled = false;
+        }
+      } }, 'Genera selezionate'),
+    ]),
+  ]);
+  openModal('Genera lezioni apprese dai registri', body);
+}
+
 function openDettaglio(l, numero, onSaved, soloLettura) {
   const collegata = l.criticita_tema || l.decisione_tema || l.allert_descrizione;
   const azioni = [
@@ -120,6 +219,7 @@ export async function renderLezioniApprese(container) {
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
+      soloLettura ? null : el('button', { class: 'btn', onclick: () => openGeneratore(refresh) }, '+ Genera da registri'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lezione'),
       settingsGear(),
     ]),
