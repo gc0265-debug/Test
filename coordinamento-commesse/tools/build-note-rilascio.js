@@ -28,13 +28,20 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.22';
+const VERSIONE_ATTUALE = '1.23';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.22', title: 'Registro Decisioni: raggruppamento per WP e filtri rapidi', date: '31 ottobre 2026', attuale: true,
+    v: '1.23', title: 'Stampa Lavorazioni con grafici, Maestranze sotto Stakeholder', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'La stampa di Lavorazioni ("Stato avanzamento dei montaggi") ora include anche i due grafici per stato (barre e torta) e un breve testo introduttivo pensato per la condivisione esterna con il cliente.',
+      'La voce Maestranze in menu è stata spostata dal gruppo Commessa al gruppo Stakeholder, insieme al Registro Stakeholder e al Piano Comunicazioni.',
+    ],
+  },
+  {
+    v: '1.22', title: 'Registro Decisioni: raggruppamento per WP e filtri rapidi', date: '31 ottobre 2026',
     points: [
       'Nuova riga di filtri a tendina sopra la tabella del Registro Decisioni: per Work Package, per stato (Pendenti / Decise) e per urgenza (solo le decisioni oltre 21 giorni di anzianità), combinabili tra loro.',
       'Nuovo interruttore "Raggruppa per WP": attivandolo, la tabella viene divisa in un blocco separato per ciascun Work Package (con un blocco "Senza WP" per le decisioni non ancora assegnate a un WP), sullo stesso modello già usato in Capitolato Requisiti per il raggruppamento per contratto.',

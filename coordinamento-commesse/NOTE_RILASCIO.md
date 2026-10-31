@@ -16,6 +16,17 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Stampa Lavorazioni con grafici, Maestranze sotto Stakeholder (31 ottobre 2026)
+
+- La stampa di Lavorazioni ("Stato avanzamento dei montaggi") ora include
+  anche i due grafici per stato (barre e torta) e un breve testo
+  introduttivo pensato per la condivisione esterna con il cliente.
+- La voce **Maestranze** in menu è stata spostata dal gruppo Commessa al
+  gruppo Stakeholder, insieme al Registro Stakeholder e al Piano
+  Comunicazioni.
+
+---
+
 ## Registro Decisioni: raggruppamento per WP e filtri rapidi (31 ottobre 2026)
 
 - Nuova riga di filtri a tendina sopra la tabella del Registro Decisioni:

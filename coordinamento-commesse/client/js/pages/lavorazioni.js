@@ -8,10 +8,13 @@ import {
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
-import { barChart, pieChart } from '../components/charts.js';
+import { barChart, pieChart, barChartHtml, pieChartHtml } from '../components/charts.js';
 import { getCategoria, mergeLabels } from '../components/categorie.js';
 
 const STATO_FIXED = { 'da-fare': ['Da fare', 'outline', 'var(--ink-3)'], 'in-corso': ['In corso', 'ambra', 'var(--ambra)'], completata: ['Completata', 'verde', 'var(--verde)'], bloccata: ['Bloccata', 'rosso', 'var(--red)'] };
+// Stessi colori di STATO_FIXED, ma come esadecimale: la finestra di
+// stampa non carica il CSS dell'app, quindi i var(--...) non risolverebbero.
+const STATO_COLOR_PRINT = { 'var(--ink-3)': '#8A8A8A', 'var(--ambra)': '#A8761E', 'var(--verde)': '#2E7D5B', 'var(--red)': '#C0332B' };
 const PRIORITA_FIXED = { alta: ['Alta', 'rosso'], media: ['Media', 'ambra'], bassa: ['Bassa', 'outline'] };
 let STATO = STATO_FIXED;
 let PRIORITA = PRIORITA_FIXED;
@@ -230,11 +233,39 @@ async function openForm(existing, onSaved) {
   openModal(existing ? 'Modifica lavorazione' : 'Nuova lavorazione', form);
 }
 
-function renderCharts(rows) {
+function statoItems(rows) {
   const counts = { 'da-fare': 0, 'in-corso': 0, completata: 0, bloccata: 0 };
   rows.forEach((r) => { counts[r.stato] = (counts[r.stato] || 0) + 1; });
-  const items = Object.entries(STATO).map(([k, v]) => ({ label: v[0], value: counts[k], color: v[2] }));
+  return Object.entries(STATO).map(([k, v]) => ({ label: v[0], value: counts[k], color: v[2] }));
+}
 
+// Stessi due grafici mostrati a schermo, in HTML per la finestra di
+// stampa: stessa disposizione (barre a sinistra, torta con legenda a
+// destra), colori esadecimali al posto dei var(--...) dell'app.
+function chartsPrintHtml(rows) {
+  const items = statoItems(rows).map((it) => ({ ...it, color: STATO_COLOR_PRINT[it.color] || it.color }));
+  const legend = items.map((it) => `
+    <div class="chart-legend-item"><span class="chart-legend-dot" style="background:${it.color}"></span>${it.label}: ${it.value}</div>
+  `).join('');
+  return `
+    <div class="charts-row">
+      <div class="chart-box">
+        <div class="chart-box__title">Lavorazioni per stato (%)</div>
+        ${barChartHtml(items, { width: 320 })}
+      </div>
+      <div class="chart-box">
+        <div class="chart-box__title">Lavorazioni per stato (valori)</div>
+        <div class="chart-pie-wrap">
+          ${pieChartHtml(items, { size: 130 })}
+          <div class="chart-legend">${legend}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCharts(rows) {
+  const items = statoItems(rows);
   return el('div', { class: 'charts-row' }, [
     el('div', { class: 'chart-box' }, [
       el('div', { class: 'chart-box__title' }, 'Lavorazioni per stato (%)'),
@@ -275,11 +306,14 @@ export async function renderLavorazioni(container) {
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
-        printReport('Lavorazioni', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
+        printReport('Stato avanzamento dei montaggi', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
           heading: 'Lavorazioni',
           columns: ['Titolo', 'WP', 'Piano/Zona', 'Stato', 'Priorità', 'Inizio', 'Fine', 'Impresa'],
           rows: rows.map((r) => [r.titolo, r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—', [r.piano, r.zona].filter(Boolean).join(' · ') || '—', STATO[r.stato][0], PRIORITA[r.priorita][0], formatDate(r.data_inizio), formatDate(r.data_fine), r.contratto_controparte || r.impresa || '—']),
-        }]);
+        }], {
+          intro: 'Si condivide lo stato avanzamento dei montaggi Gili Creations per vostra opportuna informazione.',
+          chartsHtml: chartsPrintHtml(lastRows),
+        });
       } }, 'Stampa'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lavorazione'),
       settingsGear(),
