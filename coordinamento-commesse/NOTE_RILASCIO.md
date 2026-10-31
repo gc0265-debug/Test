@@ -16,6 +16,27 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Contratti: controparte dal Registro Stakeholder, collegamento a più voci di Capitolato (31 ottobre 2026)
+
+- Nella scheda Contratto, il campo "Controparte" è ora un menu a
+  tendina che pesca dal Registro Stakeholder della commessa, invece di
+  un testo libero — coerente con quanto già fatto per "Impresa" in
+  Lavorazioni e per i fornitori in Maestranze.
+- Un contratto può ora essere collegato a **più voci di Capitolato
+  Requisiti insieme**, tramite una selezione multipla nella scheda di
+  modifica: non più una sola voce come prima.
+- Ogni voce di capitolato resta collegata a un solo contratto alla
+  volta: selezionandola su un contratto diverso, viene spostata da
+  quello precedente — lo stesso vincolo già in vigore nella scheda
+  Capitolato Requisiti, qui gestito per più voci in un solo
+  salvataggio.
+- La card di ogni contratto mostra ora l'elenco delle voci di
+  capitolato collegate. Il vecchio campo "Riferimento capitolato"
+  resta disponibile come nota libera separata, per non perdere quanto
+  già scritto in precedenza.
+
+---
+
 ## Menu laterale fisso durante lo scorrimento (30 ottobre 2026)
 
 - Corretto un refuso nel foglio di stile che annullava l'effetto

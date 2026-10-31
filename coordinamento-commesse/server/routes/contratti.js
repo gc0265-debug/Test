@@ -121,6 +121,31 @@ router.put('/:id', upload.single('file'), (req, res) => {
   res.json(row);
 });
 
+// Collega questo contratto a più voci di Capitolato Requisiti insieme:
+// scollega tutte le voci attualmente puntate (contratto_id=this) e
+// ricollega solo quelle passate in voce_ids, filtrando per sicurezza
+// sulla stessa commessa del contratto. Una voce resta collegabile a un
+// solo contratto alla volta (lo stesso vincolo già usato dalla scheda
+// Capitolato Requisiti), qui lo gestiamo per l'intero gruppo in un colpo.
+router.put('/:id/capitolato-voci', (req, res) => {
+  const contratto = db.prepare('SELECT * FROM contratti WHERE id = ?').get(req.params.id);
+  if (!contratto) return res.status(404).json({ error: 'contratto non trovato' });
+  const voceIds = Array.isArray(req.body.voce_ids) ? req.body.voce_ids.map(Number).filter(Number.isFinite) : [];
+
+  db.transaction(() => {
+    db.prepare('UPDATE capitolato_voci SET contratto_id = NULL, updated_at = unixepoch() WHERE contratto_id = ?').run(contratto.id);
+    if (voceIds.length) {
+      const placeholders = voceIds.map(() => '?').join(',');
+      db.prepare(`UPDATE capitolato_voci SET contratto_id = ?, updated_at = unixepoch() WHERE id IN (${placeholders}) AND commessa_id = ?`)
+        .run(contratto.id, ...voceIds, contratto.commessa_id);
+    }
+  })();
+
+  const voci = db.prepare('SELECT id, codice_wbs, titolo FROM capitolato_voci WHERE contratto_id = ? ORDER BY codice_wbs ASC').all(contratto.id);
+  logAudit({ commessa_id: contratto.commessa_id, entity_type: 'contratti', entity_id: contratto.id, azione: 'modificata', utente: req.user?.nome, dettaglio: 'voci di capitolato collegate aggiornate' });
+  res.json({ voci });
+});
+
 // ---- atti aggiuntivi: varianti/integrazioni economiche al contratto ----
 router.get('/:id/atti', (req, res) => {
   const rows = db.prepare('SELECT * FROM atti_aggiuntivi WHERE contratto_id = ? ORDER BY data ASC, id ASC').all(req.params.id);

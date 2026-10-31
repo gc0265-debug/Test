@@ -21,6 +21,7 @@ router.get('/', (req, res) => {
   `;
   const params = [];
   sql = applicaFiltroCommessa(sql, params, req.query, 'c.commessa_id');
+  if (req.query.contratto_id) { sql += ' AND c.contratto_id = ?'; params.push(req.query.contratto_id); }
   sql += ' ORDER BY c.codice_wbs ASC';
   res.json({ data: db.prepare(sql).all(...params), total: 0 });
 });

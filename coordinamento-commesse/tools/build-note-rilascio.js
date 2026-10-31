@@ -28,13 +28,22 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.15';
-const DATA_ATTUALE = '30 ottobre 2026';
+const VERSIONE_ATTUALE = '1.16';
+const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.15', title: 'Menu laterale fisso durante lo scorrimento', date: '30 ottobre 2026', attuale: true,
+    v: '1.16', title: 'Contratti: controparte dal Registro Stakeholder, collegamento a più voci di Capitolato', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nella scheda Contratto, il campo "Controparte" è ora un menu a tendina che pesca dal Registro Stakeholder della commessa, invece di un testo libero — coerente con quanto già fatto per "Impresa" in Lavorazioni e per i fornitori in Maestranze.',
+      'Un contratto può ora essere collegato a più voci di Capitolato Requisiti insieme, tramite una selezione multipla nella scheda di modifica: non più una sola voce come prima.',
+      'Ogni voce di capitolato resta collegata a un solo contratto alla volta: selezionandola su un contratto diverso, viene spostata da quello precedente — lo stesso vincolo già in vigore nella scheda Capitolato Requisiti, qui gestito per più voci in un solo salvataggio.',
+      'La card di ogni contratto mostra ora l\'elenco delle voci di capitolato collegate. Il vecchio campo "Riferimento capitolato" resta disponibile come nota libera separata, per non perdere quanto già scritto in precedenza.',
+    ],
+  },
+  {
+    v: '1.15', title: 'Menu laterale fisso durante lo scorrimento', date: '30 ottobre 2026',
     points: [
       'Corretto un refuso nel foglio di stile che annullava l\'effetto "fisso" del menu a sinistra: scorrendo una pagina lunga (es. un elenco con molte righe), il menu ora resta sempre visibile e nella stessa posizione, invece di scorrere via insieme al contenuto.',
     ],

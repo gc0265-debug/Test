@@ -54,7 +54,22 @@ function openAttoForm(contrattoId, existing, onSaved) {
   openModal(existing ? 'Modifica atto aggiuntivo' : 'Nuovo atto aggiuntivo', form);
 }
 
-function openForm(existing, onSaved) {
+async function openForm(existing, onSaved) {
+  // In vista aggregata di gruppo il contratto può appartenere a una
+  // commessa diversa da quella (eventuale) selezionata in sidebar.
+  const commessaIdForm = existing?.commessa_id ?? state.commessaId;
+  const [stakeholderRes, capitolatoRes] = await Promise.all([
+    api.get(`/stakeholder?commessa_id=${commessaIdForm}`),
+    api.get(`/capitolato?commessa_id=${commessaIdForm}`),
+  ]);
+  const stakeholderAttivi = stakeholderRes.data.filter((s) => s.stato === 'attivo');
+  const controparteOptions = [['', '—'], ...stakeholderAttivi.map((s) => [s.nome, s.nome])];
+  if (existing?.controparte && !controparteOptions.some(([v]) => v === existing.controparte)) {
+    controparteOptions.push([existing.controparte, `${existing.controparte} (non più nel Registro Stakeholder)`]);
+  }
+  const vociCapitolato = capitolatoRes.data;
+  const vociSelezionate = new Set(vociCapitolato.filter((v) => v.contratto_id === existing?.id).map((v) => v.id));
+
   const form = el('form', {});
   if (existing) {
     const commessaOptions = state.commesse.map((c) => [c.id, `${c.codice} — ${c.nome}`]);
@@ -62,12 +77,33 @@ function openForm(existing, onSaved) {
       'Sposta il contratto su un\'altra commessa se è stato registrato per errore su quella sbagliata.'));
   }
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true, placeholder: 'es. Contratto di appalto montaggio' })));
-  form.appendChild(field('Controparte', textInput('controparte', existing?.controparte ?? '')));
+  form.appendChild(field('Controparte', select('controparte', controparteOptions, existing?.controparte ?? ''),
+    'Scelta dal Registro Stakeholder della commessa.'));
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Data stipula', dateInput('data_stipula', existing?.data_stipula ?? '')),
     field('Valore (€)', textInput('valore', existing?.valore ?? '', { type: 'number', step: '0.01' })),
   ]));
-  form.appendChild(field('Riferimento capitolato', textInput('riferimento_capitolato', existing?.riferimento_capitolato ?? '', { placeholder: 'es. Capitolato rev. 3 del 15/09/2026' })));
+  form.appendChild(field('Riferimento capitolato (nota libera)', textInput('riferimento_capitolato', existing?.riferimento_capitolato ?? '', { placeholder: 'es. Capitolato rev. 3 del 15/09/2026' })));
+
+  form.appendChild(el('label', {}, 'Voci di Capitolato Requisiti collegate'));
+  if (!vociCapitolato.length) {
+    form.appendChild(el('p', { class: 'muted', style: 'margin:4px 0 14px' },
+      'Nessuna voce di capitolato registrata per questa commessa: aggiungine una da Capitolato Requisiti per poterla collegare qui.'));
+  } else {
+    const list = el('div', { class: 'checkbox-list' }, vociCapitolato.map((v) => {
+      const checkbox = el('input', { type: 'checkbox', checked: vociSelezionate.has(v.id) });
+      checkbox.addEventListener('change', () => { if (checkbox.checked) vociSelezionate.add(v.id); else vociSelezionate.delete(v.id); });
+      return el('label', { class: 'checkbox-list__item' }, [
+        checkbox,
+        el('span', {}, [v.codice_wbs, ' — ', v.titolo, (v.contratto_id && v.contratto_id !== existing?.id)
+          ? el('span', { class: 'muted' }, ` (già collegata a ${v.contratto_titolo || 'un altro contratto'})`) : null]),
+      ]);
+    }));
+    form.appendChild(list);
+    form.appendChild(el('div', { class: 'field__hint', style: 'margin:4px 0 14px' },
+      'Ogni voce può restare collegata a un solo contratto: selezionandola qui la sposti da un eventuale altro contratto a questo.'));
+  }
+
   form.appendChild(field(
     'Data baseline capitolato', dateInput('capitolato_baseline_data', existing?.capitolato_baseline_data ?? ''),
     'Ogni versione di un requisito successiva a questa data è segnalata come variazione da gestire.'
@@ -100,8 +136,8 @@ function openForm(existing, onSaved) {
     if (fd.get('rimuovi_file') === 'on') fd.set('rimuovi_file', '1');
     if (!fileInput.files.length) fd.delete('file');
     try {
-      if (existing) await api.putForm(`/contratti/${existing.id}`, fd);
-      else await api.postForm('/contratti', fd);
+      const row = existing ? await api.putForm(`/contratti/${existing.id}`, fd) : await api.postForm('/contratti', fd);
+      await api.put(`/contratti/${row.id}/capitolato-voci`, { voce_ids: [...vociSelezionate] });
       closeModal();
       toast(existing ? 'Contratto aggiornato.' : 'Contratto registrato.');
       onSaved();
@@ -131,11 +167,12 @@ async function segnalaVariazione(contratto, variazione, onDone) {
 }
 
 async function renderContrattoCard(c, refreshAll, soloLettura) {
-  const [variazioni, atti] = await Promise.all([
+  const [variazioni, atti, vociCollegate] = await Promise.all([
     c.stato === 'attivo' && c.capitolato_baseline_data
       ? api.get(`/contratti/${c.id}/variazioni`).then((r) => r.data)
       : Promise.resolve([]),
     api.get(`/contratti/${c.id}/atti`).then((r) => r.data),
+    api.get(`/capitolato?contratto_id=${c.id}`).then((r) => r.data),
   ]);
   const valoreAtti = atti.reduce((sum, a) => sum + (a.valore || 0), 0);
   const valoreTotale = (c.valore || 0) + valoreAtti;
@@ -167,7 +204,9 @@ async function renderContrattoCard(c, refreshAll, soloLettura) {
       el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Variazioni da gestire'), el('div', { class: 'tile__value' + (variazioni.length ? ' alert' : '') }, String(variazioni.length))]),
       el('div', { class: 'tile' }, [el('div', { class: 'tile__label' }, 'Valore totale (con atti aggiuntivi)'), el('div', { class: 'tile__value', style: 'font-size:16px' }, formatValore(valoreTotale))]),
     ]),
-    c.riferimento_capitolato ? el('p', {}, [el('b', {}, 'Riferimento capitolato: '), c.riferimento_capitolato]) : null,
+    vociCollegate.length ? el('p', {}, [el('b', {}, 'Voci di capitolato collegate: '),
+      vociCollegate.map((v) => `${v.codice_wbs} — ${v.titolo}`).join(', ')]) : null,
+    c.riferimento_capitolato ? el('p', {}, [el('b', {}, 'Riferimento capitolato (nota libera): '), c.riferimento_capitolato]) : null,
     c.procedura_change_management ? el('p', {}, [el('b', {}, 'Procedura di change management: '), c.procedura_change_management]) : null,
     el('p', {}, [
       c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', class: 'btn btn--sm', style: 'margin-right:8px' }, 'Apri link ↗') : null,
