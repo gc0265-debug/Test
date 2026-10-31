@@ -28,13 +28,22 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.23';
+const VERSIONE_ATTUALE = '1.24';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.23', title: 'Stampa Lavorazioni con grafici, Maestranze sotto Stakeholder', date: '31 ottobre 2026', attuale: true,
+    v: '1.24', title: 'Nuova scheda SAL — Stato Avanzamento Lavori', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nuova scheda SAL al posto di Maestranze (ora sotto Stakeholder): un registro di avanzamento fisico delle Lavorazioni, con percentuale di completamento aggregata per Work Package e per Impresa.',
+      'Non è un SAL contabile — non calcola quantità, prezzi unitari o acconti, dati che l\'app non traccia ancora — ma un avanzamento operativo, utile per condividere lo stato dei montaggi senza dover aprire un foglio a parte.',
+      'Ogni SAL si chiude con un numero progressivo e una data: resta congelato così com\'era, e viene confrontato automaticamente con il SAL precedente mostrando il delta percentuale di avanzamento.',
+      'Lo storico dei SAL chiusi è consultabile, stampabile (con gli stessi grafici per stato di Lavorazioni) ed eliminabile in caso di errore.',
+    ],
+  },
+  {
+    v: '1.23', title: 'Stampa Lavorazioni con grafici, Maestranze sotto Stakeholder', date: '31 ottobre 2026',
     points: [
       'La stampa di Lavorazioni ("Stato avanzamento dei montaggi") ora include anche i due grafici per stato (barre e torta) e un breve testo introduttivo pensato per la condivisione esterna con il cliente.',
       'La voce Maestranze in menu è stata spostata dal gruppo Commessa al gruppo Stakeholder, insieme al Registro Stakeholder e al Piano Comunicazioni.',

@@ -151,6 +151,25 @@ CREATE TABLE IF NOT EXISTS misure (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- SAL operativo — Stato Avanzamento Lavori: fotografia periodica
+-- dell'avanzamento fisico delle Lavorazioni (% completate su totali),
+-- aggregata per Work Package e per Impresa, numerata progressivamente
+-- per commessa. Non è un SAL economico (nessuna quantità/prezzo
+-- unitario: Lavorazioni non li traccia) — vedi server/routes/sal.js.
+-- Ogni riga è lo snapshot congelato al momento della chiusura, in modo
+-- da poter confrontare un SAL con il precedente anche se nel frattempo
+-- le Lavorazioni sono cambiate.
+CREATE TABLE IF NOT EXISTS sal (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    numero INTEGER NOT NULL,                   -- progressivo per commessa (1, 2, 3...)
+    data TEXT NOT NULL DEFAULT (date('now')),  -- data di chiusura del SAL
+    note TEXT,
+    dati_json TEXT NOT NULL,                   -- snapshot congelato: {totale, per_wp:[...], per_impresa:[...]}
+    creato_da TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 CREATE TABLE IF NOT EXISTS maestranze (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
@@ -468,6 +487,7 @@ CREATE INDEX IF NOT EXISTS idx_note_commessa ON note_coordinamento(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_diario_commessa ON diario(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_lavorazioni_commessa ON lavorazioni(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_misure_lavorazione ON misure(lavorazione_id);
+CREATE INDEX IF NOT EXISTS idx_sal_commessa ON sal(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_maestranze_commessa ON maestranze(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_documenti_commessa ON documenti(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_allert_commessa ON allert(commessa_id);

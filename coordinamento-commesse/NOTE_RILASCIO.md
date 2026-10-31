@@ -16,6 +16,23 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Nuova scheda SAL — Stato Avanzamento Lavori (31 ottobre 2026)
+
+- Nuova scheda **SAL** al posto di Maestranze (ora sotto Stakeholder): un
+  registro di avanzamento fisico delle Lavorazioni, con percentuale di
+  completamento aggregata per Work Package e per Impresa.
+- Non è un SAL contabile — non calcola quantità, prezzi unitari o
+  acconti, dati che l'app non traccia ancora — ma un avanzamento
+  operativo, utile per condividere lo stato dei montaggi senza dover
+  aprire un foglio a parte.
+- Ogni SAL si chiude con un numero progressivo e una data: resta
+  congelato così com'era, e viene confrontato automaticamente con il SAL
+  precedente mostrando il delta percentuale di avanzamento.
+- Lo storico dei SAL chiusi è consultabile, stampabile (con gli stessi
+  grafici per stato di Lavorazioni) ed eliminabile in caso di errore.
+
+---
+
 ## Stampa Lavorazioni con grafici, Maestranze sotto Stakeholder (31 ottobre 2026)
 
 - La stampa di Lavorazioni ("Stato avanzamento dei montaggi") ora include

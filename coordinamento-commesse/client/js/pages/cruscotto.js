@@ -17,7 +17,7 @@ const AZIONE_LABEL = {
 const ENTITY_LABEL = {
   criticita: 'Criticità', decisioni: 'Decisione', allert: 'Allert', milestone: 'Milestone', lezioni_apprese: 'Lezione appresa',
   requisiti: 'Requisito', contratti: 'Contratto', stakeholder: 'Stakeholder', processi_comunicazione: 'Processo comunicazione',
-  capitolato_voci: 'Voce di capitolato',
+  capitolato_voci: 'Voce di capitolato', sal: 'SAL',
 };
 
 function tile(label, value, cls, sub) {

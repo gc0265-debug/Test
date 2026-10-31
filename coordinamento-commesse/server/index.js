@@ -20,6 +20,7 @@ const decisioniRouter = require('./routes/decisioni');
 const noteCoordinamentoRouter = require('./routes/noteCoordinamento');
 const diarioRouter = require('./routes/diario');
 const lavorazioniRouter = require('./routes/lavorazioni');
+const salRouter = require('./routes/sal');
 const maestranzeRouter = require('./routes/maestranze');
 const documentiRouter = require('./routes/documenti');
 const dashboardRouter = require('./routes/dashboard');
@@ -91,6 +92,7 @@ app.use('/api/note-coordinamento', requireAuth, blockWriteForCliente, requireSec
 app.use('/api/diario', requireAuth, blockWriteForCliente, requireSection('diario'), diarioRouter);
 app.use('/api/lavorazioni', requireAuth, blockWriteForCliente, requireSection('lavorazioni', 'timeline'), lavorazioniRouter);
 app.use('/api/misure', requireAuth, blockWriteForCliente, requireSection('lavorazioni', 'timeline'), misureRouter);
+app.use('/api/sal', requireAuth, blockWriteForCliente, requireSection('sal'), salRouter);
 app.use('/api/maestranze', requireAuth, blockWriteForCliente, requireSection('maestranze'), maestranzeRouter);
 app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), documentiRouter);
 app.use('/api/dashboard', requireAuth, blockWriteForCliente, requireSection('cruscotto'), dashboardRouter);

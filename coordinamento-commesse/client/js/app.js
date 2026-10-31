@@ -18,6 +18,7 @@ import { renderComunicazione } from './pages/comunicazione.js';
 import { renderNote } from './pages/note.js';
 import { renderDiario } from './pages/diario.js';
 import { renderLavorazioni } from './pages/lavorazioni.js';
+import { renderSal } from './pages/sal.js';
 import { renderMaestranze } from './pages/maestranze.js';
 import { renderDocumenti } from './pages/documenti.js';
 import { renderCommesse } from './pages/commesse.js';
@@ -40,6 +41,7 @@ route('comunicazione', { title: 'Piano Comunicazioni', render: renderComunicazio
 route('note', { title: 'Note di Coordinamento', render: renderNote });
 route('diario', { title: 'Diario di Cantiere', render: renderDiario });
 route('lavorazioni', { title: 'Lavorazioni', render: renderLavorazioni });
+route('sal', { title: 'SAL — Stato Avanzamento Lavori', render: renderSal });
 route('maestranze', { title: 'Maestranze', render: renderMaestranze });
 route('documenti', { title: 'Documenti', render: renderDocumenti });
 route('commesse', { title: 'Commesse', render: renderCommesse });
