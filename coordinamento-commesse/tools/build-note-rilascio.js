@@ -28,13 +28,20 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.16';
+const VERSIONE_ATTUALE = '1.17';
 const DATA_ATTUALE = '31 ottobre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.16', title: 'Contratti: controparte dal Registro Stakeholder, collegamento a più voci di Capitolato', date: '31 ottobre 2026', attuale: true,
+    v: '1.17', title: 'Maestranze: nome scelto dal Registro Stakeholder', date: '31 ottobre 2026', attuale: true,
+    points: [
+      'Nella scheda Maestranze, il campo "Nome" è ora un menu a tendina che pesca dal Registro Stakeholder della commessa, invece di un testo libero — coerente con "Controparte" nei Contratti, "Impresa" in Lavorazioni e i fornitori collegati già presenti in questa stessa scheda.',
+      'Una maestranza già registrata in precedenza con un nome non presente nel Registro Stakeholder resta visibile e selezionata com\'era, segnalata con la dicitura "(non più nel Registro Stakeholder)": nessun dato storico viene perso passando al menu a tendina.',
+    ],
+  },
+  {
+    v: '1.16', title: 'Contratti: controparte dal Registro Stakeholder, collegamento a più voci di Capitolato', date: '31 ottobre 2026',
     points: [
       'Nella scheda Contratto, il campo "Controparte" è ora un menu a tendina che pesca dal Registro Stakeholder della commessa, invece di un testo libero — coerente con quanto già fatto per "Impresa" in Lavorazioni e per i fornitori in Maestranze.',
       'Un contratto può ora essere collegato a più voci di Capitolato Requisiti insieme, tramite una selezione multipla nella scheda di modifica: non più una sola voce come prima.',

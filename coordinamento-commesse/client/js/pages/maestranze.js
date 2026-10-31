@@ -26,9 +26,15 @@ async function openForm(existing, onSaved) {
   const stakeholderAttivi = stakeholderRes.data.filter((s) => s.stato === 'attivo');
   const selezionati = new Set(fornitoriAttuali);
 
+  const nomeOptions = [['', '—'], ...stakeholderAttivi.map((s) => [s.nome, s.nome])];
+  if (existing?.nome && !nomeOptions.some(([v]) => v === existing.nome)) {
+    nomeOptions.push([existing.nome, `${existing.nome} (non più nel Registro Stakeholder)`]);
+  }
+
   const form = el('form', {});
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
-  form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true })));
+  form.appendChild(field('Nome', select('nome', nomeOptions, existing?.nome ?? '', { required: true }),
+    'Scelto dal Registro Stakeholder della commessa.'));
   form.appendChild(field('Ruolo', textInput('ruolo', existing?.ruolo ?? '')));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(field('Telefono', textInput('telefono', existing?.telefono ?? '')));

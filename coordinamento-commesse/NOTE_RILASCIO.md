@@ -16,6 +16,21 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Maestranze: nome scelto dal Registro Stakeholder (31 ottobre 2026)
+
+- Nella scheda Maestranze, il campo "Nome" è ora un menu a tendina che
+  pesca dal Registro Stakeholder della commessa, invece di un testo
+  libero — coerente con "Controparte" nei Contratti, "Impresa" in
+  Lavorazioni e i fornitori collegati già presenti in questa stessa
+  scheda.
+- Una maestranza già registrata in precedenza con un nome non
+  presente nel Registro Stakeholder resta visibile e selezionata
+  com'era, segnalata con la dicitura "(non più nel Registro
+  Stakeholder)": nessun dato storico viene perso passando al menu a
+  tendina.
+
+---
+
 ## Contratti: controparte dal Registro Stakeholder, collegamento a più voci di Capitolato (31 ottobre 2026)
 
 - Nella scheda Contratto, il campo "Controparte" è ora un menu a
