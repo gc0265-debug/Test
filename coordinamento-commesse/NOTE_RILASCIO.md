@@ -16,6 +16,79 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Valutazioni critiche
+
+Registro delle verifiche indipendenti condotte sull'applicazione, a
+confronto con gli strumenti equivalenti disponibili sul mercato. Un
+rilievo resta aperto finché non viene chiuso da una versione successiva,
+richiamata esplicitamente.
+
+### Verifica indipendente rispetto agli strumenti equivalenti del mercato (31 ottobre 2026)
+
+Confronto diretto con gli strumenti di scheduling e coordinamento in uso
+nel settore, con l'obiettivo di capire cosa non avrebbe retto il
+confronto di fronte a un cliente reale.
+
+- La Timeline Montaggi mostrava solo un calendario di barre indipendenti,
+  senza alcun legame di sequenza fra le attività: non era possibile
+  definire che una lavorazione dovesse attendere la fine di un'altra, né
+  calcolare un percorso critico. Senza questo, lo strumento non è
+  scheduling in senso proprio — è la funzione che un GC o una Direzione
+  Lavori si aspettano di vedere appena aprono la pagina.
+  **[Risolta in v1.36]**
+- Gli account amministratore erano protetti dalla sola password, senza
+  autenticazione a due fattori né un requisito minimo di robustezza: il
+  buco di sicurezza più vistoso dell'applicazione, da chiudere prima che
+  un cliente reale vi acceda. **[Risolta in v1.37]**
+
+*Il giudizio è stato espresso in forma di conversazione; questa voce ne
+riporta fedelmente i due rilievi che hanno guidato gli sviluppi
+successivi, verificabili nei punti "Novità e miglioramenti" delle
+rispettive versioni.*
+
+### Autovalutazione critica del sistema MFA e della policy password (1 novembre 2026)
+
+Applicando lo stesso metro di giudizio a quanto appena realizzato:
+l'assenza più vistosa è chiusa, ma l'implementazione resta un primo
+livello, non equivalente a quanto offerto da una piattaforma SaaS matura.
+
+- L'MFA resta facoltativa anche per gli account amministratore: nulla
+  nell'interfaccia la richiede o la sollecita attivamente. **[Aperta]**
+- Non esistono codici di recupero: se l'app authenticator viene persa,
+  l'unica via di rientro è un intervento diretto sul database da parte
+  di chi ha accesso al server. **[Aperta]**
+- La disattivazione dell'MFA richiede solo la password dell'account: se
+  la password fosse già compromessa, un estraneo potrebbe disattivarla
+  senza resistenza aggiuntiva. **[Aperta]**
+- La policy minima si applica solo alla creazione o al cambio password:
+  un account amministratore già esistente con una password debole
+  continua a funzionare finché non la cambia volontariamente. **[Aperta]**
+
+---
+
+## MFA e policy password minima sugli account (1 novembre 2026)
+
+- Ogni utente può ora attivare l'**autenticazione a due fattori (MFA)**
+  sul proprio account, dalla nuova icona "Sicurezza account" accanto al
+  proprio nome in fondo al menu laterale: un QR da inquadrare con un'app
+  authenticator (Google Authenticator, Authy, Microsoft Authenticator...)
+  e un codice di conferma, dopodiché il login richiede anche il codice a
+  6 cifre oltre alla password.
+- Nuova **policy minima di robustezza**, applicata a ogni nuova password
+  e ad ogni cambio password, per qualunque ruolo: almeno 10 caratteri,
+  con una maiuscola, una minuscola e un numero.
+- Ogni utente può ora cambiare la propria password direttamente dalla
+  stessa area "Sicurezza account", senza dover passare dalla pagina
+  Utenti riservata agli amministratori.
+
+**Bug risolti**
+
+- Corretta l'etichetta del ruolo mostrata in fondo al menu laterale:
+  indicava sempre "Amministratore" oppure "Operatore", senza mai
+  riportare "Cliente" per gli utenti con quell'accesso.
+
+---
+
 ## Timeline: dipendenze fra attività e percorso critico (1 novembre 2026)
 
 - Da ogni milestone o lavorazione si possono collegare uno o più
@@ -173,10 +246,6 @@ Nessuna modifica in corso al momento.
 
 ## Timeline: intestazione corretta, colori più chiari, elimina milestone (31 ottobre 2026)
 
-- Risolto il difetto per cui, con i gruppi Piano espansi, la barra
-  riassuntiva del gruppo finiva nascosta dietro la riga delle settimane:
-  l'intestazione ora si aggancia correttamente in cima al grafico, senza
-  sovrapposizioni.
 - Le settimane in intestazione mostrano ora l'etichetta abbreviata (es.
   "S44") invece di "Sett. 44", più leggibile quando lo zoom è ridotto.
 - Colori più distinguibili nel Gantt: le barre dei gruppi Piano sono ora
@@ -188,6 +257,13 @@ Nessuna modifica in corso al momento.
 - Una milestone può ora essere eliminata direttamente dal suo modulo di
   modifica nella Timeline, con lo stesso pulsante "Elimina" già presente
   per le altre schede.
+
+**Bug risolti**
+
+- Risolto il difetto per cui, con i gruppi Piano espansi, la barra
+  riassuntiva del gruppo finiva nascosta dietro la riga delle settimane:
+  l'intestazione ora si aggancia correttamente in cima al grafico, senza
+  sovrapposizioni.
 
 ---
 
@@ -359,6 +435,8 @@ Nessuna modifica in corso al momento.
 
 ## Menu laterale fisso durante lo scorrimento (30 ottobre 2026)
 
+**Bug risolti**
+
 - Corretto un refuso nel foglio di stile che annullava l'effetto
   "fisso" del menu a sinistra: scorrendo una pagina lunga (es. un
   elenco con molte righe), il menu ora resta sempre visibile e nella
@@ -390,18 +468,20 @@ Nessuna modifica in corso al momento.
 
 ## Correzione pannello Work Package, sidebar con più profondità (30 ottobre 2026)
 
-- Corretto un problema per cui, con la vista aggregata di gruppo attiva
-  (es. "RSW Roma — tutte"), il pannello "Work package della commessa
-  selezionata" nella scheda Commesse restava vuoto anche selezionando
-  una riga della tabella.
-- Ora il pannello segue sempre la riga selezionata nell'elenco
-  commesse, mostrando il codice della commessa scelta nel titolo
-  ("Work package di 2514RW"), sia in vista singola commessa sia in
-  vista aggregata di gruppo.
 - La sidebar a sinistra ha ora una leggera profondità: una sfumatura
   verso un tono più scuro e un'ombra sul bordo, per staccarla meglio
   dal contenuto della pagina — invariata nella sostanza, solo
   nell'aspetto, e coerente sia nel tema chiaro sia in quello scuro.
+
+**Bug risolti**
+
+- Corretto un problema per cui, con la vista aggregata di gruppo attiva
+  (es. "RSW Roma — tutte"), il pannello "Work package della commessa
+  selezionata" nella scheda Commesse restava vuoto anche selezionando
+  una riga della tabella. Ora il pannello segue sempre la riga
+  selezionata nell'elenco commesse, mostrando il codice della commessa
+  scelta nel titolo ("Work package di 2514RW"), sia in vista singola
+  commessa sia in vista aggregata di gruppo.
 
 ---
 
@@ -457,21 +537,25 @@ Nessuna modifica in corso al momento.
 
 ## Correzione import Excel di Approvazioni Drawings (30 ottobre 2026)
 
-- Risolto il problema per cui il pulsante **"Importa da Excel"** nella
-  scheda Approvazioni Drawings non importava nulla con l'elenco
-  deliverable reale (le intestazioni erano in una riga diversa da
-  quella attesa e i nomi di colonna non corrispondevano).
-- L'import ora riconosce sia il template semplice sia il formato reale
-  dell'Elenco Deliverable, cercando da solo la riga di intestazione.
-- Quando un elaborato non ha ancora un "Nome elaborato" assegnato,
-  viene usato come titolo provvisorio il nome dell'ambiente/area/zona,
-  così da non perdere elaborati ancora senza un file formale.
-- Lo stato della colonna "Status" (OK, temi minori, in approvazione,
-  da rilevare, ecc.) viene convertito automaticamente nei 4 stati
-  dell'app, mantenendo il testo originale in nota quando serve.
 - Livello, Area, Ambiente, PM e le annotazioni della maschera GILI
   vengono riportati in nota, così da non perdere il contesto di ogni
   riga importata.
+
+**Bug risolti**
+
+- Risolto il problema per cui il pulsante **"Importa da Excel"** nella
+  scheda Approvazioni Drawings non importava nulla con l'elenco
+  deliverable reale (le intestazioni erano in una riga diversa da
+  quella attesa e i nomi di colonna non corrispondevano). L'import ora
+  riconosce sia il template semplice sia il formato reale dell'Elenco
+  Deliverable, cercando da solo la riga di intestazione.
+- Quando un elaborato non ha ancora un "Nome elaborato" assegnato,
+  veniva perso: ora viene usato come titolo provvisorio il nome
+  dell'ambiente/area/zona.
+- Lo stato della colonna "Status" (OK, temi minori, in approvazione,
+  da rilevare, ecc.) non veniva riconosciuto: viene ora convertito
+  automaticamente nei 4 stati dell'app, mantenendo il testo originale
+  in nota quando serve.
 
 ---
 

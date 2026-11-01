@@ -253,6 +253,8 @@ CREATE TABLE IF NOT EXISTS users (
     ruolo TEXT NOT NULL DEFAULT 'operatore'
           CHECK(ruolo IN ('admin','operatore','cliente')),
     sezioni_consentite TEXT,                   -- JSON array di sezioni, solo per ruolo 'cliente' (accesso in sola lettura)
+    mfa_secret TEXT,                           -- chiave TOTP base32, impostata da /auth/mfa/setup
+    mfa_enabled INTEGER NOT NULL DEFAULT 0,    -- 1 solo dopo conferma del primo codice (/auth/mfa/verifica)
     attivo INTEGER NOT NULL DEFAULT 1,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())

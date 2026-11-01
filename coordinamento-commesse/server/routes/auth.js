@@ -1,7 +1,9 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const { authenticator } = require('otplib');
+const QRCode = require('qrcode');
 const db = require('../db/database');
-const { hashPassword, verifyPassword, requireAuth, requireAdmin, parseSezioni } = require('../utils/auth');
+const { hashPassword, verifyPassword, requireAuth, requireAdmin, parseSezioni, validatePasswordStrength } = require('../utils/auth');
 const logger = require('../utils/logger');
 
 const router = express.Router();
@@ -25,7 +27,7 @@ function normalizzaRuolo(ruolo, fallback) {
 
 function publicUser(u) {
   if (!u) return null;
-  const { password_hash, ...rest } = u;
+  const { password_hash, mfa_secret, ...rest } = u;
   return { ...rest, sezioni_consentite: parseSezioni(u.sezioni_consentite) };
 }
 
@@ -52,6 +54,29 @@ router.post('/login', loginLimiter, (req, res) => {
     logger.warn('login fallito', { ip: req.ip, email: String(email).toLowerCase().trim() });
     return res.status(401).json({ error: 'credenziali non valide' });
   }
+  // Se l'account ha l'MFA attiva, la password da sola non basta: si apre
+  // una sessione "in sospeso" (niente req.session.user, quindi requireAuth
+  // non lascia ancora passare) in attesa del codice confermato su /login/mfa.
+  if (user.mfa_enabled) {
+    req.session.mfaPendingUserId = user.id;
+    return res.json({ mfa_richiesta: true });
+  }
+  req.session.user = publicUser(user);
+  res.json(publicUser(user));
+});
+
+// Stesso limitatore del login: un codice TOTP ha solo 6 cifre, quindi va
+// protetto dal tentativo ripetuto esattamente come la password.
+router.post('/login/mfa', loginLimiter, (req, res) => {
+  const pendingId = req.session.mfaPendingUserId;
+  if (!pendingId) return res.status(400).json({ error: 'nessun accesso in corso: effettua di nuovo il login' });
+  const user = db.prepare('SELECT * FROM users WHERE id = ? AND attivo = 1').get(pendingId);
+  const { codice } = req.body;
+  if (!user || !user.mfa_enabled || !user.mfa_secret || !codice || !authenticator.check(String(codice).trim(), user.mfa_secret)) {
+    logger.warn('login MFA fallito', { ip: req.ip, userId: pendingId });
+    return res.status(401).json({ error: 'codice non valido' });
+  }
+  delete req.session.mfaPendingUserId;
   req.session.user = publicUser(user);
   res.json(publicUser(user));
 });
@@ -64,6 +89,53 @@ router.get('/me', requireAuth, (req, res) => {
   res.json(req.user);
 });
 
+// ---- account personale: cambio password e MFA (self-service) ----
+router.post('/me/password', requireAuth, (req, res) => {
+  const { password_attuale, password_nuova } = req.body;
+  const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+  if (!password_attuale || !verifyPassword(password_attuale, row.password_hash)) {
+    return res.status(401).json({ error: 'la password attuale non è corretta' });
+  }
+  const errore = validatePasswordStrength(password_nuova);
+  if (errore) return res.status(400).json({ error: errore });
+  db.prepare('UPDATE users SET password_hash = ?, updated_at = unixepoch() WHERE id = ?').run(hashPassword(password_nuova), req.user.id);
+  res.status(204).end();
+});
+
+// Avvia (o rigenera) la configurazione MFA: genera un nuovo secret e lo
+// salva subito, ma l'MFA resta "non attiva" finché /mfa/verifica non
+// conferma che l'utente lo ha davvero caricato nella sua app authenticator.
+router.post('/mfa/setup', requireAuth, async (req, res) => {
+  const secret = authenticator.generateSecret();
+  db.prepare('UPDATE users SET mfa_secret = ?, mfa_enabled = 0 WHERE id = ?').run(secret, req.user.id);
+  const otpauthUrl = authenticator.keyuri(req.user.email, 'Coordinamento Commesse', secret);
+  const qr = await QRCode.toDataURL(otpauthUrl);
+  res.json({ secret, qr });
+});
+
+router.post('/mfa/verifica', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT mfa_secret FROM users WHERE id = ?').get(req.user.id);
+  const { codice } = req.body;
+  if (!row?.mfa_secret) return res.status(400).json({ error: 'avvia prima la configurazione MFA' });
+  if (!codice || !authenticator.check(String(codice).trim(), row.mfa_secret)) {
+    return res.status(400).json({ error: 'codice non valido' });
+  }
+  db.prepare('UPDATE users SET mfa_enabled = 1 WHERE id = ?').run(req.user.id);
+  req.session.user = { ...req.user, mfa_enabled: 1 };
+  res.json({ mfa_enabled: true });
+});
+
+router.post('/mfa/disattiva', requireAuth, (req, res) => {
+  const { password } = req.body;
+  const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+  if (!password || !verifyPassword(password, row.password_hash)) {
+    return res.status(401).json({ error: 'password non corretta' });
+  }
+  db.prepare('UPDATE users SET mfa_enabled = 0, mfa_secret = NULL WHERE id = ?').run(req.user.id);
+  req.session.user = { ...req.user, mfa_enabled: 0 };
+  res.json({ mfa_enabled: false });
+});
+
 // ---- gestione utenti (solo admin) ----
 router.get('/users', requireAuth, requireAdmin, (req, res) => {
   const rows = db.prepare('SELECT id, nome, email, ruolo, sezioni_consentite, attivo, created_at FROM users ORDER BY nome').all();
@@ -73,6 +145,8 @@ router.get('/users', requireAuth, requireAdmin, (req, res) => {
 router.post('/users', requireAuth, requireAdmin, (req, res) => {
   const { nome, email, password, ruolo, sezioni_consentite } = req.body;
   if (!nome || !email || !password) return res.status(400).json({ error: 'nome, email e password sono obbligatori' });
+  const erroreForza = validatePasswordStrength(password);
+  if (erroreForza) return res.status(400).json({ error: erroreForza });
   const ruoloFinale = normalizzaRuolo(ruolo, 'operatore');
   try {
     const result = db.prepare(`
@@ -93,6 +167,10 @@ router.put('/users/:id', requireAuth, requireAdmin, (req, res) => {
   const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'utente non trovato' });
   const { nome, email, password, ruolo, sezioni_consentite, attivo } = req.body;
+  if (password) {
+    const erroreForza = validatePasswordStrength(password);
+    if (erroreForza) return res.status(400).json({ error: erroreForza });
+  }
   const ruoloFinale = normalizzaRuolo(ruolo, existing.ruolo);
   const next = {
     nome: nome ?? existing.nome,

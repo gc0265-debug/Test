@@ -1,6 +1,7 @@
 import { state, loadCommesse, setCommessa, setGruppo, gruppiDisponibili, subscribe } from './state.js';
 import { route, startRouter, navigate } from './router.js';
 import { getCurrentUser, logout } from './auth.js';
+import { openSicurezzaAccount } from './pages/account.js';
 import { renderLogin } from './pages/login.js';
 import { el } from './components/ui.js';
 import { renderCruscotto } from './pages/cruscotto.js';
@@ -184,15 +185,22 @@ function renderCommessaSelect() {
 function renderUserBadge(user) {
   const host = document.getElementById('sideUser');
   host.innerHTML = '';
+  const etichetteRuolo = { admin: 'Amministratore', operatore: 'Operatore', cliente: 'Cliente' };
   host.appendChild(el('div', { class: 'side-user' }, [
     el('div', {}, [
       el('div', { class: 'side-user__nome' }, user.nome),
-      el('div', { class: 'side-user__ruolo' }, user.ruolo === 'admin' ? 'Amministratore' : 'Operatore'),
+      el('div', { class: 'side-user__ruolo' }, etichetteRuolo[user.ruolo] || user.ruolo),
     ]),
-    el('button', {
-      class: 'btn btn--sm btn--ghost',
-      onclick: async () => { await logout(); window.location.reload(); },
-    }, 'Esci'),
+    el('div', { class: 'side-user__azioni' }, [
+      el('button', {
+        class: 'btn btn--sm btn--ghost', title: 'Sicurezza account',
+        onclick: () => openSicurezzaAccount(user),
+      }, '🔒'),
+      el('button', {
+        class: 'btn btn--sm btn--ghost',
+        onclick: async () => { await logout(); window.location.reload(); },
+      }, 'Esci'),
+    ]),
   ]));
 }
 

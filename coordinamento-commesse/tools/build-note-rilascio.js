@@ -28,13 +28,59 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.36';
+const VERSIONE_ATTUALE = '1.37';
 const DATA_ATTUALE = '1 novembre 2026';
+
+// Verifiche critiche indipendenti sull'applicazione (il "verdetto del
+// giudice" chiesto a più riprese): un log che cresce ad ogni round,
+// separato dal changelog per versione perché non descrive una singola
+// release ma un giudizio complessivo, con i rilievi che restano aperti
+// finché non vengono chiusi da una versione successiva.
+const VALUTAZIONI_CRITICHE = [
+  {
+    data: '31 ottobre 2026',
+    ambito: 'Verifica indipendente dell\'applicazione rispetto agli strumenti equivalenti del mercato (scheduling e coordinamento di cantiere)',
+    sintesi: 'Confronto diretto con gli strumenti di scheduling e coordinamento in uso nel settore, con l\'obiettivo di capire cosa non avrebbe retto il confronto di fronte a un cliente reale.',
+    rilievi: [
+      {
+        testo: 'La Timeline Montaggi mostrava solo un calendario di barre indipendenti, senza alcun legame di sequenza fra le attività: non era possibile definire che una lavorazione dovesse attendere la fine di un\'altra, né calcolare un percorso critico. Senza questo, lo strumento non è scheduling in senso proprio — è la funzione che un GC o una Direzione Lavori si aspettano di vedere appena aprono la pagina.',
+        stato: 'Risolta in v1.36',
+      },
+      {
+        testo: 'Gli account amministratore erano protetti dalla sola password, senza autenticazione a due fattori né un requisito minimo di robustezza: il buco di sicurezza più vistoso dell\'applicazione, da chiudere prima che un cliente reale vi acceda.',
+        stato: 'Risolta in v1.37',
+      },
+    ],
+    nota: 'Il giudizio è stato espresso in forma di conversazione; questa voce ne riporta fedelmente i due rilievi che hanno guidato gli sviluppi successivi, verificabili nei punti "Novità e miglioramenti" delle rispettive versioni.',
+  },
+  {
+    data: '1 novembre 2026',
+    ambito: 'Autovalutazione critica del sistema MFA e della policy password appena introdotti (v1.37)',
+    sintesi: 'Applicando lo stesso metro di giudizio a quanto appena realizzato: l\'assenza più vistosa è chiusa, ma l\'implementazione resta un primo livello, non equivalente a quanto offerto da una piattaforma SaaS matura.',
+    rilievi: [
+      { testo: 'L\'MFA resta facoltativa anche per gli account amministratore: nulla nell\'interfaccia la richiede o la sollecita attivamente. Il buco si chiude solo quando chi amministra l\'app la attiva di persona.', stato: 'Aperta' },
+      { testo: 'Non esistono codici di recupero: se l\'app authenticator viene persa, l\'unica via di rientro è un intervento diretto sul database da parte di chi ha accesso al server, non una procedura pensata per l\'utente.', stato: 'Aperta' },
+      { testo: 'La disattivazione dell\'MFA richiede solo la password dell\'account: se la password fosse già compromessa, un estraneo potrebbe disattivarla senza che l\'MFA frapponga resistenza aggiuntiva in quel momento.', stato: 'Aperta' },
+      { testo: 'La policy minima si applica solo alla creazione o al cambio password: un account amministratore già esistente con una password debole continua a funzionare finché non la cambia volontariamente.', stato: 'Aperta' },
+    ],
+  },
+];
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.36', title: 'Timeline: dipendenze fra attività e percorso critico', date: '1 novembre 2026', attuale: true,
+    v: '1.37', title: 'MFA e policy password minima sugli account', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Ogni utente può ora attivare l\'autenticazione a due fattori (MFA) sul proprio account, dalla nuova icona "Sicurezza account" accanto al proprio nome in fondo al menu laterale: un QR da inquadrare con un\'app authenticator (Google Authenticator, Authy, Microsoft Authenticator...) e un codice di conferma, dopodiché il login richiede anche il codice a 6 cifre oltre alla password.',
+      'Nuova policy minima di robustezza, applicata a ogni nuova password e ad ogni cambio password, per qualunque ruolo: almeno 10 caratteri, con una maiuscola, una minuscola e un numero.',
+      'Ogni utente può ora cambiare la propria password direttamente dalla stessa area "Sicurezza account", senza dover passare dalla pagina Utenti riservata agli amministratori.',
+    ],
+    bugfix: [
+      'Corretta l\'etichetta del ruolo mostrata in fondo al menu laterale: indicava sempre "Amministratore" oppure "Operatore", senza mai riportare "Cliente" per gli utenti con quell\'accesso.',
+    ],
+  },
+  {
+    v: '1.36', title: 'Timeline: dipendenze fra attività e percorso critico', date: '1 novembre 2026',
     points: [
       'Da ogni milestone o lavorazione si possono collegare uno o più predecessori — l\'attività che deve finire (più un eventuale ritardo in giorni) prima che questa possa iniziare: niente più solo un calendario, un vero vincolo di sequenza come in uno strumento di scheduling.',
       'Le frecce nel Gantt mostrano i collegamenti: in rosso quelle sul percorso critico (la catena di attività che, se rallenta, fa slittare l\'intera commessa), tratteggiate in ambra quelle in conflitto con le date attualmente impostate.',
@@ -115,10 +161,12 @@ const SECTIONS = [
   {
     v: '1.26', title: 'Timeline: intestazione corretta, colori più chiari, elimina milestone', date: '31 ottobre 2026',
     points: [
-      'Risolto il difetto per cui, con i gruppi Piano espansi, la barra riassuntiva del gruppo finiva nascosta dietro la riga delle settimane: l\'intestazione ora si aggancia correttamente in cima al grafico, senza sovrapposizioni.',
       'Le settimane in intestazione mostrano ora l\'etichetta abbreviata (es. "S44") invece di "Sett. 44", più leggibile quando lo zoom è ridotto.',
       'Colori più distinguibili nel Gantt: le barre dei gruppi Piano sono ora viola (prima un grigio simile a quello già usato per baseline e riepiloghi), la barra di baseline è ambra per richiamare il pallino di scostamento già in uso altrove nell\'app. La legenda distingue ora "Gruppo Piano" da "Riepilogo sotto-attività", prima accorpati in una sola voce.',
       'Una milestone può ora essere eliminata direttamente dal suo modulo di modifica nella Timeline, con lo stesso pulsante "Elimina" già presente per le altre schede.',
+    ],
+    bugfix: [
+      'Risolto il difetto per cui, con i gruppi Piano espansi, la barra riassuntiva del gruppo finiva nascosta dietro la riga delle settimane: l\'intestazione ora si aggancia correttamente in cima al grafico, senza sovrapposizioni.',
     ],
   },
   {
@@ -203,7 +251,8 @@ const SECTIONS = [
   },
   {
     v: '1.15', title: 'Menu laterale fisso durante lo scorrimento', date: '30 ottobre 2026',
-    points: [
+    points: [],
+    bugfix: [
       'Corretto un refuso nel foglio di stile che annullava l\'effetto "fisso" del menu a sinistra: scorrendo una pagina lunga (es. un elenco con molte righe), il menu ora resta sempre visibile e nella stessa posizione, invece di scorrere via insieme al contenuto.',
     ],
   },
@@ -220,9 +269,10 @@ const SECTIONS = [
   {
     v: '1.13', title: 'Correzione pannello Work Package, sidebar con più profondità', date: '30 ottobre 2026',
     points: [
-      'Corretto un problema per cui, con la vista aggregata di gruppo attiva (es. "RSW Roma — tutte"), il pannello "Work package della commessa selezionata" nella scheda Commesse restava vuoto anche selezionando una riga della tabella.',
-      'Ora il pannello segue sempre la riga selezionata nell’elenco commesse, mostrando il codice della commessa scelta nel titolo ("Work package di 2514RW"), sia in vista singola commessa sia in vista aggregata di gruppo.',
       'La sidebar a sinistra ha ora una leggera profondità: una sfumatura verso un tono più scuro e un’ombra sul bordo, per staccarla meglio dal contenuto della pagina — invariata nella sostanza, solo nell’aspetto, e coerente sia nel tema chiaro sia in quello scuro.',
+    ],
+    bugfix: [
+      'Corretto un problema per cui, con la vista aggregata di gruppo attiva (es. "RSW Roma — tutte"), il pannello "Work package della commessa selezionata" nella scheda Commesse restava vuoto anche selezionando una riga della tabella. Ora il pannello segue sempre la riga selezionata nell’elenco commesse, mostrando il codice della commessa scelta nel titolo ("Work package di 2514RW"), sia in vista singola commessa sia in vista aggregata di gruppo.',
     ],
   },
   {
@@ -247,11 +297,12 @@ const SECTIONS = [
   {
     v: '1.10', title: 'Correzione import Excel di Approvazioni Drawings', date: '30 ottobre 2026',
     points: [
-      'Risolto il problema per cui il pulsante "Importa da Excel" nella scheda Approvazioni Drawings non importava alcuna riga con l’elenco deliverable reale: le intestazioni si trovavano su una riga diversa da quella attesa e i nomi di colonna non corrispondevano a quelli del modello generico.',
-      'L’importazione ora riconosce sia il modello semplice sia il formato reale dell’Elenco Deliverable, individuando da sola la riga di intestazione.',
-      'Quando un elaborato non ha ancora un "Nome elaborato" assegnato, viene usato come titolo provvisorio il nome dell’ambiente, dell’area o della zona, così da non perdere elaborati ancora privi di un file formale.',
-      'Lo stato riportato nella colonna "Status" (OK, temi minori, in approvazione, da rilevare, e così via) viene convertito automaticamente nei 4 stati dell’applicazione, mantenendo il testo originale in nota quando la corrispondenza non è diretta.',
       'Livello, Area, Ambiente, Project Manager e le altre annotazioni della maschera GILI vengono riportati in nota, così da non perdere il contesto di ogni riga importata.',
+    ],
+    bugfix: [
+      'Risolto il problema per cui il pulsante "Importa da Excel" nella scheda Approvazioni Drawings non importava alcuna riga con l’elenco deliverable reale: le intestazioni si trovavano su una riga diversa da quella attesa e i nomi di colonna non corrispondevano a quelli del modello generico. L’importazione ora riconosce sia il modello semplice sia il formato reale dell’Elenco Deliverable, individuando da sola la riga di intestazione.',
+      'Quando un elaborato non ha ancora un "Nome elaborato" assegnato, veniva perso: ora viene usato come titolo provvisorio il nome dell’ambiente, dell’area o della zona.',
+      'Lo stato riportato nella colonna "Status" (OK, temi minori, in approvazione, da rilevare, e così via) non veniva riconosciuto: viene ora convertito automaticamente nei 4 stati dell’applicazione, mantenendo il testo originale in nota quando la corrispondenza non è diretta.',
     ],
   },
   {
@@ -379,7 +430,54 @@ const children = [
       italics: true, color: BODY, size: 22,
     })],
   }),
+
+  // --- Valutazioni critiche ---
+  new Paragraph({
+    heading: HeadingLevel.HEADING_1,
+    spacing: { before: 200, after: 100 },
+    children: [new TextRun({ text: 'Valutazioni critiche', bold: true, color: NAVY, size: 30 })],
+  }),
+  new Paragraph({
+    spacing: { after: 240 },
+    children: [new TextRun({
+      text: 'Registro delle verifiche indipendenti condotte sull\'applicazione, a confronto con gli strumenti equivalenti disponibili sul mercato. Un rilievo resta aperto finché non viene chiuso da una versione successiva, richiamata esplicitamente.',
+      italics: true, color: GRAY, size: 20,
+    })],
+  }),
 ];
+
+VALUTAZIONI_CRITICHE.forEach((v) => {
+  children.push(new Paragraph({
+    border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: RULE } },
+    spacing: { before: 260, after: 50 },
+    children: [new TextRun({ text: v.ambito, bold: true, color: NAVY, size: 22 })],
+  }));
+  children.push(new Paragraph({
+    spacing: { after: 100 },
+    children: [new TextRun({ text: v.data, italics: true, color: GRAY, size: 18 })],
+  }));
+  children.push(new Paragraph({
+    spacing: { after: 100 },
+    children: [new TextRun({ text: v.sintesi, color: BODY, size: 21 })],
+  }));
+  v.rilievi.forEach((r) => {
+    const risolta = r.stato !== 'Aperta';
+    children.push(new Paragraph({
+      bullet: { level: 0 },
+      spacing: { after: 80 },
+      children: [
+        new TextRun({ text: r.testo + '  ', color: BODY, size: 21 }),
+        new TextRun({ text: `[${r.stato}]`, bold: true, color: risolta ? NAVY : RED, size: 19 }),
+      ],
+    }));
+  });
+  if (v.nota) {
+    children.push(new Paragraph({
+      spacing: { before: 40, after: 60 },
+      children: [new TextRun({ text: v.nota, italics: true, color: GRAY, size: 18 })],
+    }));
+  }
+});
 
 SECTIONS.forEach((s) => {
   children.push(new Paragraph({
@@ -396,17 +494,32 @@ SECTIONS.forEach((s) => {
     dateRuns.push(new TextRun({ text: 'VERSIONE ATTUALE', bold: true, color: RED, size: 18 }));
   }
   children.push(new Paragraph({ spacing: { after: 160 }, children: dateRuns }));
-  children.push(new Paragraph({
-    spacing: { before: 60, after: 90 },
-    children: [new TextRun({ text: 'Novità e miglioramenti', bold: true, allCaps: true, color: NAVY, size: 20 })],
-  }));
-  s.points.forEach((p) => {
+  if (s.points.length) {
     children.push(new Paragraph({
-      bullet: { level: 0 },
-      spacing: { after: 110 },
-      children: [new TextRun({ text: p, color: BODY, size: 22 })],
+      spacing: { before: 60, after: 90 },
+      children: [new TextRun({ text: 'Novità e miglioramenti', bold: true, allCaps: true, color: NAVY, size: 20 })],
     }));
-  });
+    s.points.forEach((p) => {
+      children.push(new Paragraph({
+        bullet: { level: 0 },
+        spacing: { after: 110 },
+        children: [new TextRun({ text: p, color: BODY, size: 22 })],
+      }));
+    });
+  }
+  if (s.bugfix && s.bugfix.length) {
+    children.push(new Paragraph({
+      spacing: { before: 60, after: 90 },
+      children: [new TextRun({ text: 'Bug risolti', bold: true, allCaps: true, color: RED, size: 20 })],
+    }));
+    s.bugfix.forEach((p) => {
+      children.push(new Paragraph({
+        bullet: { level: 0 },
+        spacing: { after: 110 },
+        children: [new TextRun({ text: p, color: BODY, size: 22 })],
+      }));
+    });
+  }
 });
 
 // --- Chiusura ---

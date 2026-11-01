@@ -156,6 +156,10 @@ ensureColumns('approvazioni_drawings', [
   { name: 'data_limite_approvazione', def: 'TEXT' },
 ]);
 ensureColumns('users', [{ name: 'sezioni_consentite', def: 'TEXT' }]);
+ensureColumns('users', [
+  { name: 'mfa_secret', def: 'TEXT' },
+  { name: 'mfa_enabled', def: 'INTEGER NOT NULL DEFAULT 0' },
+]);
 ensureColumns('commesse', [
   { name: 'gruppo', def: 'TEXT' },
   { name: 'email_notifiche', def: 'TEXT' },
@@ -170,6 +174,8 @@ dropColumnCheck('users', "CHECK(ruolo IN", `
     ruolo TEXT NOT NULL DEFAULT 'operatore'
           CHECK(ruolo IN ('admin','operatore','cliente')),
     sezioni_consentite TEXT,
+    mfa_secret TEXT,
+    mfa_enabled INTEGER NOT NULL DEFAULT 0,
     attivo INTEGER NOT NULL DEFAULT 1,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())

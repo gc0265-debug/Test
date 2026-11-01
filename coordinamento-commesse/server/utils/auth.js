@@ -10,6 +10,18 @@ function verifyPassword(plain, hash) {
   return bcrypt.compareSync(plain, hash);
 }
 
+// Policy minima, uniforme per tutti i ruoli: evita password banali senza
+// pretendere requisiti che in un piccolo team finirebbero solo per essere
+// annotati su un post-it. Restituisce il messaggio d'errore, o null se ok.
+function validatePasswordStrength(password) {
+  if (typeof password !== 'string' || !password) return 'la password è obbligatoria';
+  if (password.length < 10) return 'la password deve contenere almeno 10 caratteri';
+  if (!/[a-z]/.test(password)) return 'la password deve contenere almeno una lettera minuscola';
+  if (!/[A-Z]/.test(password)) return 'la password deve contenere almeno una lettera maiuscola';
+  if (!/[0-9]/.test(password)) return 'la password deve contenere almeno un numero';
+  return null;
+}
+
 // Protegge le rotte API: richiede una sessione autenticata.
 function requireAuth(req, res, next) {
   if (!req.session || !req.session.user) {
@@ -63,5 +75,5 @@ function blockWriteForCliente(req, res, next) {
 
 module.exports = {
   hashPassword, verifyPassword, requireAuth, requireAdmin,
-  parseSezioni, requireSection, blockWriteForCliente,
+  parseSezioni, requireSection, blockWriteForCliente, validatePasswordStrength,
 };
