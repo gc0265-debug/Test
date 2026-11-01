@@ -6,6 +6,7 @@ const express = require('express');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -37,6 +38,7 @@ router.post('/processi', (req, res) => {
 router.put('/processi/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM processi_comunicazione WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'processo non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   db.prepare(`
     UPDATE processi_comunicazione SET nome=?, scopo=?, frequenza=?, canale=?, output=?, ruolo_responsabile=?, note=?, updated_at=unixepoch()

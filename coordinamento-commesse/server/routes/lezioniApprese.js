@@ -6,6 +6,7 @@ const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 const { generaLezioniApprese } = require('../utils/ai');
 
 const router = express.Router();
@@ -81,6 +82,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM lezioni_apprese WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'lezione non trovata' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
 
   db.prepare(`

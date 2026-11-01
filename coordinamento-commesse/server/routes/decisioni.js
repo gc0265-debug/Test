@@ -5,6 +5,7 @@ const db = require('../db/database');
 const { daysBetween, todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -171,6 +172,7 @@ router.post('/import', upload.single('file'), async (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM decisioni WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'decisione non trovata' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   if (next.stato === 'decisa' && !next.data_decisione) next.data_decisione = todayStr();
   if (next.stato !== 'decisa') next.data_decisione = null;

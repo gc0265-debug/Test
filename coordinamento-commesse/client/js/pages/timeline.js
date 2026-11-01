@@ -189,6 +189,7 @@ async function openForm(existing, onSaved, presets = {}) {
     api.get(`/lavorazioni?commessa_id=${commessaIdForm}`),
   ]);
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   // Solo lavorazioni di primo livello (senza a loro volta una madre) e
   // diverse da questa: la gerarchia resta a 2 soli livelli.

@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const db = require('../db/database');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { deltaToDocxBuffer } = require('../utils/deltaToDocx');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -64,6 +65,7 @@ router.post('/', upload.single('file'), (req, res) => {
 router.put('/:id', upload.single('file'), (req, res) => {
   const existing = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'documento non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const { titolo, tipo, url, note, rimuovi_file, cartella_id } = req.body;
   const file = req.file;
 
@@ -128,6 +130,7 @@ router.post('/autore', async (req, res) => {
 router.put('/:id/autore', async (req, res) => {
   const existing = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'documento non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const { titolo, tipo, note, delta, cartella_id } = req.body;
   if (!delta || !Array.isArray(delta.ops)) return res.status(400).json({ error: 'contenuto del documento mancante o non valido' });
 

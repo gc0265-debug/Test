@@ -45,6 +45,7 @@ const drawingCommentiRouter = require('./routes/drawingCommenti');
 const misureRouter = require('./routes/misure');
 const reportConfigRouter = require('./routes/reportConfig');
 const timelineDipendenzeRouter = require('./routes/timelineDipendenze');
+const ricercaRouter = require('./routes/ricerca');
 
 // Il secret firma i cookie di sessione: deve restare lo stesso tra un
 // riavvio e l'altro, altrimenti ogni riavvio invaliderebbe tutte le
@@ -126,6 +127,10 @@ app.use('/api/categorie', requireAuth, blockWriteForCliente, categorieRouter);
 app.use('/api/finanziaria', requireAuth, requireAdmin, finanziariaRouter);
 app.use('/api/approvazioni-drawings', requireAuth, blockWriteForCliente, requireSection('approvazioni-drawings'), approvazioniDrawingsRouter);
 app.use('/api/drawing-commenti', requireAuth, blockWriteForCliente, requireSection('approvazioni-drawings'), drawingCommentiRouter);
+// Attraversa più registri: il filtro per sezione (coerente con gli
+// stessi requireSection qui sopra) è rifatto riga per riga dentro la
+// rotta stessa, non da un unico requireSection applicato qui.
+app.use('/api/ricerca', requireAuth, blockWriteForCliente, ricercaRouter);
 
 // client statico — nessun build step, serviti così come sono
 app.use(express.static(path.join(__dirname, '..', 'client')));

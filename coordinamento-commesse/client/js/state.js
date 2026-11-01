@@ -103,3 +103,20 @@ export function wpLabel(wpId) {
   const wp = state.workPackages.find((w) => w.id === wpId);
   return wp ? `${wp.codice} ${wp.nome}` : '—';
 }
+
+// Ricerca cross-registro: cliccando un risultato si salva qui quale riga
+// aprire, e la pagina di destinazione la consuma al primo caricamento
+// (una sola volta: letture successive della stessa pagina non la
+// riaprono più). Tenuto in state.js invece che nel componente di ricerca
+// perché deve sopravvivere al cambio di pagina innescato dalla ricerca
+// stessa.
+let focusRiga = null;
+export function impostaFocusRiga(tipo, id) { focusRiga = { tipo, id }; }
+export function consumaFocusRiga(tipo) {
+  if (focusRiga && focusRiga.tipo === tipo) {
+    const id = focusRiga.id;
+    focusRiga = null;
+    return id;
+  }
+  return null;
+}

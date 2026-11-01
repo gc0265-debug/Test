@@ -2,7 +2,7 @@
 // grafici in alto: barre con % e torta con i valori, entrambi per stato.
 
 import { api } from '../api.js';
-import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -72,6 +72,7 @@ async function openMisuraForm(lavorazione, existing, onSaved) {
   const documentoOptions = [['', '— nessuno'], ...documentiRes.data.map((d) => [d.id, d.titolo])];
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Tratta / Posizione', textInput('tratta', existing?.tratta ?? '', { required: true, placeholder: 'es. Corridoio Nord, lato dx' }),
     'La porzione di lavorazione misurata, identificabile anche da chi non era presente al sopralluogo.'));
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -181,6 +182,7 @@ async function openForm(existing, onSaved) {
   }
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
     'Il nome mostrato nella Timeline Montaggi e nella lista Lavorazioni.'));
@@ -383,4 +385,10 @@ export async function renderLavorazioni(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('lavorazioni');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga && !clienteSoloLettura) openForm(riga, refresh);
+  }
 }

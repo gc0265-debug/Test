@@ -7,6 +7,7 @@ const db = require('../db/database');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { daysBetween, todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -67,6 +68,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM milestone WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'milestone non trovata' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   if (next.data_fine < next.data_inizio) return res.status(400).json({ error: 'la data di fine non può precedere la data di inizio' });
 

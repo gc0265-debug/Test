@@ -45,6 +45,7 @@ function renderPuntiEditor(punti, onChange) {
 function openForm(existing, onSaved) {
   const punti = existing ? JSON.parse(JSON.stringify(existing.punti)) : [];
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Data', textInput('data', existing?.data || todayISO(), { type: 'date', required: true }),
     'Data della nota, mostrata in stampa e nell\'elenco.'));
   form.appendChild(field('Oggetto', textInput('oggetto', existing?.oggetto ?? 'Punti aperti per il coordinamento', { required: true }),

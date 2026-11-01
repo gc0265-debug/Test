@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -77,6 +78,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM note_coordinamento WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'nota non trovata' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   const punti = req.body.punti !== undefined ? req.body.punti : JSON.parse(existing.punti_json);
   db.prepare(`

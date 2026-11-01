@@ -8,6 +8,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -66,6 +67,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM misure WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'misura non trovata' });
+  if (!verificaVersione(req, res, existing)) return;
   const { tratta, quota_progetto, quota_rilevata, unita, nota_tecnica, data_rilievo, documento_id, rif_criticita_id } = req.body;
   const next = {
     tratta: tratta ?? existing.tratta,

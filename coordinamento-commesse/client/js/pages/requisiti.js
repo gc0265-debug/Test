@@ -5,7 +5,7 @@
 // approvazioni confluiscono lì, non in un registro separato.
 
 import { api } from '../api.js';
-import { state, scopeParams, inVistaGruppo } from '../state.js';
+import { state, scopeParams, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, formatDateTime, settingsGear,
@@ -30,6 +30,7 @@ async function openForm(existing, onSaved) {
   const faseOptions = toOptions(faseList);
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === commessaIdForm)?.codice || '2514RW'}.WP1.03` }),
@@ -201,4 +202,10 @@ export async function renderRequisiti(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('requisiti');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }

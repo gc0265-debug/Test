@@ -6,6 +6,7 @@ const clamp = (text) => text ? el('div', { class: 'text-2lines' }, text) : '—'
 export const renderDiario = createCrudPage({
   apiPath: '/diario',
   titleSingular: 'Voce di diario',
+  tipoRicerca: 'diario',
   emptyLabel: 'Nessuna voce di diario per questa commessa.',
   fields: [
     { name: 'data', label: 'Data', type: 'date', default: todayISO(), required: true, hint: 'Un\'unica voce per ogni giornata di cantiere.' },

@@ -4,7 +4,7 @@
 // presidio GC, non una sincronizzazione automatica con quel fascicolo.
 
 import { api } from '../api.js';
-import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -36,6 +36,7 @@ async function openForm(existing, onSaved) {
   const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Descrizione', textarea('descrizione', existing?.descrizione ?? '', { required: true }),
     'Cosa è successo e perché richiede un presidio: il fatto da segnalare, non la risposta data.'));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),
@@ -163,4 +164,10 @@ export async function renderAllert(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('allert');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }

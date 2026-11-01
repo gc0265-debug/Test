@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db/database');
 const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -49,6 +50,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM stakeholder WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'stakeholder non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   db.prepare(`
     UPDATE stakeholder SET nome=?, organizzazione=?, ruolo=?, categoria=?, interesse=?, influenza=?, email=?, telefono=?, stato=?, note=?, updated_at=unixepoch()

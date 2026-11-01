@@ -3,7 +3,7 @@
 // e una matrice RACI verso gli stakeholder della commessa.
 
 import { api } from '../api.js';
-import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
@@ -14,6 +14,7 @@ async function openForm(existing, onSaved) {
   const frequenzaOptions = toOptions(await getCategoria('comunicazione_frequenza'));
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Nome processo', textInput('nome', existing?.nome ?? '', { required: true, placeholder: 'es. Riunione di coordinamento settimanale' }),
     'Il nome del processo comunicativo ricorrente.'));
   form.appendChild(field('Scopo', textarea('scopo', existing?.scopo ?? ''), 'Perché esiste questo processo, cosa deve garantire.'));
@@ -163,4 +164,10 @@ export async function renderComunicazione(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('comunicazione');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }

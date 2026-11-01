@@ -4,6 +4,7 @@ import { getCurrentUser, logout } from './auth.js';
 import { openSicurezzaAccount } from './pages/account.js';
 import { renderLogin } from './pages/login.js';
 import { el } from './components/ui.js';
+import { initRicercaGlobale } from './components/ricercaGlobale.js';
 import { renderCruscotto } from './pages/cruscotto.js';
 import { renderCriticita } from './pages/criticita.js';
 import { renderDecisioni } from './pages/decisioni.js';
@@ -241,6 +242,7 @@ async function main() {
   renderCommessaSelect();
   subscribe(renderCommessaSelect);
   setupSidebarResize();
+  initRicercaGlobale();
   startRouter();
 }
 

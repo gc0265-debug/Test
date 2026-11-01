@@ -4,7 +4,7 @@
 // senza termine fisso). La tabella mostra per prima cosa le viola scadute.
 
 import { api } from '../api.js';
-import { state, scopeParams, inVistaGruppo } from '../state.js';
+import { state, scopeParams, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -36,6 +36,7 @@ async function openForm(existing, onSaved) {
   const commessaIdForm = existing?.commessa_id ?? state.commessaId;
   const wpRes = await api.get(`/commesse/${commessaIdForm}/wp`);
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const urgenzaSelect = select('urgenza', Object.entries(URGENZA).map(([k, v]) => [k, v[0]]), existing?.urgenza ?? 'normale');
@@ -230,4 +231,10 @@ export async function renderCriticita(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('criticita');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }

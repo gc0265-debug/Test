@@ -116,12 +116,12 @@ mancanti.
   l'ultimo salvataggio sovrascrive il primo senza alcun avviso. Con più
   account operatore attivi è lo scenario concreto più probabile di
   perdita silenziosa di dati di tutta l'applicazione, non un'ipotesi
-  remota. **[Aperta]**
+  remota. **[Risolta in v1.41]**
 - Nessuna ricerca che attraversi più registri insieme: ogni scheda
   cerca solo al proprio interno. Ritrovare "di cosa avevamo parlato sul
   controsoffitto del bar" significa indovinare se era una criticità,
   una decisione, una nota o un documento, e cercare in ognuno
-  separatamente. **[Aperta]**
+  separatamente. **[Risolta in v1.41]**
 - Lo "Storico" esiste solo riga per riga: non c'è un registro eventi
   unico della commessa ("cosa è cambiato questa settimana, ovunque") da
   scorrere per tenere il controllo d'insieme senza riaprire ogni scheda
@@ -159,6 +159,32 @@ mancanti.
 l'applicazione nel suo complesso: non singole funzioni mancanti, ma
 scelte strutturali (concorrenza, infrastruttura, permessi) che pesano
 di più quanto più l'app viene usata da un team reale nel tempo.*
+
+---
+
+## Blocco sulle modifiche concorrenti e ricerca cross-registro (1 novembre 2026)
+
+- Ogni modulo di modifica dei registri principali (Criticità, Decisioni,
+  Allert, Requisiti, Contratti, Stakeholder, Piano Comunicazioni,
+  Lavorazioni, Misure, Approvazioni Drawings, Response Matrix,
+  Capitolato Requisiti, Note di Coordinamento, Diario, Lezioni Apprese,
+  Maestranze, Timeline/Milestone, Documenti) porta con sé la versione
+  della riga caricata: se nel frattempo qualcun altro ha già salvato
+  quella stessa riga, il salvataggio viene **rifiutato con un avviso**
+  ("questa riga è stata modificata da qualcun altro nel frattempo:
+  ricarica la pagina...") invece di sovrascrivere in silenzio il lavoro
+  del primo.
+- Una nuova casella **"Cerca in tutti i registri…"** in alto in ogni
+  pagina interroga insieme tutti i registri della commessa selezionata
+  (o del gruppo progetto, in vista aggregata): i risultati compaiono
+  raggruppati per registro con un estratto del testo trovato, e
+  cliccandone uno si apre direttamente la pagina giusta — con la riga
+  trovata già aperta in modifica per i registri principali (Criticità,
+  Decisioni, Allert, Requisiti, Contratti, Stakeholder, Piano
+  Comunicazioni, Lavorazioni, Diario).
+- Un utente Cliente vede nella ricerca solo i registri delle sezioni a
+  cui ha già accesso altrove nell'app, mai quelli delle sezioni non
+  concesse — anche se il testo cercato combacerebbe.
 
 ---
 

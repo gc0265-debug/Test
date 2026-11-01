@@ -5,7 +5,7 @@
 // a mano.
 
 import { api } from '../api.js';
-import { state, scopeParams, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, scopeParams, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
@@ -31,6 +31,7 @@ async function openForm(existing, onSaved) {
   const requisitiOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true }),
@@ -287,4 +288,10 @@ export async function renderDecisioni(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('decisioni');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }

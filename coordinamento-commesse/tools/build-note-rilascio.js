@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.40';
+const VERSIONE_ATTUALE = '1.41';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -88,8 +88,8 @@ const VALUTAZIONI_CRITICHE = [
     ambito: 'Verifica indipendente a tutto campo, non solo sull\'ultima funzione: l\'applicazione nel suo complesso contro gli strumenti equivalenti del mercato',
     sintesi: 'Dall\'ultima verifica a tutto campo (31 ottobre) l\'app ha chiuso i due buchi più vistosi, scheduling e sicurezza degli accessi, e ha aggiunto il markup sui disegni. Qui il giudizio riparte da zero sull\'insieme, non sull\'ultimo round: i rilievi che seguono riguardano soprattutto l\'infrastruttura e il lavoro in team, non più singole funzioni mancanti.',
     rilievi: [
-      { testo: 'Nessun blocco ottimistico sulle modifiche: se due persone salvano la stessa riga (es. la stessa criticità) quasi nello stesso momento, l\'ultimo salvataggio sovrascrive il primo senza alcun avviso. Con più account operatore attivi è lo scenario concreto più probabile di perdita silenziosa di dati di tutta l\'applicazione, non un\'ipotesi remota.', stato: 'Aperta' },
-      { testo: 'Nessuna ricerca che attraversi più registri insieme: ogni scheda cerca solo al proprio interno. Ritrovare "di cosa avevamo parlato sul controsoffitto del bar" significa indovinare se era una criticità, una decisione, una nota o un documento, e cercare in ognuno separatamente.', stato: 'Aperta' },
+      { testo: 'Nessun blocco ottimistico sulle modifiche: se due persone salvano la stessa riga (es. la stessa criticità) quasi nello stesso momento, l\'ultimo salvataggio sovrascrive il primo senza alcun avviso. Con più account operatore attivi è lo scenario concreto più probabile di perdita silenziosa di dati di tutta l\'applicazione, non un\'ipotesi remota.', stato: 'Risolta in v1.41' },
+      { testo: 'Nessuna ricerca che attraversi più registri insieme: ogni scheda cerca solo al proprio interno. Ritrovare "di cosa avevamo parlato sul controsoffitto del bar" significa indovinare se era una criticità, una decisione, una nota o un documento, e cercare in ognuno separatamente.', stato: 'Risolta in v1.41' },
       { testo: 'Lo "Storico" esiste solo riga per riga: non c\'è un registro eventi unico della commessa ("cosa è cambiato questa settimana, ovunque") da scorrere per tenere il controllo d\'insieme senza riaprire ogni scheda una per una.', stato: 'Aperta' },
       { testo: 'L\'app gira come singola istanza su un Mac con un database SQLite a scrittore unico: adeguato al team attuale, ma senza ridondanza, senza un vero monitoraggio (solo un health-check minimale) e con un solo punto di guasto — chi altro dovesse usarla in modo continuativo dipende interamente da quel singolo Mac acceso e raggiungibile.', stato: 'Aperta' },
       { testo: 'Nessuna interfaccia pensata per sistemi esterni (API, webhook): tutti i dati restano raggiungibili solo dall\'interno dell\'app stessa, senza alcuna via per collegarla in futuro ad altri strumenti di GILI, SAC o di Field Project SAS.', stato: 'Aperta' },
@@ -105,7 +105,15 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.40', title: 'Markup: selezione multipla e criticità già complete di WP/urgenza', date: '1 novembre 2026', attuale: true,
+    v: '1.41', title: 'Blocco sulle modifiche concorrenti e ricerca cross-registro', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Ogni modulo di modifica dei registri principali (Criticità, Decisioni, Allert, Requisiti, Contratti, Stakeholder, Piano Comunicazioni, Lavorazioni, Misure, Approvazioni Drawings, Response Matrix, Capitolato Requisiti, Note di Coordinamento, Diario, Lezioni Apprese, Maestranze, Timeline/Milestone, Documenti) porta con sé la versione della riga caricata: se nel frattempo qualcun altro ha già salvato quella stessa riga, il salvataggio viene rifiutato con un avviso ("questa riga è stata modificata da qualcun altro nel frattempo: ricarica la pagina...") invece di sovrascrivere in silenzio il lavoro del primo.',
+      'Una nuova casella "Cerca in tutti i registri…" in alto in ogni pagina interroga insieme tutti i registri della commessa selezionata (o del gruppo progetto, in vista aggregata): i risultati compaiono raggruppati per registro con un estratto del testo trovato, e cliccandone uno si apre direttamente la pagina giusta — con la riga trovata già aperta in modifica per i registri principali (Criticità, Decisioni, Allert, Requisiti, Contratti, Stakeholder, Piano Comunicazioni, Lavorazioni, Diario).',
+      'Un utente Cliente vede nella ricerca solo i registri delle sezioni a cui ha già accesso altrove nell\'app, mai quelli delle sezioni non concesse — anche se il testo cercato combacerebbe.',
+    ],
+  },
+  {
+    v: '1.40', title: 'Markup: selezione multipla e criticità già complete di WP/urgenza', date: '1 novembre 2026',
     points: [
       'Nell\'editor di markup lo strumento "Seleziona" supporta ora la selezione multipla: Shift+click aggiunge o toglie un\'annotazione dalla selezione corrente, e trascinandone una tutte le altre selezionate si spostano insieme.',
       'Il pulsante "Segnala criticità" copre ora tutte le annotazioni selezionate in un\'unica azione (es. "Segnala criticità (3)"), aprendo un modulo dove si sceglie Work Package, urgenza, destinatario ed eventuale scadenza comuni prima di creare le criticità — una per annotazione, tutte già complete invece di nascere "Normale" e senza WP da riaprire e integrare a mano.',

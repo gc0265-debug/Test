@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const db = require('../db/database');
 const { logAudit } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -84,6 +85,7 @@ router.post('/', upload.single('file'), (req, res) => {
 router.put('/:id', upload.single('file'), (req, res) => {
   const existing = db.prepare('SELECT * FROM contratti WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'contratto non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const b = req.body;
   const file = req.file;
   if ((file || b.rimuovi_file === '1') && existing.file_path) fs.unlink(path.join(uploadDir, existing.file_path), () => {});

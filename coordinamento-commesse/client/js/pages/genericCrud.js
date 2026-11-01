@@ -4,7 +4,7 @@
 // lettura, con una colonna Commessa aggiunta in testa.
 
 import { api } from '../api.js';
-import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
@@ -18,7 +18,7 @@ function buildFieldNode(f, value) {
   return textInput(f.name, value ?? '', { required: f.required || false, placeholder: f.placeholder || '' });
 }
 
-export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true, printColumns }) {
+export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true, printColumns, tipoRicerca }) {
   async function fetchRows() {
     const query = scopedByCommessa ? `?${queryScopeCommessa()}` : '';
     const res = await api.get(`${apiPath}${query}`);
@@ -30,6 +30,10 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
     fields.forEach((f) => {
       form.appendChild(field(f.label, buildFieldNode(f, existing ? existing[f.name] : f.default), f.hint));
     });
+    // blocco ottimistico sulle modifiche concorrenti: riporta indietro la
+    // versione caricata, così il server può accorgersi se qualcun altro ha
+    // già salvato questa stessa riga nel frattempo (vedi server/utils/concorrenza.js)
+    if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
     form.appendChild(el('div', { class: 'modal__actions' }, [
       el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
       el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
@@ -119,5 +123,16 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
     }
 
     await refresh();
+
+    // Apre la riga arrivata dalla ricerca cross-registro, se questa pagina
+    // è la sua destinazione e se la riga esiste ancora nella commessa
+    // corrente (vedi server/routes/ricerca.js e components/ricercaGlobale.js).
+    if (tipoRicerca) {
+      const focusId = consumaFocusRiga(tipoRicerca);
+      if (focusId) {
+        const riga = lastRows.find((r) => String(r.id) === String(focusId));
+        if (riga) openForm(riga, refresh);
+      }
+    }
   };
 }

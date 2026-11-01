@@ -3,7 +3,7 @@
 // del Piano Comunicazioni.
 
 import { api } from '../api.js';
-import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -18,6 +18,7 @@ async function openForm(existing, onSaved) {
   const categoriaOptions = toOptions(await getCategoria('stakeholder_categoria'));
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Nome', textInput('nome', existing?.nome ?? '', { required: true }),
     'Il nome con cui lo stakeholder compare nei menu di Lavorazioni, Maestranze e Contratti.'));
   form.appendChild(el('div', { class: 'field--row' }, [
@@ -168,4 +169,10 @@ export async function renderStakeholder(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('stakeholder');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }

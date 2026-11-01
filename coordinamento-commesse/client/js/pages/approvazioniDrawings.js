@@ -48,6 +48,7 @@ function commentoId(index) {
 
 async function openCommentoQuickForm(elaborato, existing, refreshList) {
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Autore', textInput('autore', existing?.autore ?? '', { placeholder: 'es. Interior Designer, MEP Eng., GC' }),
     'Chi ha fatto il commento — serve a dimostrare la provenienza, non è un elenco controllato.'));
   form.appendChild(field('Richiesta ricevuta', textarea('richiesta', existing?.richiesta ?? '', { required: true }),
@@ -153,6 +154,7 @@ async function openForm(existing, onSaved) {
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Codice', textInput('codice', existing?.codice ?? '', { required: true, placeholder: 'es. AD-WP2-014' }),
       'Identificativo univoco dell\'elaborato, lo stesso usato nel cartiglio del disegno.'),

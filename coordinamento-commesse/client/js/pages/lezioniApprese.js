@@ -31,6 +31,7 @@ async function openForm(existing, onSaved) {
   const allertOptions = [['', '— nessuno'], ...allertRes.data.map((a) => [a.id, a.descrizione])];
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
     'Riassunto breve della lezione, mostrato in elenco.'));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? ''),

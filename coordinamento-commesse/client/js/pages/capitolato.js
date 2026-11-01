@@ -22,6 +22,7 @@ async function openForm(existing, onSaved) {
   const contrattoOptions = [['', '— nessuno'], ...contrattiRes.data.map((c) => [c.id, c.controparte || c.titolo])];
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === state.commessaId)?.codice || '2514RW'}.WP1.03` }),
     'Codice univoco della voce, coerente con la struttura WBS della commessa.'));
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
@@ -62,6 +63,7 @@ async function openForm(existing, onSaved) {
 // sempre il documento della voce da cui si è partiti.
 function openRequisitoQuickForm(voce, existing, refreshList) {
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? `${voce.codice_wbs}.R`, { required: true }),
     'Codice del requisito, di norma quello della voce con un suffisso.'));
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),

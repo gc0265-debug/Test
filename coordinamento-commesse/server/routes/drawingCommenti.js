@@ -8,6 +8,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { logAudit, diffFields } = require('../utils/audit');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -46,6 +47,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM drawing_commenti WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'commento non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body, change_order: req.body.change_order !== undefined ? (req.body.change_order ? 1 : 0) : existing.change_order };
   db.prepare(`
     UPDATE drawing_commenti SET autore=?, richiesta=?, azione=?, stato=?, change_order=?, note=?, updated_at=unixepoch()

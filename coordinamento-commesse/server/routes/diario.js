@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
+const { verificaVersione } = require('../utils/concorrenza');
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM diario WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'voce di diario non trovata' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   db.prepare(`
     UPDATE diario SET data=?, squadre=?, attivita=?, eventi=?, criticita_testo=?, updated_at=unixepoch() WHERE id=?

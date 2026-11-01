@@ -93,6 +93,7 @@ async function openForm(existing, cartelle, cartellaIdDefault, onSaved) {
   const tipoOptions = toOptions(await getCategoria('documenti_tipo'));
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
     'Il nome con cui il documento compare nell\'elenco.'));
   form.appendChild(field('Tipo', select('tipo', tipoOptions, existing?.tipo ?? 'altro'),
@@ -151,6 +152,7 @@ function openEditorWord(existing, cartelle, cartellaIdDefault, onSaved) {
   }
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
     'Diventa anche il nome del file .docx generato.'));
   const tipoSelect = select('tipo', [['altro', 'Altro']], existing?.tipo ?? 'altro');

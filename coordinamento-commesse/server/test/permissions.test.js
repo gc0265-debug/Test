@@ -26,6 +26,11 @@ db.prepare(`
 
 const commessaId = db.prepare(`INSERT INTO commesse (codice, nome) VALUES ('TST', 'Commessa di test')`).run().lastInsertRowid;
 
+// Righe per i test di ricerca cross-registro: una in una sezione concessa
+// al cliente di test (timeline), una in una sezione non concessa (criticità).
+db.prepare(`INSERT INTO milestone (commessa_id, titolo, data_inizio, data_fine, baseline_data_inizio, baseline_data_fine) VALUES (?, 'ParolaChiaveMilestoneTest', '2026-01-01', '2026-01-02', '2026-01-01', '2026-01-02')`).run(commessaId);
+db.prepare(`INSERT INTO criticita (commessa_id, tema) VALUES (?, 'ParolaChiaveCriticitaTest')`).run(commessaId);
+
 const server = app.listen(0);
 const baseUrl = `http://127.0.0.1:${server.address().port}`;
 
@@ -90,4 +95,28 @@ test('operatore: non è soggetto a nessuna restrizione di sezione o di scrittura
     body: JSON.stringify({ commessa_id: commessaId, tema: 'Test' }),
   });
   assert.equal(postRes.status, 201);
+});
+
+test('ricerca cross-registro: cliente trova solo i risultati delle sezioni concesse', async () => {
+  const cookie = await loginCookie('cliente@example.com', 'Password123!');
+
+  const resConcessa = await fetch(`${baseUrl}/api/ricerca?q=ParolaChiaveMilestoneTest&commessa_id=${commessaId}`, { headers: { Cookie: cookie } });
+  assert.equal(resConcessa.status, 200);
+  const bodyConcessa = await resConcessa.json();
+  assert.equal(bodyConcessa.total, 1, 'la milestone (sezione timeline, concessa) deve comparire');
+  assert.equal(bodyConcessa.data[0].tipo, 'milestone');
+
+  const resNonConcessa = await fetch(`${baseUrl}/api/ricerca?q=ParolaChiaveCriticitaTest&commessa_id=${commessaId}`, { headers: { Cookie: cookie } });
+  assert.equal(resNonConcessa.status, 200);
+  const bodyNonConcessa = await resNonConcessa.json();
+  assert.equal(bodyNonConcessa.total, 0, 'la criticità (sezione non concessa) non deve comparire, anche se il testo combacia');
+});
+
+test('ricerca cross-registro: operatore non ha restrizioni di sezione', async () => {
+  const cookie = await loginCookie('operatore@example.com', 'Password123!');
+  const res = await fetch(`${baseUrl}/api/ricerca?q=ParolaChiaveCriticitaTest&commessa_id=${commessaId}`, { headers: { Cookie: cookie } });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.total, 1);
+  assert.equal(body.data[0].tipo, 'criticita');
 });

@@ -75,6 +75,7 @@ async function openForm(existing, onSaved) {
   const vociSelezionate = new Set(vociCapitolato.filter((v) => v.contratto_id === existing?.id).map((v) => v.id));
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   if (existing) {
     const commessaOptions = state.commesse.map((c) => [c.id, `${c.codice} — ${c.nome}`]);
     form.appendChild(field('Commessa', select('commessa_id', commessaOptions, existing.commessa_id),

@@ -13,6 +13,7 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 const db = require('../db/database');
 const { logAudit, diffFields } = require('../utils/audit');
+const { verificaVersione } = require('../utils/concorrenza');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { daysBetween, todayStr } = require('../utils/dates');
 
@@ -212,6 +213,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM approvazioni_drawings WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'elaborato non trovato' });
+  if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
   db.prepare(`
     UPDATE approvazioni_drawings

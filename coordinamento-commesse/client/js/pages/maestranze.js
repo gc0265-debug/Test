@@ -3,7 +3,7 @@
 // commessa, invece di scriverli a mano in un campo di testo libero.
 
 import { api } from '../api.js';
-import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
+import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
   openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear,
@@ -32,6 +32,7 @@ async function openForm(existing, onSaved) {
   }
 
   const form = el('form', {});
+  if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
   const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(field('Nome', select('nome', nomeOptions, existing?.nome ?? '', { required: true }),
     'Scelto dal Registro Stakeholder della commessa.'));
@@ -154,4 +155,10 @@ export async function renderMaestranze(container) {
   }
 
   await refresh();
+
+  const focusId = consumaFocusRiga('maestranze');
+  if (focusId) {
+    const riga = lastRows.find((r) => String(r.id) === String(focusId));
+    if (riga) openForm(riga, refresh);
+  }
 }
