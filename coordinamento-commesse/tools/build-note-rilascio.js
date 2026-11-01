@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.39';
+const VERSIONE_ATTUALE = '1.40';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -79,8 +79,8 @@ const VALUTAZIONI_CRITICHE = [
     ambito: 'Autovalutazione critica del collegamento markup → Registro Criticità (v1.39)',
     sintesi: 'I tre rilievi aperti sul markup (v1.38) sono chiusi in questo stesso round. Applicando lo stesso metro al collegamento appena costruito, restano due limiti minori, non bloccanti.',
     rilievi: [
-      { testo: '"Segnala criticità" copre una sola annotazione alla volta: su un disegno con molti rilievi da aprire insieme non c\'è un\'azione cumulativa.', stato: 'Aperta' },
-      { testo: 'La criticità nasce sempre con urgenza "Normale" e senza Work Package assegnato: va comunque riaperta e completata a mano per scadenza, destinatario e WP — lo stesso comportamento già in uso da Misure di Lavorazioni, qui non ancora perfezionato per il caso specifico del disegno.', stato: 'Aperta' },
+      { testo: '"Segnala criticità" copre una sola annotazione alla volta: su un disegno con molti rilievi da aprire insieme non c\'è un\'azione cumulativa.', stato: 'Risolta in v1.40' },
+      { testo: 'La criticità nasce sempre con urgenza "Normale" e senza Work Package assegnato: va comunque riaperta e completata a mano per scadenza, destinatario e WP — lo stesso comportamento già in uso da Misure di Lavorazioni, qui non ancora perfezionato per il caso specifico del disegno.', stato: 'Risolta in v1.40' },
     ],
   },
 ];
@@ -88,7 +88,15 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.39', title: 'Markup collegato al Registro Criticità, cronologia gestibile, PDF lunghi più leggeri', date: '1 novembre 2026', attuale: true,
+    v: '1.40', title: 'Markup: selezione multipla e criticità già complete di WP/urgenza', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Nell\'editor di markup lo strumento "Seleziona" supporta ora la selezione multipla: Shift+click aggiunge o toglie un\'annotazione dalla selezione corrente, e trascinandone una tutte le altre selezionate si spostano insieme.',
+      'Il pulsante "Segnala criticità" copre ora tutte le annotazioni selezionate in un\'unica azione (es. "Segnala criticità (3)"), aprendo un modulo dove si sceglie Work Package, urgenza, destinatario ed eventuale scadenza comuni prima di creare le criticità — una per annotazione, tutte già complete invece di nascere "Normale" e senza WP da riaprire e integrare a mano.',
+      'Anche il tasto Canc/Backspace ora elimina tutte le forme selezionate insieme, non più una sola alla volta.',
+    ],
+  },
+  {
+    v: '1.39', title: 'Markup collegato al Registro Criticità, cronologia gestibile, PDF lunghi più leggeri', date: '1 novembre 2026',
     points: [
       'Nell\'editor di markup, selezionando un\'annotazione (con lo strumento "Seleziona") compare il pulsante "Segnala criticità": crea una nuova riga nel Registro Criticità collegata al disegno e alla pagina, pronta da completare con scadenza, destinatario e Work Package — sullo stesso modello già in uso da Misure di Lavorazioni.',
       'Un\'annotazione già diventata una criticità resta riconoscibile da un piccolo bollino sul disegno, per non segnalarla due volte; nel Registro Criticità la riga mostra un link "📎 disegno collegato" per riaprire il disegno originale.',

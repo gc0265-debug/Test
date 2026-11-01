@@ -383,6 +383,8 @@ td.select input{cursor:pointer;}
 .markup-text-input{position:fixed;z-index:60;min-width:120px;min-height:28px;padding:3px 6px;border:1.5px dashed var(--ink-2);background:#fff;font-family:'Montserrat',Arial,sans-serif;font-size:13px;resize:both;}
 .markup-cronologia{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);}
 .markup-cronologia__riga{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--paper);font-size:12.5px;}
+.markup-elenco-segnala{margin:0 0 14px;padding-left:18px;font-size:12.5px;color:var(--ink-2);max-height:140px;overflow-y:auto;}
+.markup-elenco-segnala li{margin-bottom:3px;}
 
 /* ---------- promemoria scadenze (cruscotto) ---------- */
 .reminder-list{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:-1px;margin-bottom:10px;}

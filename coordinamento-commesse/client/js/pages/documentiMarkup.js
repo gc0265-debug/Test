@@ -8,7 +8,7 @@
 // forme fra editor ed esportazione.
 
 import { api } from '../api.js';
-import { el, openModal, closeModal, toast, confirmDialog } from '../components/ui.js';
+import { el, openModal, closeModal, toast, confirmDialog, field, select, textInput, dateInput } from '../components/ui.js';
 
 let workerConfigurato = false;
 function assicuraWorkerPdf() {
@@ -75,7 +75,7 @@ export async function apriMarkup(documento) {
   let colore = COLORI[0];
   let spessore = SPESSORI[1][1];
   let zoom = 1;
-  let selezionata = -1;
+  let selezionate = new Set(); // indici delle forme selezionate nella pagina corrente (selezione multipla con Shift+click)
   let formaInCorso = null;
 
   // ---- DOM ----
@@ -99,7 +99,7 @@ export async function apriMarkup(documento) {
   const zoomLabel = el('span', { class: 'markup-zoom-label' }, '100%');
   const btnSegnalaCriticita = el('button', {
     class: 'btn btn--sm btn--ghost', disabled: true, title: 'Seleziona prima un\'annotazione con lo strumento "Seleziona"',
-    onclick: () => segnalaCriticitaSelezionata(),
+    onclick: () => apriFormSegnalaCriticita(),
   }, 'Segnala criticità');
   const btnSalva = el('button', { class: 'btn btn--primary btn--sm', onclick: () => salvaPagina() }, 'Salva markup');
   const btnEsporta = el('button', { class: 'btn btn--sm', onclick: () => esportaPdf() }, 'Esporta PDF');
@@ -125,7 +125,7 @@ export async function apriMarkup(documento) {
     STRUMENTI.forEach(([key, label]) => {
       strumentiHost.appendChild(el('button', {
         class: 'btn btn--sm btn--ghost' + (strumento === key ? ' is-active' : ''),
-        onclick: () => { strumento = key; selezionata = -1; disegnaControlliStrumenti(); ridisegnaOverlay(); },
+        onclick: () => { strumento = key; selezionate.clear(); disegnaControlliStrumenti(); ridisegnaOverlay(); },
       }, label));
     });
   }
@@ -149,9 +149,11 @@ export async function apriMarkup(documento) {
     });
   }
   function aggiornaColoreSelezionata() {
-    if (selezionata < 0) return;
+    if (!selezionate.size) return;
     const shapes = shapesPerPagina.get(paginaCorrente);
-    if (shapes[selezionata]) { shapes[selezionata].colore = colore; pushCronologia(); ridisegnaOverlay(); }
+    selezionate.forEach((i) => { if (shapes[i]) shapes[i].colore = colore; });
+    pushCronologia();
+    ridisegnaOverlay();
   }
   disegnaControlliStrumenti();
   disegnaControlliColori();
@@ -234,7 +236,7 @@ export async function apriMarkup(documento) {
   async function vaiAllaPagina(n) {
     if (n < 1 || n > numPagine) return;
     paginaCorrente = n;
-    selezionata = -1;
+    selezionate.clear();
     disegnaControlliPagina();
     await caricaUltimaSessione(n);
     if (!cronologiaPerPagina.has(n)) {
@@ -279,7 +281,7 @@ export async function apriMarkup(documento) {
     if (!stato || stato.puntatore <= 0) return;
     stato.puntatore -= 1;
     shapesPerPagina.set(paginaCorrente, JSON.parse(JSON.stringify(stato.snapshot[stato.puntatore])));
-    selezionata = -1;
+    selezionate.clear();
     ridisegnaOverlay();
   }
   function ripeti() {
@@ -287,7 +289,7 @@ export async function apriMarkup(documento) {
     if (!stato || stato.puntatore >= stato.snapshot.length - 1) return;
     stato.puntatore += 1;
     shapesPerPagina.set(paginaCorrente, JSON.parse(JSON.stringify(stato.snapshot[stato.puntatore])));
-    selezionata = -1;
+    selezionate.clear();
     ridisegnaOverlay();
   }
 
@@ -318,7 +320,7 @@ export async function apriMarkup(documento) {
                 const sessione = await api.get(`/documenti/${documento.id}/markup/${s.id}`);
                 shapesPerPagina.set(paginaCorrente, sessione.shapes);
                 pushCronologia();
-                selezionata = -1;
+                selezionate.clear();
                 ridisegnaOverlay();
                 closeModal();
               },
@@ -472,47 +474,112 @@ export async function apriMarkup(documento) {
     const ctx = overlayCanvas.getContext('2d');
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     const shapes = shapesPerPagina.get(paginaCorrente) || [];
-    shapes.forEach((s, i) => disegnaForma(ctx, s, i === selezionata));
+    shapes.forEach((s, i) => disegnaForma(ctx, s, selezionate.has(i)));
     if (formaInCorso) disegnaForma(ctx, formaInCorso, false);
     aggiornaStatoSegnalaCriticita();
   }
 
-  function aggiornaStatoSegnalaCriticita() {
+  // Forme selezionate che non sono ancora diventate una criticità: sono
+  // quelle che "Segnala criticità" può ancora creare (le altre, già
+  // segnalate, restano selezionabili ma non contano ai fini del pulsante).
+  function formeDaSegnalare() {
     const shapes = shapesPerPagina.get(paginaCorrente) || [];
-    const s = selezionata >= 0 ? shapes[selezionata] : null;
-    if (!s) {
+    return Array.from(selezionate).filter((i) => shapes[i] && !shapes[i].criticita_id);
+  }
+
+  function aggiornaStatoSegnalaCriticita() {
+    const daSegnalare = formeDaSegnalare();
+    if (!selezionate.size) {
       btnSegnalaCriticita.disabled = true;
       btnSegnalaCriticita.textContent = 'Segnala criticità';
-      btnSegnalaCriticita.title = 'Seleziona prima un\'annotazione con lo strumento "Seleziona"';
-    } else if (s.criticita_id) {
+      btnSegnalaCriticita.title = 'Seleziona prima una o più annotazioni con lo strumento "Seleziona" (Shift+click per selezionarne più di una).';
+    } else if (!daSegnalare.length) {
       btnSegnalaCriticita.disabled = true;
-      btnSegnalaCriticita.textContent = '✓ Già segnalata';
-      btnSegnalaCriticita.title = 'Questa annotazione è già collegata a una criticità del registro.';
+      btnSegnalaCriticita.textContent = '✓ Già segnalata/e';
+      btnSegnalaCriticita.title = 'Le annotazioni selezionate sono già collegate a una criticità del registro.';
     } else {
       btnSegnalaCriticita.disabled = false;
-      btnSegnalaCriticita.textContent = 'Segnala criticità';
-      btnSegnalaCriticita.title = 'Crea una criticità nel Registro Criticità a partire da questa annotazione.';
+      btnSegnalaCriticita.textContent = daSegnalare.length > 1 ? `Segnala criticità (${daSegnalare.length})` : 'Segnala criticità';
+      btnSegnalaCriticita.title = 'Crea una criticità nel Registro Criticità a partire da ciascuna annotazione selezionata.';
     }
   }
 
-  async function segnalaCriticitaSelezionata() {
+  const ETICHETTE_TIPO_FORMA = {
+    penna: 'tratto a mano libera', evidenziatore: 'evidenziazione', linea: 'linea', freccia: 'freccia',
+    rettangolo: 'rettangolo', ellisse: 'ellisse', nuvola: 'nuvola di revisione', testo: 'nota di testo',
+  };
+
+  async function apriFormSegnalaCriticita() {
     const shapes = shapesPerPagina.get(paginaCorrente);
-    const s = selezionata >= 0 ? shapes[selezionata] : null;
-    if (!s || s.criticita_id) return;
-    btnSegnalaCriticita.disabled = true;
-    try {
-      const res = await api.post(`/documenti/${documento.id}/markup/segnala-criticita`, {
-        pagina: paginaCorrente, tipo: s.tipo, testo: s.tipo === 'testo' ? s.testo : null,
-      });
-      s.criticita_id = res.criticita_id;
-      pushCronologia();
-      ridisegnaOverlay();
-      await salvaPagina(true);
-      toast(`Criticità creata: "${res.tema}".`);
-    } catch (err) {
-      toast(err.message, { error: true });
-      aggiornaStatoSegnalaCriticita();
-    }
+    const indici = formeDaSegnalare();
+    if (!indici.length) return;
+
+    const wpRes = await api.get(`/commesse/${documento.commessa_id}/wp`);
+    const wpSelect = select('wp_id', [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])], '');
+    const urgenzaSelect = select('urgenza', [['normale', 'Normale'], ['viola', 'Urgente (3gg)'], ['verde', 'Dovuta da controparte']], 'normale');
+    const destinatarioInput = textInput('destinatario', '', { placeholder: 'es. SAC, DL, interno' });
+    const scadenzaField = field('Entro quando (se urgente)', dateInput('entro_quando', ''), 'Obbligatoria se l\'urgenza è "Urgente (3gg)".');
+    function syncScadenza() { scadenzaField.style.display = urgenzaSelect.value === 'viola' ? '' : 'none'; }
+    urgenzaSelect.addEventListener('change', syncScadenza);
+
+    const elenco = el('ul', { class: 'markup-elenco-segnala' }, indici.map((i) => {
+      const s = shapes[i];
+      const desc = ETICHETTE_TIPO_FORMA[s.tipo] || s.tipo;
+      return el('li', {}, s.tipo === 'testo' && s.testo ? `${desc}: "${s.testo}"` : desc);
+    }));
+
+    const form = el('form', {}, [
+      el('p', {}, indici.length > 1
+        ? `Verranno create ${indici.length} criticità, una per ciascuna annotazione:`
+        : 'Verrà creata una criticità da questa annotazione:'),
+      elenco,
+      field('Work package', wpSelect, 'A quale WP si riferiscono queste criticità.'),
+      field('Urgenza', urgenzaSelect, '"Urgente (3gg)" impone una scadenza di risposta; "Dovuta da controparte" è un sollecito senza termine fisso; "Normale" non ha scadenza.'),
+      scadenzaField,
+      field('Destinatario', destinatarioInput, 'Chi deve rispondere a questa richiesta.'),
+      el('div', { class: 'modal__actions' }, [
+        el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
+        el('button', { type: 'submit', class: 'btn btn--primary' }, indici.length > 1 ? `Crea ${indici.length} criticità` : 'Crea criticità'),
+      ]),
+    ]);
+    syncScadenza();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (urgenzaSelect.value === 'viola' && !dateInputValue(scadenzaField)) {
+        toast('Indica una scadenza per un\'urgenza "Urgente (3gg)".', { error: true });
+        return;
+      }
+      const payloadComune = {
+        wp_id: wpSelect.value || null, urgenza: urgenzaSelect.value,
+        destinatario: destinatarioInput.value || null,
+        entro_quando: urgenzaSelect.value === 'viola' ? dateInputValue(scadenzaField) : null,
+      };
+      try {
+        const risultati = [];
+        for (const i of indici) {
+          const s = shapes[i];
+          const res = await api.post(`/documenti/${documento.id}/markup/segnala-criticita`, {
+            pagina: paginaCorrente, tipo: s.tipo, testo: s.tipo === 'testo' ? s.testo : null, ...payloadComune,
+          });
+          s.criticita_id = res.criticita_id;
+          risultati.push(res.tema);
+        }
+        pushCronologia();
+        ridisegnaOverlay();
+        await salvaPagina(true);
+        closeModal();
+        toast(risultati.length > 1 ? `${risultati.length} criticità create.` : `Criticità creata: "${risultati[0]}".`);
+      } catch (err) {
+        toast(err.message, { error: true });
+      }
+    });
+
+    openModal(indici.length > 1 ? `Segnala ${indici.length} criticità` : 'Segnala criticità', form);
+  }
+
+  function dateInputValue(fieldNode) {
+    return fieldNode.querySelector('input[name="entro_quando"]')?.value || '';
   }
 
   function puntoNelBox(x, y, b, tolleranza = 8) {
@@ -543,8 +610,18 @@ export async function apriMarkup(documento) {
 
     if (strumento === 'seleziona') {
       const idx = formaAlPunto(x, y);
-      selezionata = idx;
-      if (idx >= 0) trascinamento = { tipo: 'sposta', idx, dx: 0, dy: 0, ultimoX: x, ultimoY: y };
+      if (evt.shiftKey) {
+        // Shift+click aggiunge/toglie dalla selezione corrente, senza mai avviare un trascinamento:
+        // evita di spostare per sbaglio mentre si sta solo componendo la selezione multipla.
+        if (idx >= 0) { if (selezionate.has(idx)) selezionate.delete(idx); else selezionate.add(idx); }
+        trascinamento = null;
+      } else if (idx >= 0) {
+        if (!selezionate.has(idx)) selezionate = new Set([idx]);
+        trascinamento = { tipo: 'sposta', ultimoX: x, ultimoY: y };
+      } else {
+        selezionate.clear();
+        trascinamento = null;
+      }
       ridisegnaOverlay();
       return;
     }
@@ -565,9 +642,8 @@ export async function apriMarkup(documento) {
     const { x, y } = posizioneCanvas(evt);
     if (trascinamento?.tipo === 'sposta') {
       const shapes = shapesPerPagina.get(paginaCorrente);
-      const s = shapes[trascinamento.idx];
       const dx = x - trascinamento.ultimoX, dy = y - trascinamento.ultimoY;
-      spostaForma(s, dx, dy);
+      selezionate.forEach((i) => { if (shapes[i]) spostaForma(shapes[i], dx, dy); });
       trascinamento.ultimoX = x; trascinamento.ultimoY = y;
       ridisegnaOverlay();
       return;
@@ -621,13 +697,13 @@ export async function apriMarkup(documento) {
     }
   }
 
-  // tasto Canc/Backspace elimina la forma selezionata; funziona solo
-  // mentre l'editor di markup è aperto, rimosso alla chiusura del modale.
+  // tasto Canc/Backspace elimina tutte le forme selezionate; funziona
+  // solo mentre l'editor di markup è aperto, rimosso alla chiusura del modale.
   function onKeydown(e) {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selezionata >= 0 && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selezionate.size && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') {
       const shapes = shapesPerPagina.get(paginaCorrente);
-      shapes.splice(selezionata, 1);
-      selezionata = -1;
+      Array.from(selezionate).sort((a, b) => b - a).forEach((i) => shapes.splice(i, 1));
+      selezionate.clear();
       pushCronologia();
       ridisegnaOverlay();
     }

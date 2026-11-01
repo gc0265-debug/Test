@@ -95,12 +95,29 @@ restano due limiti minori, non bloccanti.
 
 - "Segnala criticità" copre una sola annotazione alla volta: su un
   disegno con molti rilievi da aprire insieme non c'è un'azione
-  cumulativa. **[Aperta]**
+  cumulativa. **[Risolta in v1.40]**
 - La criticità nasce sempre con urgenza "Normale" e senza Work Package
   assegnato: va comunque riaperta e completata a mano per scadenza,
   destinatario e WP — lo stesso comportamento già in uso da Misure di
   Lavorazioni, qui non ancora perfezionato per il caso specifico del
-  disegno. **[Aperta]**
+  disegno. **[Risolta in v1.40]**
+
+---
+
+## Markup: selezione multipla e criticità già complete di WP/urgenza (1 novembre 2026)
+
+- Nell'editor di markup lo strumento "Seleziona" supporta ora la
+  **selezione multipla**: Shift+click aggiunge o toglie un'annotazione
+  dalla selezione corrente, e trascinandone una tutte le altre
+  selezionate si spostano insieme.
+- Il pulsante "Segnala criticità" copre ora tutte le annotazioni
+  selezionate in un'unica azione (es. "Segnala criticità (3)"), aprendo
+  un modulo dove si sceglie **Work Package, urgenza, destinatario ed
+  eventuale scadenza** comuni prima di creare le criticità — una per
+  annotazione, tutte già complete invece di nascere "Normale" e senza
+  WP da riaprire e integrare a mano.
+- Anche il tasto Canc/Backspace ora elimina tutte le forme selezionate
+  insieme, non più una sola alla volta.
 
 ---
 

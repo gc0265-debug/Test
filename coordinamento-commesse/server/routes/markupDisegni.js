@@ -64,7 +64,11 @@ router.delete('/:id/markup/:markupId', (req, res) => {
 router.post('/:id/markup/segnala-criticita', (req, res) => {
   const doc = documentoEsistente(req.params.id);
   if (!doc) return res.status(404).json({ error: 'documento non trovato' });
-  const { pagina, tipo, testo } = req.body;
+  const { pagina, tipo, testo, wp_id, urgenza, destinatario, entro_quando } = req.body;
+  const urgenzaFinale = urgenza || 'normale';
+  if (urgenzaFinale === 'viola' && !entro_quando) {
+    return res.status(400).json({ error: 'una criticità "viola" richiede una scadenza (entro_quando)' });
+  }
 
   const etichetteTipo = {
     penna: 'tratto a mano libera', evidenziatore: 'evidenziazione', linea: 'linea', freccia: 'freccia',
@@ -78,9 +82,9 @@ router.post('/:id/markup/segnala-criticita', (req, res) => {
   ].join('\n');
 
   const result = db.prepare(`
-    INSERT INTO criticita (commessa_id, tema, cosa_serve, urgenza, stato, rif_documento_id, rif_documento_pagina)
-    VALUES (?, ?, ?, 'normale', 'aperta', ?, ?)
-  `).run(doc.commessa_id, tema, cosaServe, doc.id, pagina || 1);
+    INSERT INTO criticita (commessa_id, wp_id, tema, cosa_serve, destinatario, urgenza, entro_quando, stato, rif_documento_id, rif_documento_pagina)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'aperta', ?, ?)
+  `).run(doc.commessa_id, wp_id || null, tema, cosaServe, destinatario || null, urgenzaFinale, entro_quando || null, doc.id, pagina || 1);
 
   logAudit({ commessa_id: doc.commessa_id, entity_type: 'criticita', entity_id: result.lastInsertRowid, azione: 'creata', utente: req.user?.nome, dettaglio: tema });
 
