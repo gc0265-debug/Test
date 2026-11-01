@@ -83,6 +83,23 @@ const VALUTAZIONI_CRITICHE = [
       { testo: 'La criticità nasce sempre con urgenza "Normale" e senza Work Package assegnato: va comunque riaperta e completata a mano per scadenza, destinatario e WP — lo stesso comportamento già in uso da Misure di Lavorazioni, qui non ancora perfezionato per il caso specifico del disegno.', stato: 'Risolta in v1.40' },
     ],
   },
+  {
+    data: '1 novembre 2026',
+    ambito: 'Verifica indipendente a tutto campo, non solo sull\'ultima funzione: l\'applicazione nel suo complesso contro gli strumenti equivalenti del mercato',
+    sintesi: 'Dall\'ultima verifica a tutto campo (31 ottobre) l\'app ha chiuso i due buchi più vistosi, scheduling e sicurezza degli accessi, e ha aggiunto il markup sui disegni. Qui il giudizio riparte da zero sull\'insieme, non sull\'ultimo round: i rilievi che seguono riguardano soprattutto l\'infrastruttura e il lavoro in team, non più singole funzioni mancanti.',
+    rilievi: [
+      { testo: 'Nessun blocco ottimistico sulle modifiche: se due persone salvano la stessa riga (es. la stessa criticità) quasi nello stesso momento, l\'ultimo salvataggio sovrascrive il primo senza alcun avviso. Con più account operatore attivi è lo scenario concreto più probabile di perdita silenziosa di dati di tutta l\'applicazione, non un\'ipotesi remota.', stato: 'Aperta' },
+      { testo: 'Nessuna ricerca che attraversi più registri insieme: ogni scheda cerca solo al proprio interno. Ritrovare "di cosa avevamo parlato sul controsoffitto del bar" significa indovinare se era una criticità, una decisione, una nota o un documento, e cercare in ognuno separatamente.', stato: 'Aperta' },
+      { testo: 'Lo "Storico" esiste solo riga per riga: non c\'è un registro eventi unico della commessa ("cosa è cambiato questa settimana, ovunque") da scorrere per tenere il controllo d\'insieme senza riaprire ogni scheda una per una.', stato: 'Aperta' },
+      { testo: 'L\'app gira come singola istanza su un Mac con un database SQLite a scrittore unico: adeguato al team attuale, ma senza ridondanza, senza un vero monitoraggio (solo un health-check minimale) e con un solo punto di guasto — chi altro dovesse usarla in modo continuativo dipende interamente da quel singolo Mac acceso e raggiungibile.', stato: 'Aperta' },
+      { testo: 'Nessuna interfaccia pensata per sistemi esterni (API, webhook): tutti i dati restano raggiungibili solo dall\'interno dell\'app stessa, senza alcuna via per collegarla in futuro ad altri strumenti di GILI, SAC o di Field Project SAS.', stato: 'Aperta' },
+      { testo: 'Il layout si adatta allo schermo dello smartphone solo in modo generico (un solo breakpoint, non pensato per il telefono): tabelle e Gantt restano scomodi da consultare sul cellulare, proprio il dispositivo più a portata di mano in cantiere.', stato: 'Aperta' },
+      { testo: 'Non esiste un\'esportazione completa dei propri dati: solo export per singolo registro (Excel) o per report configurato. Chi volesse un archivio integrale di una commessa, per un passaggio di consegne o per smettere di usare l\'app, non ha un pulsante unico per ottenerlo.', stato: 'Aperta' },
+      { testo: 'I permessi restano a tre soli livelli (admin/operatore/cliente): un operatore ha accesso in scrittura a tutti i Work Package di ogni commessa a cui è assegnato, senza possibilità di restringerlo, ad esempio, al solo WP di cui è effettivamente responsabile.', stato: 'Aperta' },
+      { testo: 'Nessun supporto per altre lingue: testi, date ed etichette sono scritti direttamente in italiano in ogni punto dell\'app, senza un livello di traduzione. Non è un problema oggi, ma blocca sul nascere il coinvolgimento di un fornitore o un cliente che non legga l\'italiano.', stato: 'Aperta' },
+    ],
+    nota: 'A differenza delle verifiche precedenti, qui il giudizio riguarda l\'applicazione nel suo complesso: non singole funzioni mancanti, ma scelte strutturali (concorrenza, infrastruttura, permessi) che pesano di più quanto più l\'app viene usata da un team reale nel tempo.',
+  },
 ];
 
 // Più recente prima, come nel documento di riferimento.

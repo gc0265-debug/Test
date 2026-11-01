@@ -102,6 +102,64 @@ restano due limiti minori, non bloccanti.
   Lavorazioni, qui non ancora perfezionato per il caso specifico del
   disegno. **[Risolta in v1.40]**
 
+### Verifica indipendente a tutto campo, non solo sull'ultima funzione (1 novembre 2026)
+
+Dall'ultima verifica a tutto campo (31 ottobre) l'app ha chiuso i due
+buchi più vistosi, scheduling e sicurezza degli accessi, e ha aggiunto
+il markup sui disegni. Qui il giudizio riparte da zero sull'insieme,
+non sull'ultimo round: i rilievi che seguono riguardano soprattutto
+l'infrastruttura e il lavoro in team, non più singole funzioni
+mancanti.
+
+- Nessun blocco ottimistico sulle modifiche: se due persone salvano la
+  stessa riga (es. la stessa criticità) quasi nello stesso momento,
+  l'ultimo salvataggio sovrascrive il primo senza alcun avviso. Con più
+  account operatore attivi è lo scenario concreto più probabile di
+  perdita silenziosa di dati di tutta l'applicazione, non un'ipotesi
+  remota. **[Aperta]**
+- Nessuna ricerca che attraversi più registri insieme: ogni scheda
+  cerca solo al proprio interno. Ritrovare "di cosa avevamo parlato sul
+  controsoffitto del bar" significa indovinare se era una criticità,
+  una decisione, una nota o un documento, e cercare in ognuno
+  separatamente. **[Aperta]**
+- Lo "Storico" esiste solo riga per riga: non c'è un registro eventi
+  unico della commessa ("cosa è cambiato questa settimana, ovunque") da
+  scorrere per tenere il controllo d'insieme senza riaprire ogni scheda
+  una per una. **[Aperta]**
+- L'app gira come singola istanza su un Mac con un database SQLite a
+  scrittore unico: adeguato al team attuale, ma senza ridondanza, senza
+  un vero monitoraggio (solo un health-check minimale) e con un solo
+  punto di guasto — chi altro dovesse usarla in modo continuativo
+  dipende interamente da quel singolo Mac acceso e raggiungibile.
+  **[Aperta]**
+- Nessuna interfaccia pensata per sistemi esterni (API, webhook): tutti
+  i dati restano raggiungibili solo dall'interno dell'app stessa, senza
+  alcuna via per collegarla in futuro ad altri strumenti di GILI, SAC o
+  di Field Project SAS. **[Aperta]**
+- Il layout si adatta allo schermo dello smartphone solo in modo
+  generico (un solo breakpoint, non pensato per il telefono): tabelle e
+  Gantt restano scomodi da consultare sul cellulare, proprio il
+  dispositivo più a portata di mano in cantiere. **[Aperta]**
+- Non esiste un'esportazione completa dei propri dati: solo export per
+  singolo registro (Excel) o per report configurato. Chi volesse un
+  archivio integrale di una commessa, per un passaggio di consegne o
+  per smettere di usare l'app, non ha un pulsante unico per ottenerlo.
+  **[Aperta]**
+- I permessi restano a tre soli livelli (admin/operatore/cliente): un
+  operatore ha accesso in scrittura a tutti i Work Package di ogni
+  commessa a cui è assegnato, senza possibilità di restringerlo, ad
+  esempio, al solo WP di cui è effettivamente responsabile. **[Aperta]**
+- Nessun supporto per altre lingue: testi, date ed etichette sono
+  scritti direttamente in italiano in ogni punto dell'app, senza un
+  livello di traduzione. Non è un problema oggi, ma blocca sul nascere
+  il coinvolgimento di un fornitore o un cliente che non legga
+  l'italiano. **[Aperta]**
+
+*A differenza delle verifiche precedenti, qui il giudizio riguarda
+l'applicazione nel suo complesso: non singole funzioni mancanti, ma
+scelte strutturali (concorrenza, infrastruttura, permessi) che pesano
+di più quanto più l'app viene usata da un team reale nel tempo.*
+
 ---
 
 ## Markup: selezione multipla e criticità già complete di WP/urgenza (1 novembre 2026)
