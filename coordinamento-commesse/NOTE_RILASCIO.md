@@ -64,6 +64,52 @@ livello, non equivalente a quanto offerto da una piattaforma SaaS matura.
   un account amministratore già esistente con una password debole
   continua a funzionare finché non la cambia volontariamente. **[Aperta]**
 
+### Autovalutazione critica di cartelle e markup sui disegni (1 novembre 2026)
+
+Il markup chiude la lacuna più visibile rispetto agli strumenti di
+cantiere concorrenti (nessun modo di annotare un disegno restava il
+limite più citato): resta però uno strumento visivo a sé, non ancora
+collegato ai registri che tracciano davvero il seguito di
+un'osservazione.
+
+- Un markup su un disegno (es. una nuvola di revisione con "verificare
+  quota") resta solo visivo: non genera una riga nel Registro Criticità
+  come già avviene dalla sezione Misure di Lavorazioni. Chi annota un
+  disegno deve ancora aprire a mano una criticità se vuole che quel
+  rilievo abbia una scadenza e un responsabile. **[Aperta]**
+- Le sessioni di markup salvate restano tutte, per sempre: non c'è modo
+  dall'interfaccia di eliminarne una creata per errore (la rotta esiste
+  lato server ma non è ancora richiamata da nessun pulsante). **[Aperta]**
+- Su un elaborato PDF con molte pagine, l'editor tiene in memoria il
+  rendering di ogni pagina visitata per tutta la sessione: utile per non
+  ridisegnarle ad ogni cambio pagina, ma su un fascicolo molto lungo può
+  appesantire il browser. Non c'è ancora un limite o un avviso. **[Aperta]**
+
+---
+
+## Documenti: cartelle nidificate e markup sui disegni (1 novembre 2026)
+
+- La scheda Documenti ha ora delle **cartelle**, nidificabili a piacere
+  (cartelle dentro cartelle): un pulsante "+ Nuova cartella", una barra
+  di navigazione in stile Documenti › Disegni › Piano 3 e un campo
+  "Cartella" nel modulo di ogni documento per archiviarlo o spostarlo.
+- Sui disegni in **PDF o immagine** (JPG, PNG...) è ora disponibile un
+  pulsante **"Markup"**: un editor con gli strumenti classici di
+  revisione — penna, evidenziatore, linea, freccia, rettangolo, ellisse,
+  nuvola di revisione, testo — con colori, spessore del tratto,
+  selezione/spostamento, annulla/ripeti e zoom.
+- Ogni "Salva markup" crea una nuova sessione datata e firmata da chi
+  l'ha fatta, senza mai sovrascrivere le precedenti: restano tutte
+  consultabili dal menu "Cronologia sessioni" della pagina, utile per
+  tenere traccia dei round di commenti del DL o del GC su revisioni
+  successive dello stesso disegno.
+- Il pulsante **"Esporta PDF"** genera un nuovo documento PDF con tutti i
+  markup incorporati nel disegno stesso, pronto da scaricare, stampare o
+  allegare a un'email a chi non ha accesso all'app — il disegno
+  originale caricato non viene mai modificato.
+- Sui PDF a più pagine (un fascicolo di elaborati) l'editor naviga
+  pagina per pagina, con un markup indipendente per ciascuna.
+
 ---
 
 ## MFA e policy password minima sugli account (1 novembre 2026)

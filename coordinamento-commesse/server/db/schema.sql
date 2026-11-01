@@ -185,9 +185,22 @@ CREATE TABLE IF NOT EXISTS maestranze (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Cartelle dei Documenti, nidificabili a piacere (parent_id punta a
+-- un'altra riga di questa stessa tabella): la gerarchia la decide chi
+-- usa l'app, non uno schema fisso di categorie.
+CREATE TABLE IF NOT EXISTS cartelle_documenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    parent_id INTEGER REFERENCES cartelle_documenti(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 CREATE TABLE IF NOT EXISTS documenti (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    cartella_id INTEGER REFERENCES cartelle_documenti(id) ON DELETE SET NULL,
     titolo TEXT NOT NULL,
     tipo TEXT DEFAULT 'altro',
     url TEXT,
@@ -198,6 +211,23 @@ CREATE TABLE IF NOT EXISTS documenti (
     note TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Markup su un disegno (PDF o immagine) caricato in Documenti: ogni
+-- salvataggio crea una nuova sessione storicizzata, mai una sovrascrittura,
+-- così restano consultabili i round di commenti fatti nel tempo (es. dal
+-- DL su una revisione, poi su quella successiva). "shapes" è un array
+-- JSON di forme vettoriali (tipo, colore, punti...), non un'immagine:
+-- resta modificabile riaprendo la sessione come punto di partenza.
+CREATE TABLE IF NOT EXISTS markup_disegni (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    documento_id INTEGER NOT NULL REFERENCES documenti(id) ON DELETE CASCADE,
+    pagina INTEGER NOT NULL DEFAULT 1,
+    autore_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    autore_nome TEXT,
+    titolo TEXT,
+    shapes TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 -- Milestone / montaggi: date di inizio e fine per commessa, work package,

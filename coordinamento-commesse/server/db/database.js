@@ -33,6 +33,7 @@ ensureColumns('documenti', [
   // app: permette di riaprirli nell'editor per modificarli, a differenza
   // di un file caricato dall'esterno di cui l'app non conosce il contenuto.
   { name: 'contenuto_editor', def: 'TEXT' },
+  { name: 'cartella_id', def: 'INTEGER REFERENCES cartelle_documenti(id) ON DELETE SET NULL' },
 ]);
 ensureColumns('decisioni', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
 ensureColumns('allert', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);

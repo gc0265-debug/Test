@@ -6,6 +6,7 @@ import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
+import { apriMarkup, documentoSupportaMarkup } from './documentiMarkup.js';
 
 function formatSize(bytes) {
   if (!bytes) return '';
@@ -13,7 +14,82 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-async function openForm(existing, onSaved) {
+// ---------- cartelle: albero, opzioni per i select, breadcrumb ----------
+
+function figliPerGenitore(cartelle) {
+  const mappa = {};
+  cartelle.forEach((c) => {
+    const k = c.parent_id || 'root';
+    (mappa[k] ??= []).push(c);
+  });
+  Object.values(mappa).forEach((arr) => arr.sort((a, b) => a.nome.localeCompare(b.nome, 'it')));
+  return mappa;
+}
+
+// Opzioni indentate per il <select> "Cartella": esclude la cartella
+// stessa e le sue discendenti quando si sta scegliendo dove spostarla,
+// altrimenti si potrebbe selezionare un ciclo che poi il server rifiuta.
+function opzioniCartelle(cartelle, escludiId) {
+  const figli = figliPerGenitore(cartelle);
+  const esclusi = new Set();
+  (function raccogli(id) {
+    esclusi.add(id);
+    (figli[id] || []).forEach((c) => raccogli(c.id));
+  }(escludiId));
+  const out = [];
+  (function cammina(genitoreKey, profondita) {
+    (figli[genitoreKey] || []).forEach((c) => {
+      if (escludiId && esclusi.has(c.id)) return;
+      out.push([c.id, '　'.repeat(profondita) + c.nome]);
+      cammina(c.id, profondita + 1);
+    });
+  }('root', 0));
+  return out;
+}
+
+function percorsoCartella(cartelle, cartellaId) {
+  const byId = Object.fromEntries(cartelle.map((c) => [c.id, c]));
+  const percorso = [];
+  let cur = cartellaId;
+  while (cur) {
+    const c = byId[cur];
+    if (!c) break;
+    percorso.unshift(c);
+    cur = c.parent_id;
+  }
+  return percorso;
+}
+
+function cartellaForm(commessaId, cartelle, existing, parentIdDefault, onSaved) {
+  const nomeInput = textInput('nome', existing?.nome ?? '', { required: true, autofocus: true });
+  const parentSelect = select('parent_id', [['', '— cartella radice —'], ...opzioniCartelle(cartelle, existing?.id)],
+    existing ? (existing.parent_id ?? '') : (parentIdDefault ?? ''));
+  const form = el('form', {}, [
+    field('Nome cartella', nomeInput),
+    field('Dentro a', parentSelect, 'Dove si trova questa cartella. Lascia "cartella radice" per metterla al primo livello.'),
+    el('div', { class: 'modal__actions' }, [
+      el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
+      el('button', { type: 'submit', class: 'btn btn--primary' }, existing ? 'Salva' : 'Crea'),
+    ]),
+  ]);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = { nome: nomeInput.value.trim(), parent_id: parentSelect.value || null };
+    if (!existing) payload.commessa_id = commessaId;
+    try {
+      if (existing) await api.put(`/cartelle-documenti/${existing.id}`, payload);
+      else await api.post('/cartelle-documenti', payload);
+      closeModal();
+      toast(existing ? 'Cartella aggiornata.' : 'Cartella creata.');
+      onSaved();
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  });
+  openModal(existing ? 'Rinomina o sposta cartella' : 'Nuova cartella', form);
+}
+
+async function openForm(existing, cartelle, cartellaIdDefault, onSaved) {
   const tipoOptions = toOptions(await getCategoria('documenti_tipo'));
 
   const form = el('form', {});
@@ -23,6 +99,9 @@ async function openForm(existing, onSaved) {
     'Classificazione libera, personalizzabile da Impostazioni.'));
   form.appendChild(field('Link (URL)', textInput('url', existing?.url ?? '', { placeholder: 'https://…' }),
     'Link esterno (es. cartella condivisa), in aggiunta o in alternativa al file caricato sotto.'));
+  const cartellaSelect = select('cartella_id', [['', '— cartella radice —'], ...opzioniCartelle(cartelle)],
+    existing ? (existing.cartella_id ?? '') : (cartellaIdDefault ?? ''));
+  form.appendChild(field('Cartella', cartellaSelect, 'Dove si trova questo documento nell\'archivio.'));
 
   const fileInput = el('input', { type: 'file', name: 'file' });
   form.appendChild(field('File', fileInput, existing?.file_nome
@@ -65,7 +144,7 @@ async function openForm(existing, onSaved) {
 // viene convertito in un vero .docx sul server (vedi
 // server/utils/deltaToDocx.js) e salvato come un documento normale, con
 // in più il Delta originale che permette di riaprirlo per modificarlo.
-function openEditorWord(existing, onSaved) {
+function openEditorWord(existing, cartelle, cartellaIdDefault, onSaved) {
   if (typeof window.Quill === 'undefined') {
     toast('Editor Word non disponibile: ricarica la pagina (connessione assente al primo caricamento?).', { error: true });
     return;
@@ -76,6 +155,9 @@ function openEditorWord(existing, onSaved) {
     'Diventa anche il nome del file .docx generato.'));
   const tipoSelect = select('tipo', [['altro', 'Altro']], existing?.tipo ?? 'altro');
   form.appendChild(field('Tipo', tipoSelect, 'Classificazione libera, personalizzabile da Impostazioni.'));
+  const cartellaSelect = select('cartella_id', [['', '— cartella radice —'], ...opzioniCartelle(cartelle)],
+    existing ? (existing.cartella_id ?? '') : (cartellaIdDefault ?? ''));
+  form.appendChild(field('Cartella', cartellaSelect, 'Dove si trova questo documento nell\'archivio.'));
   form.appendChild(field('Note', textarea('note', existing?.note ?? '', { rows: 2 }),
     'Annotazioni libere, visibili solo qui — non fanno parte del testo del documento.'));
 
@@ -127,6 +209,7 @@ function openEditorWord(existing, onSaved) {
     const payload = {
       titolo: form.titolo.value,
       tipo: tipoSelect.value,
+      cartella_id: cartellaSelect.value || null,
       note: form.note.value || null,
       delta,
     };
@@ -157,6 +240,8 @@ export async function renderDocumenti(container) {
   let lastRows = [];
   let tipoMap = {};
   let selectedId = null;
+  let cartelle = [];
+  let cartellaId = null; // null = cartella radice
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -168,23 +253,69 @@ export async function renderDocumenti(container) {
           rows: rows.map((r) => [r.titolo, tipoMap[r.tipo] || r.tipo, r.url || '—', r.file_nome || '—', r.note || '—']),
         }]);
       } }, 'Stampa'),
-      soloLettura ? null : el('button', { class: 'btn', onclick: () => openEditorWord(null, refresh) }, '+ Scrivi documento Word'),
-      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo documento'),
+      soloLettura ? null : el('button', { class: 'btn', onclick: () => cartellaForm(state.commessaId, cartelle, null, cartellaId, refresh) }, '+ Nuova cartella'),
+      soloLettura ? null : el('button', { class: 'btn', onclick: () => openEditorWord(null, cartelle, cartellaId, refresh) }, '+ Scrivi documento Word'),
+      soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, cartelle, cartellaId, refresh) }, '+ Nuovo documento'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  const breadcrumbHost = el('div', { class: 'docs-breadcrumb' });
+  const cartelleHost = el('div', { class: 'docs-cartelle' });
+  if (!soloLettura) { container.appendChild(breadcrumbHost); container.appendChild(cartelleHost); }
   const tableHost = el('div');
   container.appendChild(tableHost);
 
+  function vaiA(id) { cartellaId = id; refresh(); }
+
+  function renderNavigazioneCartelle() {
+    const percorso = percorsoCartella(cartelle, cartellaId);
+    breadcrumbHost.innerHTML = '';
+    breadcrumbHost.appendChild(el('button', { class: 'docs-breadcrumb__item' + (cartellaId ? '' : ' is-active'), onclick: () => vaiA(null) }, '📁 Documenti'));
+    percorso.forEach((c) => {
+      breadcrumbHost.appendChild(el('span', { class: 'docs-breadcrumb__sep' }, '›'));
+      breadcrumbHost.appendChild(el('button', {
+        class: 'docs-breadcrumb__item' + (c.id === cartellaId ? ' is-active' : ''), onclick: () => vaiA(c.id),
+      }, c.nome));
+    });
+
+    const sottocartelle = cartelle.filter((c) => (c.parent_id || null) === (cartellaId || null));
+    cartelleHost.innerHTML = '';
+    sottocartelle.forEach((c) => {
+      cartelleHost.appendChild(el('div', { class: 'docs-cartella', onclick: () => vaiA(c.id) }, [
+        el('span', { class: 'docs-cartella__nome' }, `📁 ${c.nome}`),
+        el('span', { class: 'docs-cartella__azioni' }, [
+          el('button', {
+            class: 'btn btn--sm btn--ghost', title: 'Rinomina o sposta',
+            onclick: (e) => { e.stopPropagation(); cartellaForm(state.commessaId, cartelle, c, null, refresh); },
+          }, '✎'),
+          el('button', {
+            class: 'btn btn--sm btn--ghost btn--danger', title: 'Elimina',
+            onclick: async (e) => {
+              e.stopPropagation();
+              if (!confirmDialog(`Eliminare la cartella "${c.nome}"? Deve essere vuota.`)) return;
+              try { await api.del(`/cartelle-documenti/${c.id}`); toast('Cartella eliminata.'); refresh(); }
+              catch (err) { toast(err.message, { error: true }); }
+            },
+          }, '🗑'),
+        ]),
+      ]));
+    });
+  }
+
   async function refresh() {
-    const [res, tipoList] = await Promise.all([
-      api.get(`/documenti?${queryScopeCommessa()}`),
+    const query = queryScopeCommessa();
+    const docsQuery = soloLettura ? query : `${query}&cartella_id=${cartellaId ?? 'root'}`;
+    const [res, tipoList, cartelleRes] = await Promise.all([
+      api.get(`/documenti?${docsQuery}`),
       getCategoria('documenti_tipo'),
+      soloLettura ? Promise.resolve({ data: [] }) : api.get(`/cartelle-documenti?${query}`),
     ]);
     tipoMap = toMap(tipoList);
     const TIPO = tipoMap;
     lastRows = res.data;
+    cartelle = cartelleRes.data;
+    if (!soloLettura) renderNavigazioneCartelle();
     renderTable(tableHost, [
       soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'titolo', label: 'Titolo' },
@@ -195,6 +326,7 @@ export async function renderDocumenti(container) {
       soloLettura ? null : {
         key: 'actions', label: '', className: 'actions',
         render: (row) => el('div', {}, [
+          documentoSupportaMarkup(row) ? el('button', { class: 'btn btn--sm btn--ghost', onclick: () => apriMarkup(row) }, 'Markup') : null,
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => apriModifica(row) }, row.contenuto_editor ? 'Modifica testo' : 'Modifica'),
           el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
@@ -207,15 +339,15 @@ export async function renderDocumenti(container) {
           }, 'Elimina'),
         ]),
       },
-    ].filter(Boolean), res.data, {
-      emptyLabel: 'Nessun documento registrato per questa commessa.',
+    ].filter(Boolean), lastRows, {
+      emptyLabel: cartellaId ? 'Nessun documento in questa cartella.' : 'Nessun documento registrato per questa commessa.',
       onRowClick: (row) => apriModifica(row),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
 
     function apriModifica(row) {
-      if (row.contenuto_editor) openEditorWord(row, refresh);
-      else openForm(row, refresh);
+      if (row.contenuto_editor) openEditorWord(row, cartelle, cartellaId, refresh);
+      else openForm(row, cartelle, cartellaId, refresh);
     }
   }
 

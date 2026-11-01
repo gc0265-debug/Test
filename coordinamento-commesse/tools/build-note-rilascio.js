@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.37';
+const VERSIONE_ATTUALE = '1.38';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -64,12 +64,32 @@ const VALUTAZIONI_CRITICHE = [
       { testo: 'La policy minima si applica solo alla creazione o al cambio password: un account amministratore già esistente con una password debole continua a funzionare finché non la cambia volontariamente.', stato: 'Aperta' },
     ],
   },
+  {
+    data: '1 novembre 2026',
+    ambito: 'Autovalutazione critica di cartelle e markup sui disegni (v1.38)',
+    sintesi: 'Il markup chiude la lacuna più visibile rispetto agli strumenti di cantiere concorrenti (nessun modo di annotare un disegno restava il limite più citato): resta però uno strumento visivo a sé, non ancora collegato ai registri che tracciano davvero il seguito di un\'osservazione.',
+    rilievi: [
+      { testo: 'Un markup su un disegno (es. una nuvola di revisione con "verificare quota") resta solo visivo: non genera una riga nel Registro Criticità come già avviene dalla sezione Misure di Lavorazioni. Chi annota un disegno deve ancora aprire a mano una criticità se vuole che quel rilievo abbia una scadenza e un responsabile.', stato: 'Aperta' },
+      { testo: 'Le sessioni di markup salvate restano tutte, per sempre: non c\'è modo dall\'interfaccia di eliminarne una creata per errore (la rotta esiste lato server ma non è ancora richiamata da nessun pulsante).', stato: 'Aperta' },
+      { testo: 'Su un elaborato PDF con molte pagine, l\'editor tiene in memoria il rendering di ogni pagina visitata per tutta la sessione: utile per non ridisegnarle ad ogni cambio pagina, ma su un fascicolo molto lungo può appesantire il browser. Non c\'è ancora un limite o un avviso.', stato: 'Aperta' },
+    ],
+  },
 ];
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.37', title: 'MFA e policy password minima sugli account', date: '1 novembre 2026', attuale: true,
+    v: '1.38', title: 'Documenti: cartelle nidificate e markup sui disegni', date: '1 novembre 2026', attuale: true,
+    points: [
+      'La scheda Documenti ha ora delle cartelle, nidificabili a piacere (cartelle dentro cartelle): un pulsante "+ Nuova cartella", una barra di navigazione in stile Documenti › Disegni › Piano 3 e un campo "Cartella" nel modulo di ogni documento per archiviarlo o spostarlo.',
+      'Sui disegni in PDF o immagine (JPG, PNG...) è ora disponibile un pulsante "Markup": un editor con gli strumenti classici di revisione — penna, evidenziatore, linea, freccia, rettangolo, ellisse, nuvola di revisione, testo — con colori, spessore del tratto, selezione/spostamento, annulla/ripeti e zoom.',
+      'Ogni "Salva markup" crea una nuova sessione datata e firmata da chi l\'ha fatta, senza mai sovrascrivere le precedenti: restano tutte consultabili dal menu "Cronologia sessioni" della pagina, utile per tenere traccia dei round di commenti del DL o del GC su revisioni successive dello stesso disegno.',
+      'Il pulsante "Esporta PDF" genera un nuovo documento PDF con tutti i markup incorporati nel disegno stesso, pronto da scaricare, stampare o allegare a un\'email a chi non ha accesso all\'app — il disegno originale caricato non viene mai modificato.',
+      'Sui PDF a più pagine (un fascicolo di elaborati) l\'editor naviga pagina per pagina, con un markup indipendente per ciascuna.',
+    ],
+  },
+  {
+    v: '1.37', title: 'MFA e policy password minima sugli account', date: '1 novembre 2026',
     points: [
       'Ogni utente può ora attivare l\'autenticazione a due fattori (MFA) sul proprio account, dalla nuova icona "Sicurezza account" accanto al proprio nome in fondo al menu laterale: un QR da inquadrare con un\'app authenticator (Google Authenticator, Authy, Microsoft Authenticator...) e un codice di conferma, dopodiché il login richiede anche il codice a 6 cifre oltre alla password.',
       'Nuova policy minima di robustezza, applicata a ogni nuova password e ad ogni cambio password, per qualunque ruolo: almeno 10 caratteri, con una maiuscola, una minuscola e un numero.',

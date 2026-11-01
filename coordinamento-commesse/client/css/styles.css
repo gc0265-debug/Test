@@ -282,6 +282,9 @@ td.select input{cursor:pointer;}
   padding-top:calc(24px + env(safe-area-inset-top, 0px));
 }
 .modal--wide{width:min(900px,100%);}
+.modal--full{width:100%;padding:0;display:flex;flex-direction:column;}
+.modal--full .modal__head{padding:14px 22px;margin:0;border-bottom:1px solid var(--rule);flex:none;}
+.modal--full > div:last-child{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 
 .doc-editor{border:1px solid var(--rule);background:#fff;}
 .doc-editor .ql-toolbar{border:none;border-bottom:1px solid var(--rule);font-family:inherit;}
@@ -348,6 +351,36 @@ td.select input{cursor:pointer;}
 .side-user__nome{font-size:12px;font-weight:600;}
 .side-user__ruolo{font-size:10px;color:var(--ink-3);letter-spacing:.04em;}
 .side-user__azioni{display:flex;align-items:center;gap:4px;}
+
+/* ---------- Documenti: navigazione a cartelle ---------- */
+.docs-breadcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:-4px 0 10px;font-size:12.5px;}
+.docs-breadcrumb__item{border:none;background:none;color:var(--ink-2);cursor:pointer;padding:3px 4px;border-radius:4px;font:inherit;}
+.docs-breadcrumb__item:hover{background:var(--paper-3);color:var(--ink);}
+.docs-breadcrumb__item.is-active{color:var(--ink);font-weight:600;}
+.docs-breadcrumb__sep{color:var(--ink-3);}
+.docs-cartelle{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.docs-cartella{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--paper-2);cursor:pointer;min-width:160px;}
+.docs-cartella:hover{border-color:var(--ink-3);}
+.docs-cartella__nome{font-size:13px;font-weight:500;}
+.docs-cartella__azioni{display:flex;gap:2px;}
+
+/* ---------- Documenti: editor di markup sui disegni ---------- */
+.markup-editor{display:flex;flex-direction:column;height:100%;min-height:0;}
+.markup-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--rule);background:var(--paper-2);flex:none;}
+.markup-toolbar__gruppo{display:flex;align-items:center;gap:4px;padding-right:10px;border-right:1px solid var(--rule);}
+.markup-toolbar__gruppo:last-child{border-right:none;}
+.markup-toolbar__gruppo--destra{margin-left:auto;padding-right:0;border-right:none;}
+.markup-toolbar .btn.is-active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.markup-swatch{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;}
+.markup-swatch.is-active{border-color:var(--ink);box-shadow:0 0 0 1px var(--paper);}
+.markup-zoom-label{font-size:11.5px;color:var(--ink-2);min-width:34px;text-align:center;}
+.markup-toolbar select{font-size:12px;padding:4px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);}
+.markup-area{flex:1;min-height:0;overflow:auto;background:var(--paper-3);display:flex;align-items:flex-start;justify-content:center;padding:20px;}
+.markup-canvaswrap{position:relative;flex:none;box-shadow:var(--shadow);}
+.markup-canvas{display:block;position:absolute;top:0;left:0;}
+.markup-canvas--base{position:relative;background:#fff;}
+.markup-canvas--overlay{cursor:crosshair;touch-action:none;}
+.markup-text-input{position:fixed;z-index:60;min-width:120px;min-height:28px;padding:3px 6px;border:1.5px dashed var(--ink-2);background:#fff;font-family:'Montserrat',Arial,sans-serif;font-size:13px;resize:both;}
 
 /* ---------- promemoria scadenze (cruscotto) ---------- */
 .reminder-list{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:-1px;margin-bottom:10px;}

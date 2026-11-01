@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // 25 MB
 
 router.get('/', (req, res) => {
-  const { tipo, search } = req.query;
+  const { tipo, search, cartella_id } = req.query;
   let sql = `
     SELECT d.*, cm.codice AS commessa_codice
     FROM documenti d
@@ -35,20 +35,27 @@ router.get('/', (req, res) => {
   sql = applicaFiltroCommessa(sql, params, req.query, 'd.commessa_id');
   if (tipo) { sql += ' AND tipo = ?'; params.push(tipo); }
   if (search) { sql += ' AND (titolo LIKE ? OR note LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
+  // Senza "search" il filtro cartella è attivo: 'root' = fuori da ogni
+  // cartella, un id = dentro quella cartella. Con "search" si ignora
+  // volutamente, perché cercare per testo deve guardare tutta la commessa.
+  if (!search && cartella_id !== undefined) {
+    if (cartella_id === 'root' || cartella_id === '') sql += ' AND d.cartella_id IS NULL';
+    else { sql += ' AND d.cartella_id = ?'; params.push(cartella_id); }
+  }
   sql += ' ORDER BY created_at DESC';
   const rows = db.prepare(sql).all(...params);
   res.json({ data: rows, total: rows.length });
 });
 
 router.post('/', upload.single('file'), (req, res) => {
-  const { commessa_id, titolo, tipo, url, note } = req.body;
+  const { commessa_id, titolo, tipo, url, note, cartella_id } = req.body;
   if (!commessa_id || !titolo) return res.status(400).json({ error: 'commessa_id e titolo sono obbligatori' });
   const file = req.file;
   const result = db.prepare(`
-    INSERT INTO documenti (commessa_id, titolo, tipo, url, note, file_nome, file_path, file_mime, file_size)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO documenti (commessa_id, cartella_id, titolo, tipo, url, note, file_nome, file_path, file_mime, file_size)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    commessa_id, titolo, tipo || 'altro', url || null, note || null,
+    commessa_id, cartella_id || null, titolo, tipo || 'altro', url || null, note || null,
     file ? file.originalname : null, file ? file.filename : null, file ? file.mimetype : null, file ? file.size : null
   );
   res.status(201).json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(result.lastInsertRowid));
@@ -57,7 +64,7 @@ router.post('/', upload.single('file'), (req, res) => {
 router.put('/:id', upload.single('file'), (req, res) => {
   const existing = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'documento non trovato' });
-  const { titolo, tipo, url, note, rimuovi_file } = req.body;
+  const { titolo, tipo, url, note, rimuovi_file, cartella_id } = req.body;
   const file = req.file;
 
   // un nuovo file caricato, o la richiesta esplicita di rimozione, elimina il vecchio file dal disco
@@ -70,6 +77,7 @@ router.put('/:id', upload.single('file'), (req, res) => {
     tipo: tipo || existing.tipo,
     url: url !== undefined ? (url || null) : existing.url,
     note: note !== undefined ? (note || null) : existing.note,
+    cartella_id: cartella_id !== undefined ? (cartella_id || null) : existing.cartella_id,
     file_nome: file ? file.originalname : (rimuovi_file === '1' ? null : existing.file_nome),
     file_path: file ? file.filename : (rimuovi_file === '1' ? null : existing.file_path),
     file_mime: file ? file.mimetype : (rimuovi_file === '1' ? null : existing.file_mime),
@@ -77,9 +85,9 @@ router.put('/:id', upload.single('file'), (req, res) => {
   };
 
   db.prepare(`
-    UPDATE documenti SET titolo=?, tipo=?, url=?, note=?, file_nome=?, file_path=?, file_mime=?, file_size=?, updated_at=unixepoch()
+    UPDATE documenti SET titolo=?, tipo=?, url=?, note=?, cartella_id=?, file_nome=?, file_path=?, file_mime=?, file_size=?, updated_at=unixepoch()
     WHERE id=?
-  `).run(next.titolo, next.tipo, next.url, next.note, next.file_nome, next.file_path, next.file_mime, next.file_size, req.params.id);
+  `).run(next.titolo, next.tipo, next.url, next.note, next.cartella_id, next.file_nome, next.file_path, next.file_mime, next.file_size, req.params.id);
 
   res.json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id));
 });
@@ -94,7 +102,7 @@ function nomeFileGenerato() {
 }
 
 router.post('/autore', async (req, res) => {
-  const { commessa_id, titolo, tipo, note, delta } = req.body;
+  const { commessa_id, titolo, tipo, note, delta, cartella_id } = req.body;
   if (!commessa_id || !titolo) return res.status(400).json({ error: 'commessa_id e titolo sono obbligatori' });
   if (!delta || !Array.isArray(delta.ops)) return res.status(400).json({ error: 'contenuto del documento mancante o non valido' });
 
@@ -104,10 +112,10 @@ router.post('/autore', async (req, res) => {
     fs.writeFileSync(path.join(uploadDir, fileName), buffer);
 
     const result = db.prepare(`
-      INSERT INTO documenti (commessa_id, titolo, tipo, note, file_nome, file_path, file_mime, file_size, contenuto_editor)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO documenti (commessa_id, cartella_id, titolo, tipo, note, file_nome, file_path, file_mime, file_size, contenuto_editor)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      commessa_id, titolo, tipo || 'altro', note || null,
+      commessa_id, cartella_id || null, titolo, tipo || 'altro', note || null,
       `${titolo}.docx`, fileName, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.length,
       JSON.stringify(delta)
     );
@@ -120,7 +128,7 @@ router.post('/autore', async (req, res) => {
 router.put('/:id/autore', async (req, res) => {
   const existing = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'documento non trovato' });
-  const { titolo, tipo, note, delta } = req.body;
+  const { titolo, tipo, note, delta, cartella_id } = req.body;
   if (!delta || !Array.isArray(delta.ops)) return res.status(400).json({ error: 'contenuto del documento mancante o non valido' });
 
   try {
@@ -131,10 +139,11 @@ router.put('/:id/autore', async (req, res) => {
 
     const titoloFinale = titolo ?? existing.titolo;
     db.prepare(`
-      UPDATE documenti SET titolo=?, tipo=?, note=?, file_nome=?, file_path=?, file_mime=?, file_size=?, contenuto_editor=?, updated_at=unixepoch()
+      UPDATE documenti SET titolo=?, tipo=?, note=?, cartella_id=?, file_nome=?, file_path=?, file_mime=?, file_size=?, contenuto_editor=?, updated_at=unixepoch()
       WHERE id=?
     `).run(
       titoloFinale, tipo || existing.tipo, note !== undefined ? (note || null) : existing.note,
+      cartella_id !== undefined ? (cartella_id || null) : existing.cartella_id,
       `${titoloFinale}.docx`, fileName, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.length,
       JSON.stringify(delta), req.params.id
     );

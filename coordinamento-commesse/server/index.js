@@ -25,6 +25,8 @@ const lavorazioniRouter = require('./routes/lavorazioni');
 const salRouter = require('./routes/sal');
 const maestranzeRouter = require('./routes/maestranze');
 const documentiRouter = require('./routes/documenti');
+const cartelleDocumentiRouter = require('./routes/cartelleDocumenti');
+const markupDisegniRouter = require('./routes/markupDisegni');
 const dashboardRouter = require('./routes/dashboard');
 const allertRouter = require('./routes/allert');
 const auditRouter = require('./routes/audit');
@@ -71,7 +73,12 @@ app.use(helmet({
   },
 }));
 app.use(cors());
-app.use(express.json());
+// Limite alzato rispetto al default (100kb): l'esportazione del markup sui
+// disegni invia le pagine già composte come immagini PNG in base64, che
+// per un elaborato tecnico multipagina possono pesare diversi MB — stesso
+// ordine di grandezza già accettato per i file caricati (25 MB, vedi
+// routes/documenti.js).
+app.use(express.json({ limit: '30mb' }));
 app.use(session({
   store: new SqliteSessionStore(),
   secret: getOrCreateSessionSecret(),
@@ -100,6 +107,8 @@ app.use('/api/misure', requireAuth, blockWriteForCliente, requireSection('lavora
 app.use('/api/sal', requireAuth, blockWriteForCliente, requireSection('sal'), salRouter);
 app.use('/api/maestranze', requireAuth, blockWriteForCliente, requireSection('maestranze'), maestranzeRouter);
 app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), documentiRouter);
+app.use('/api/cartelle-documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), cartelleDocumentiRouter);
+app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), markupDisegniRouter);
 app.use('/api/dashboard', requireAuth, blockWriteForCliente, requireSection('cruscotto'), dashboardRouter);
 app.use('/api/allert', requireAuth, blockWriteForCliente, requireSection('allert'), allertRouter);
 app.use('/api/audit', requireAuth, blockWriteForCliente, auditRouter);

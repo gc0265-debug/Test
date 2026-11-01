@@ -46,12 +46,13 @@ export function toast(message, { error = false } = {}) {
 // ---------- modale ----------
 let closeCurrent = null;
 
-export function openModal(title, bodyNode, { onClose, wide } = {}) {
+export function openModal(title, bodyNode, { onClose, wide, full } = {}) {
   const layer = document.getElementById('modalLayer');
   const box = document.getElementById('modalBox');
   const scrim = document.getElementById('modalScrim');
   box.innerHTML = '';
   box.classList.toggle('modal--wide', !!wide);
+  box.classList.toggle('modal--full', !!full);
   box.appendChild(el('div', { class: 'modal__head' }, [
     el('h3', {}, title),
     el('button', { class: 'modal__close', 'aria-label': 'Chiudi', onclick: () => close() }, '×'),
