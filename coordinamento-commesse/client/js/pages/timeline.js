@@ -11,7 +11,7 @@
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
-  el, field, textInput, dateInput, textarea, select, formData,
+  el, field, textInput, dateInput, textarea, select, formData, pill,
   openModal, closeModal, toast, confirmDialog, formatDate, todayISO, settingsGear,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
@@ -128,6 +128,57 @@ function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
   return segments;
 }
 
+// Apre un piccolo modulo per collegare un predecessore all'attività
+// `item` (sempre Fine-Inizio, con un ritardo/anticipo opzionale in
+// giorni). Chiude questo modulo e riapre quello dell'attività, così la
+// lista dei predecessori si aggiorna — stesso schema già usato per
+// aggiungere un Work Package da dentro la scheda Commesse.
+async function openAggiungiPredecessore(item, commessaId, onCollegato) {
+  const [milestoniRes, lavorazioniRes, depRes] = await Promise.all([
+    api.get(`/milestone?commessa_id=${commessaId}`),
+    api.get(`/lavorazioni?commessa_id=${commessaId}`),
+    api.get(`/timeline-dipendenze?commessa_id=${commessaId}`),
+  ]);
+  const giaCollegati = new Set(depRes.data
+    .filter((d) => d.succ_tipo === item.type && String(d.succ_id) === String(item.id))
+    .map((d) => `${d.pred_tipo}:${d.pred_id}`));
+  const opzioni = [
+    ...milestoniRes.data.map((m) => [`milestone:${m.id}`, `[Milestone] ${m.titolo}`]),
+    ...lavorazioniRes.data.map((l) => [`lavorazione:${l.id}`, `[Lavorazione] ${l.titolo}`]),
+  ].filter(([key]) => key !== `${item.type}:${item.id}` && !giaCollegati.has(key));
+
+  if (!opzioni.length) {
+    toast('Nessun\'altra attività disponibile da collegare come predecessore.', { error: true });
+    return;
+  }
+
+  const form = el('form', {});
+  form.appendChild(field('Predecessore', select('predecessore', opzioni, opzioni[0][0]),
+    'L\'attività che deve finire (più l\'eventuale ritardo sotto) prima che questa possa iniziare.'));
+  form.appendChild(field('Ritardo (giorni)', textInput('ritardo_giorni', '0', { type: 'number' }),
+    'Giorni di attesa dopo la fine del predecessore. Negativo per un anticipo/sovrapposizione consentita.'));
+  form.appendChild(el('div', { class: 'modal__actions' }, [
+    el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
+    el('button', { type: 'submit', class: 'btn btn--primary' }, 'Collega'),
+  ]));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const [predTipo, predId] = form.predecessore.value.split(':');
+    try {
+      await api.post('/timeline-dipendenze', {
+        commessa_id: commessaId, pred_tipo: predTipo, pred_id: Number(predId),
+        succ_tipo: item.type, succ_id: item.id,
+        ritardo_giorni: Number(form.ritardo_giorni.value) || 0,
+      });
+      toast('Predecessore collegato.');
+      await onCollegato();
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  });
+  openModal('Aggiungi predecessore', form);
+}
+
 async function openForm(existing, onSaved, presets = {}) {
   const isLavorazione = existing ? existing.type === 'lavorazione' : presets.type === 'lavorazione';
   // In vista aggregata di gruppo la riga può appartenere a una commessa
@@ -203,6 +254,48 @@ async function openForm(existing, onSaved, presets = {}) {
   }
   drawExtra();
   tipoCheckbox.addEventListener('change', drawExtra);
+
+  // Predecessori: solo su un'attività già salvata (serve il suo id). Un
+  // collegamento in conflitto con le date attuali è segnalato in rosso,
+  // ma non viene mai corretto da solo — resta una scelta manuale.
+  if (existing) {
+    form.appendChild(el('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'Predecessori (dipendenze)'));
+    const depHost = el('div');
+    form.appendChild(depHost);
+
+    async function drawDeps() {
+      const res = await api.get(`/timeline-dipendenze?commessa_id=${commessaIdForm}`);
+      const mieDipendenze = res.data.filter((d) => d.succ_tipo === existing.type && String(d.succ_id) === String(existing.id));
+      depHost.innerHTML = '';
+      if (!mieDipendenze.length) {
+        depHost.appendChild(el('p', { class: 'muted', style: 'margin:4px 0' }, 'Nessun predecessore collegato: questa attività può iniziare liberamente.'));
+        return;
+      }
+      depHost.appendChild(el('div', { style: 'border:1px solid var(--rule);margin:6px 0 4px' }, mieDipendenze.map((d) => el('div', {
+        style: 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;font-size:12.5px;border-bottom:1px solid var(--rule-2)',
+      }, [
+        el('span', {}, [
+          d.pred_titolo, ' ',
+          pill(d.violazione ? `in conflitto · ${d.giorni_scostamento}gg` : (d.ritardo_giorni ? `+${d.ritardo_giorni}gg` : 'fine-inizio'), d.violazione ? 'rosso' : 'outline'),
+        ]),
+        el('button', {
+          type: 'button', class: 'btn btn--sm btn--ghost btn--danger',
+          onclick: async () => {
+            if (!confirmDialog('Rimuovere questo predecessore?')) return;
+            await api.del(`/timeline-dipendenze/${d.id}`);
+            await drawDeps();
+          },
+        }, 'Rimuovi'),
+      ]))));
+    }
+    await drawDeps();
+    form.appendChild(el('button', {
+      type: 'button', class: 'btn btn--sm', style: 'margin:4px 0 4px',
+      onclick: () => openAggiungiPredecessore(existing, commessaIdForm, async () => { closeModal(); await openForm(existing, onSaved); }),
+    }, '+ Aggiungi predecessore'));
+    form.appendChild(el('div', { class: 'field__hint', style: 'margin:4px 0 16px' },
+      'Un predecessore deve finire (più l\'eventuale ritardo) prima che questa attività inizi. Le frecce nel Gantt mostrano questi collegamenti; quelle rosse sono sul percorso critico, quelle tratteggiate in conflitto con le date attuali.'));
+  }
 
   const azioni = [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
@@ -300,6 +393,10 @@ export async function renderTimeline(container) {
   let granularity = 'week';
   let zoom = 1;
   let items = [];
+  // Dipendenze fra attività (sempre Fine-Inizio): ricaricate solo in
+  // refresh(), non ad ogni draw() — disegnarle di nuovo con lo zoom
+  // cambiato non richiede di rileggerle dal server.
+  let dipendenze = [];
   // Stato di espansione dei gruppi "Piano" e delle lavorazioni madre con
   // sotto-attività — persiste tra un draw() e l'altro (zoom, refresh...)
   // ma si azzera riaprendo la pagina.
@@ -345,13 +442,17 @@ export async function renderTimeline(container) {
   container.appendChild(ganttHost);
 
   async function refresh() {
-    const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList, lavorazioniPrioritaList] = await Promise.all([
+    const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList, lavorazioniPrioritaList, dipendenzeRes] = await Promise.all([
       api.get(`/milestone?${queryScopeCommessa()}`),
       api.get(`/lavorazioni?${queryScopeCommessa()}`),
       getCategoria('milestone_stato'),
       getCategoria('lavorazioni_stato'),
       getCategoria('lavorazioni_priorita'),
+      // Le dipendenze hanno senso solo su una singola commessa, mai nella
+      // vista aggregata di gruppo (nessun collegamento fra commesse diverse).
+      state.commessaId ? api.get(`/timeline-dipendenze?commessa_id=${state.commessaId}`) : Promise.resolve({ data: [] }),
     ]);
+    dipendenze = dipendenzeRes.data;
     STATO = mergeLabels(STATO_FIXED, milestoneStatoList);
     STATO_LAVORAZIONE_LABEL = mergeLabels(STATO_LAVORAZIONE_LABEL_FIXED, lavorazioniStatoList);
     PRIORITA = mergeLabels(PRIORITA_FIXED, lavorazioniPrioritaList);
@@ -456,7 +557,7 @@ export async function renderTimeline(container) {
       ]))),
     ]);
 
-    function bar(dataInizio, dataFine, extraClass, titleText, clickable) {
+    function bar(dataInizio, dataFine, extraClass, titleText, clickable, depKey) {
       const startOffset = Math.max(0, daysBetween(rangeStart, dataInizio));
       const endOffset = daysBetween(rangeStart, dataFine) + 1;
       const leftPx = startOffset * ppd;
@@ -466,6 +567,7 @@ export async function renderTimeline(container) {
         style: `left:${leftPx}px;width:${widthPx}px`,
         title: titleText,
         onclick: clickable || null,
+        'data-dep-key': depKey || null,
       });
     }
 
@@ -497,7 +599,8 @@ export async function renderTimeline(container) {
         it.data_inizio, it.data_fine,
         `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}${it.isSummary ? ' gantt__bar--summary' : ''}`,
         `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}${it.isSummary ? ' · riepilogo sotto-attività' : ''}`,
-        onEdit
+        onEdit,
+        `${it.type}:${it.id}`
       ));
 
       const figli = isLavorazione ? figliPerMadre.get(it.id) : null;
@@ -617,6 +720,7 @@ export async function renderTimeline(container) {
 
     ganttHost.innerHTML = '';
     ganttHost.appendChild(el('div', { class: 'gantt', style: `--gantt-nome-w:${nomeWidth}px;--gantt-label-w:${nomeWidth + 170}px` }, chart));
+    disegnaDipendenze(chart);
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
@@ -624,11 +728,59 @@ export async function renderTimeline(container) {
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__type-tag' }, 'Lavorazione'), 'riga più sottile = lavorazione, non milestone']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--group' }), 'Gruppo Piano']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--summary' }), 'Riepilogo sotto-attività']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dep gantt__legend-dep--critica' }), 'Dipendenza sul percorso critico']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dep gantt__legend-dep--violazione' }), 'Dipendenza in conflitto con le date attuali']),
     ]));
   }
 
   function legendItem(cls, label) {
     return el('div', { class: 'gantt__legend-item' }, [el('span', { class: `gantt__legend-dot gantt__legend-dot--${cls}` }), label]);
+  }
+
+  function svgEl(tag, attrs = {}) {
+    const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.entries(attrs).forEach(([k, v]) => { if (v !== null && v !== undefined) node.setAttribute(k, v); });
+    return node;
+  }
+
+  // Frecce di dipendenza fra le barre, disegnate sopra il Gantt dopo che
+  // è nel DOM (servono le posizioni reali, con zoom/raggruppamenti già
+  // applicati — più affidabile che ricalcolarle a mano). Una dipendenza
+  // verso una riga nascosta (gruppo o lavorazione madre collassati) non
+  // viene disegnata, semplicemente omessa.
+  function disegnaDipendenze(chart) {
+    if (!dipendenze.length) return;
+    const chartRect = chart.getBoundingClientRect();
+    const svg = svgEl('svg', { class: 'gantt__deps', width: chart.scrollWidth, height: chart.scrollHeight });
+    const defs = svgEl('defs');
+    svg.appendChild(defs);
+    ['normale', 'critica', 'violazione'].forEach((variante) => {
+      const marker = svgEl('marker', { id: `gantt-arrow-${variante}`, markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: 'auto', markerUnits: 'userSpaceOnUse' });
+      marker.appendChild(svgEl('path', { d: 'M0,0 L8,4 L0,8 Z', class: `gantt__dep-arrow gantt__dep-arrow--${variante}` }));
+      defs.appendChild(marker);
+    });
+
+    let disegnate = 0;
+    dipendenze.forEach((d) => {
+      const predEl = chart.querySelector(`[data-dep-key="${d.pred_tipo}:${d.pred_id}"]`);
+      const succEl = chart.querySelector(`[data-dep-key="${d.succ_tipo}:${d.succ_id}"]`);
+      if (!predEl || !succEl) return;
+      const predRect = predEl.getBoundingClientRect();
+      const succRect = succEl.getBoundingClientRect();
+      const x1 = predRect.right - chartRect.left;
+      const y1 = predRect.top + predRect.height / 2 - chartRect.top;
+      const x2 = succRect.left - chartRect.left;
+      const y2 = succRect.top + succRect.height / 2 - chartRect.top;
+      const variante = d.violazione ? 'violazione' : (d.critica ? 'critica' : 'normale');
+      const curva = Math.max(24, Math.abs(x2 - x1) / 3);
+      svg.appendChild(svgEl('path', {
+        d: `M${x1},${y1} C${x1 + curva},${y1} ${x2 - curva},${y2} ${x2},${y2}`,
+        class: `gantt__dep-line gantt__dep-line--${variante}`,
+        'marker-end': `url(#gantt-arrow-${variante})`,
+      }));
+      disegnate += 1;
+    });
+    if (disegnate) chart.appendChild(svg);
   }
 
   await refresh();

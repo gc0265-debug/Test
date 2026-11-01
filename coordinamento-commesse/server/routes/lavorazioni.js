@@ -79,6 +79,7 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
+  db.prepare("DELETE FROM timeline_dipendenze WHERE (pred_tipo='lavorazione' AND pred_id=?) OR (succ_tipo='lavorazione' AND succ_id=?)").run(req.params.id, req.params.id);
   const result = db.prepare('DELETE FROM lavorazioni WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'lavorazione non trovata' });
   res.status(204).end();

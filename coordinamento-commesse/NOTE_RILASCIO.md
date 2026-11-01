@@ -16,6 +16,24 @@ Nessuna modifica in corso al momento.
 
 ---
 
+## Timeline: dipendenze fra attività e percorso critico (1 novembre 2026)
+
+- Da ogni milestone o lavorazione si possono collegare uno o più
+  **predecessori** — l'attività che deve finire (più un eventuale ritardo
+  in giorni) prima che questa possa iniziare: niente più solo un
+  calendario, un vero vincolo di sequenza come in uno strumento di
+  scheduling.
+- Le frecce nel Gantt mostrano i collegamenti: **in rosso** quelle sul
+  percorso critico (la catena di attività che, se rallenta, fa slittare
+  l'intera commessa), **tratteggiate in ambra** quelle in conflitto con
+  le date attualmente impostate.
+- Un collegamento non sposta mai nessuna data da solo: segnala soltanto,
+  restando sempre una scelta del Direttore di Cantiere. Un collegamento
+  che chiuderebbe un ciclo viene rifiutato subito, con un messaggio
+  chiaro.
+
+---
+
 ## Report: sei sezioni in più (31 ottobre 2026)
 
 - La scheda Report copre ora tutti i registri della commessa: aggiunte

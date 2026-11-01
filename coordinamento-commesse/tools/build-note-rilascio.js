@@ -28,13 +28,21 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.35';
-const DATA_ATTUALE = '31 ottobre 2026';
+const VERSIONE_ATTUALE = '1.36';
+const DATA_ATTUALE = '1 novembre 2026';
 
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.35', title: 'Report: sei sezioni in più', date: '31 ottobre 2026', attuale: true,
+    v: '1.36', title: 'Timeline: dipendenze fra attività e percorso critico', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Da ogni milestone o lavorazione si possono collegare uno o più predecessori — l\'attività che deve finire (più un eventuale ritardo in giorni) prima che questa possa iniziare: niente più solo un calendario, un vero vincolo di sequenza come in uno strumento di scheduling.',
+      'Le frecce nel Gantt mostrano i collegamenti: in rosso quelle sul percorso critico (la catena di attività che, se rallenta, fa slittare l\'intera commessa), tratteggiate in ambra quelle in conflitto con le date attualmente impostate.',
+      'Un collegamento non sposta mai nessuna data da solo: segnala soltanto, restando sempre una scelta del Direttore di Cantiere. Un collegamento che chiuderebbe un ciclo (es. A dipende da B che dipende già, anche indirettamente, da A) viene rifiutato subito, con un messaggio chiaro.',
+    ],
+  },
+  {
+    v: '1.35', title: 'Report: sei sezioni in più', date: '31 ottobre 2026',
     points: [
       'La scheda Report copre ora tutti i registri della commessa: aggiunte Documenti, Note di Coordinamento, Diario di Cantiere, Capitolato Requisiti, Maestranze e Piano Comunicazioni alle sezioni già disponibili — 18 in totale.',
       'Nessuna modifica ai report già configurati: le nuove sezioni compaiono tra quelle disponibili la prossima volta che se ne crea o modifica uno.',

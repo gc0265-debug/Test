@@ -485,6 +485,19 @@ td.select input{cursor:pointer;}
 .gantt__legend-bar--summary{background:var(--ink);opacity:.85;}
 .gantt__zoom{width:110px;vertical-align:middle;}
 
+/* Frecce di dipendenza fra attività (Fine-Inizio), disegnate come overlay
+   SVG sopra le barre — vedi disegnaDipendenze() in timeline.js. */
+.gantt__deps{position:absolute;top:0;left:0;overflow:visible;pointer-events:none;z-index:1;}
+.gantt__dep-line{fill:none;stroke:var(--ink-3);stroke-width:1.4;opacity:.85;}
+.gantt__dep-line--critica{stroke:var(--red);stroke-width:2.2;opacity:.9;}
+.gantt__dep-line--violazione{stroke:var(--ambra);stroke-width:1.8;stroke-dasharray:5,3;opacity:.95;}
+.gantt__dep-arrow{fill:var(--ink-3);}
+.gantt__dep-arrow--critica{fill:var(--red);}
+.gantt__dep-arrow--violazione{fill:var(--ambra);}
+.gantt__legend-dep{width:18px;height:2px;display:inline-block;border-radius:1px;}
+.gantt__legend-dep--critica{background:var(--red);height:3px;}
+.gantt__legend-dep--violazione{background:var(--ambra);border-top:2px dashed var(--ambra);height:0;}
+
 /* ---------- matrice interesse/influenza (stakeholder) ---------- */
 .matrix__axis{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;}
 .matrix__axis--x{margin-left:70px;margin-bottom:4px;}

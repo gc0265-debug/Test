@@ -45,7 +45,7 @@ route('allert', {
 });
 route('timeline', {
   title: 'Timeline Montaggi', render: renderTimeline,
-  help: 'Gantt per settimane/mesi su milestone e lavorazioni insieme, raggruppate per Piano. Ogni milestone congela una baseline alla creazione: se le date si spostano, la barra originale resta visibile in trasparenza accanto a quella attuale, per mostrare lo scostamento.',
+  help: 'Gantt per settimane/mesi su milestone e lavorazioni insieme, raggruppate per Piano. Ogni milestone congela una baseline alla creazione: se le date si spostano, la barra originale resta visibile in trasparenza accanto a quella attuale, per mostrare lo scostamento. Si possono collegare predecessori fra le attività (Fine-Inizio, con ritardo opzionale): le frecce nel Gantt mostrano i collegamenti, quelle rosse sul percorso critico, quelle tratteggiate in conflitto con le date attuali — senza mai spostare nessuna data da sola.',
 });
 route('lezioni', {
   title: 'Lezioni Apprese', render: renderLezioniApprese,

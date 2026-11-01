@@ -573,3 +573,26 @@ CREATE TABLE IF NOT EXISTS report_config (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 CREATE INDEX IF NOT EXISTS idx_report_config_commessa ON report_config(commessa_id);
+
+-- Dipendenze fra attività della Timeline (milestone e/o lavorazioni),
+-- sempre Fine-Inizio: la successora non dovrebbe iniziare prima che la
+-- predecessora finisca (più un eventuale ritardo/anticipo in giorni).
+-- Non ci sono vincoli FK diretti su pred_id/succ_id perché possono
+-- puntare a due tabelle diverse (milestone o lavorazioni): la pulizia
+-- alla cancellazione di un'attività è gestita nelle rispettive route.
+-- Niente cicli: controllato a scrittura in server/utils/scheduling.js,
+-- così il grafo resta sempre aciclico e calcolabile.
+CREATE TABLE IF NOT EXISTS timeline_dipendenze (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    pred_tipo TEXT NOT NULL CHECK(pred_tipo IN ('milestone', 'lavorazione')),
+    pred_id INTEGER NOT NULL,
+    succ_tipo TEXT NOT NULL CHECK(succ_tipo IN ('milestone', 'lavorazione')),
+    succ_id INTEGER NOT NULL,
+    ritardo_giorni INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    UNIQUE(pred_tipo, pred_id, succ_tipo, succ_id)
+);
+CREATE INDEX IF NOT EXISTS idx_timeline_dip_commessa ON timeline_dipendenze(commessa_id);
+CREATE INDEX IF NOT EXISTS idx_timeline_dip_pred ON timeline_dipendenze(pred_tipo, pred_id);
+CREATE INDEX IF NOT EXISTS idx_timeline_dip_succ ON timeline_dipendenze(succ_tipo, succ_id);

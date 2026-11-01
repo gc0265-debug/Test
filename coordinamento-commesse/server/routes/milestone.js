@@ -97,6 +97,7 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM milestone WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'milestone non trovata' });
+  db.prepare("DELETE FROM timeline_dipendenze WHERE (pred_tipo='milestone' AND pred_id=?) OR (succ_tipo='milestone' AND succ_id=?)").run(existing.id, existing.id);
   db.prepare('DELETE FROM milestone WHERE id = ?').run(req.params.id);
   logAudit({ commessa_id: existing.commessa_id, entity_type: 'milestone', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: existing.titolo });
   res.status(204).end();
