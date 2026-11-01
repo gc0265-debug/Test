@@ -183,7 +183,13 @@ export async function renderCriticita(container) {
 
     renderTable(tableHost, [
       ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' }] : []),
-      { key: 'tema', label: 'Tema' },
+      { key: 'tema', label: 'Tema', render: (r) => el('div', {}, [
+        el('div', {}, r.tema),
+        r.rif_documento_id ? el('a', {
+          href: `/api/documenti/${r.rif_documento_id}/file`, target: '_blank', rel: 'noopener',
+          class: 'field__hint', style: 'display:block', onclick: (e) => e.stopPropagation(),
+        }, `📎 disegno collegato${r.rif_documento_pagina > 1 ? ` (pag. ${r.rif_documento_pagina})` : ''}`) : null,
+      ]) },
       { key: 'wp', label: 'WP', render: (r) => r.wp_codice ? `${r.wp_codice} ${r.wp_nome}` : '—' },
       { key: 'destinatario', label: 'Destinatario' },
       { key: 'urgenza', label: 'Urgenza', render: urgenzaCell },

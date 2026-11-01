@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS criticita (
     data_apertura TEXT NOT NULL DEFAULT (date('now')),
     data_chiusura TEXT,
     note TEXT,
+    rif_documento_id INTEGER REFERENCES documenti(id) ON DELETE SET NULL,  -- "Segnala criticità" da un'annotazione di markup su un disegno
+    rif_documento_pagina INTEGER,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );

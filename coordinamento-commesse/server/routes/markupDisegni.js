@@ -12,6 +12,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const { PDFDocument } = require('pdf-lib');
 const db = require('../db/database');
+const { logAudit } = require('../utils/audit');
 
 const router = express.Router();
 const uploadDir = path.join(__dirname, '..', 'uploads');
@@ -53,6 +54,37 @@ router.delete('/:id/markup/:markupId', (req, res) => {
   const result = db.prepare('DELETE FROM markup_disegni WHERE id = ? AND documento_id = ?').run(req.params.markupId, req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'sessione di markup non trovata' });
   res.status(204).end();
+});
+
+// Crea una criticità nel Registro Criticità a partire da un'annotazione di
+// markup (es. una nuvola di revisione con "verificare quota"), sullo
+// stesso modello già usato da Misure in Lavorazioni. La forma vive solo
+// nel JSON della sessione (non è una riga a sé), quindi il "già
+// segnalata" lo marca il client sulla forma stessa, non questa rotta.
+router.post('/:id/markup/segnala-criticita', (req, res) => {
+  const doc = documentoEsistente(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'documento non trovato' });
+  const { pagina, tipo, testo } = req.body;
+
+  const etichetteTipo = {
+    penna: 'tratto a mano libera', evidenziatore: 'evidenziazione', linea: 'linea', freccia: 'freccia',
+    rettangolo: 'rettangolo', ellisse: 'ellisse', nuvola: 'nuvola di revisione', testo: 'nota di testo',
+  };
+  const descrizioneTipo = etichetteTipo[tipo] || 'annotazione';
+  const tema = testo ? `Rilievo su disegno — ${doc.titolo}: ${testo}` : `Rilievo su disegno — ${doc.titolo}`;
+  const cosaServe = [
+    `${descrizioneTipo[0].toUpperCase()}${descrizioneTipo.slice(1)} segnalata sul disegno "${doc.titolo}"${pagina ? `, pagina ${pagina}` : ''}.`,
+    'Vedi il markup sul disegno in Documenti per il dettaglio visivo.',
+  ].join('\n');
+
+  const result = db.prepare(`
+    INSERT INTO criticita (commessa_id, tema, cosa_serve, urgenza, stato, rif_documento_id, rif_documento_pagina)
+    VALUES (?, ?, ?, 'normale', 'aperta', ?, ?)
+  `).run(doc.commessa_id, tema, cosaServe, doc.id, pagina || 1);
+
+  logAudit({ commessa_id: doc.commessa_id, entity_type: 'criticita', entity_id: result.lastInsertRowid, azione: 'creata', utente: req.user?.nome, dettaglio: tema });
+
+  res.status(201).json({ criticita_id: result.lastInsertRowid, tema });
 });
 
 // Riceve una pagina PNG (disegno + markup già composti dal browser) per

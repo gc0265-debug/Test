@@ -65,7 +65,8 @@ export async function apriMarkup(documento) {
   let img = null;          // HTMLImageElement, solo se !isPdf
   let numPagine = 1;
   let paginaCorrente = 1;
-  const canvasBasePerPagina = new Map();   // pagina -> canvas già renderizzato (cache)
+  const MAX_PAGINE_IN_CACHE = 12;
+  const canvasBasePerPagina = new Map();   // pagina -> canvas già renderizzato (cache limitata, vedi canvasPerPagina)
   const shapesPerPagina = new Map();       // pagina -> array di forme correnti
   const cronologiaPerPagina = new Map();   // pagina -> { snapshot:[[...]], puntatore }
   const sessioniCaricatePerPagina = new Set(); // pagine per cui si è già interrogato il server
@@ -96,14 +97,21 @@ export async function apriMarkup(documento) {
   const btnZoomMeno = el('button', { class: 'btn btn--sm btn--ghost', onclick: () => impostaZoom(zoom - 0.2) }, '−');
   const btnZoomPiu = el('button', { class: 'btn btn--sm btn--ghost', onclick: () => impostaZoom(zoom + 0.2) }, '+');
   const zoomLabel = el('span', { class: 'markup-zoom-label' }, '100%');
+  const btnSegnalaCriticita = el('button', {
+    class: 'btn btn--sm btn--ghost', disabled: true, title: 'Seleziona prima un\'annotazione con lo strumento "Seleziona"',
+    onclick: () => segnalaCriticitaSelezionata(),
+  }, 'Segnala criticità');
   const btnSalva = el('button', { class: 'btn btn--primary btn--sm', onclick: () => salvaPagina() }, 'Salva markup');
   const btnEsporta = el('button', { class: 'btn btn--sm', onclick: () => esportaPdf() }, 'Esporta PDF');
+  const btnCronologia = el('button', { class: 'btn btn--sm btn--ghost', onclick: () => apriCronologia() }, 'Cronologia sessioni');
+  cronologiaHost.appendChild(btnCronologia);
 
   const toolbar = el('div', { class: 'markup-toolbar' }, [
     strumentiHost, coloriHost, spessoriHost,
     el('div', { class: 'markup-toolbar__gruppo' }, [btnAnnulla, btnRipeti]),
     el('div', { class: 'markup-toolbar__gruppo' }, [btnZoomMeno, zoomLabel, btnZoomPiu]),
     paginaHost,
+    el('div', { class: 'markup-toolbar__gruppo' }, [btnSegnalaCriticita]),
     cronologiaHost,
     el('div', { class: 'markup-toolbar__gruppo markup-toolbar__gruppo--destra' }, [btnSalva, btnEsporta]),
   ]);
@@ -163,6 +171,9 @@ export async function apriMarkup(documento) {
     numPagine = 1;
   }
   disegnaControlliPagina();
+  if (numPagine > MAX_PAGINE_IN_CACHE) {
+    toast(`Documento di ${numPagine} pagine: solo le ultime ${MAX_PAGINE_IN_CACHE} visitate restano pronte in memoria, le altre si ricaricano al bisogno.`);
+  }
   await vaiAllaPagina(1);
 
   function disegnaControlliPagina() {
@@ -173,9 +184,20 @@ export async function apriMarkup(documento) {
     paginaHost.appendChild(el('button', { class: 'btn btn--sm btn--ghost', onclick: () => vaiAllaPagina(paginaCorrente + 1) }, '›'));
   }
 
-  // ---- render di una pagina sul canvas base (con cache) ----
+  // ---- render di una pagina sul canvas base (con cache limitata) ----
+  // Su un fascicolo molto lungo, tenere in memoria il rendering di ogni
+  // pagina visitata non ha un limite: qui si tengono solo le ultime
+  // MAX_PAGINE_IN_CACHE pagine usate, scartando la meno recente quando se
+  // ne aggiunge una nuova oltre il limite (le forme di markup restano
+  // comunque tutte in shapesPerPagina, leggerissime: solo il rendering
+  // del disegno viene ributtato e ricalcolato se si torna su quella pagina).
   async function canvasPerPagina(n) {
-    if (canvasBasePerPagina.has(n)) return canvasBasePerPagina.get(n);
+    if (canvasBasePerPagina.has(n)) {
+      const c = canvasBasePerPagina.get(n);
+      canvasBasePerPagina.delete(n);
+      canvasBasePerPagina.set(n, c); // la sposta in fondo: "usata più di recente"
+      return c;
+    }
     const c = document.createElement('canvas');
     if (isPdf) {
       const page = await pdfDoc.getPage(n);
@@ -189,6 +211,9 @@ export async function apriMarkup(documento) {
       c.getContext('2d').drawImage(img, 0, 0);
     }
     canvasBasePerPagina.set(n, c);
+    if (canvasBasePerPagina.size > MAX_PAGINE_IN_CACHE) {
+      canvasBasePerPagina.delete(canvasBasePerPagina.keys().next().value);
+    }
     return c;
   }
 
@@ -266,34 +291,61 @@ export async function apriMarkup(documento) {
     ridisegnaOverlay();
   }
 
-  // ---- sessioni salvate (cronologia consultabile) ----
+  // ---- sessioni salvate (cronologia: carica o elimina da un modale) ----
   async function aggiornaCronologiaDropdown() {
-    cronologiaHost.innerHTML = '';
     const res = await api.get(`/documenti/${documento.id}/markup?pagina=${paginaCorrente}`);
-    if (!res.data.length) return;
-    const sel = el('select', {
-      onchange: async (e) => {
-        if (!e.target.value) return;
-        if (!confirmDialog('Caricare questa sessione? Le forme attuali di questa pagina (se non salvate) andranno perse.')) { e.target.value = ''; return; }
-        const sessione = await api.get(`/documenti/${documento.id}/markup/${e.target.value}`);
-        shapesPerPagina.set(paginaCorrente, sessione.shapes);
-        pushCronologia();
-        selezionata = -1;
-        ridisegnaOverlay();
-        e.target.value = '';
-      },
-    }, [
-      el('option', { value: '' }, 'Cronologia sessioni…'),
-      ...res.data.map((s) => el('option', { value: s.id },
-        `${new Date(s.created_at * 1000).toLocaleDateString('it-IT')} — ${s.autore_nome || '—'}${s.titolo ? ' · ' + s.titolo : ''}`)),
-    ]);
-    cronologiaHost.appendChild(sel);
+    btnCronologia.textContent = res.data.length ? `Cronologia sessioni (${res.data.length})` : 'Cronologia sessioni';
+    btnCronologia.disabled = !res.data.length;
   }
 
-  async function salvaPagina() {
+  async function apriCronologia() {
+    const res = await api.get(`/documenti/${documento.id}/markup?pagina=${paginaCorrente}`);
+    const lista = el('div', { class: 'markup-cronologia' });
+    function disegnaLista() {
+      lista.innerHTML = '';
+      if (!res.data.length) { lista.appendChild(el('p', { class: 'muted' }, 'Nessuna sessione salvata per questa pagina.')); return; }
+      res.data.forEach((s) => {
+        lista.appendChild(el('div', { class: 'markup-cronologia__riga' }, [
+          el('div', {}, [
+            el('div', {}, `${new Date(s.created_at * 1000).toLocaleString('it-IT')}`),
+            el('div', { class: 'field__hint' }, `${s.autore_nome || '—'}${s.titolo ? ' · ' + s.titolo : ''}`),
+          ]),
+          el('div', { style: 'display:flex;gap:6px' }, [
+            el('button', {
+              class: 'btn btn--sm btn--ghost',
+              onclick: async () => {
+                if (!confirmDialog('Caricare questa sessione? Le forme attuali di questa pagina (se non salvate) andranno perse.')) return;
+                const sessione = await api.get(`/documenti/${documento.id}/markup/${s.id}`);
+                shapesPerPagina.set(paginaCorrente, sessione.shapes);
+                pushCronologia();
+                selezionata = -1;
+                ridisegnaOverlay();
+                closeModal();
+              },
+            }, 'Carica'),
+            el('button', {
+              class: 'btn btn--sm btn--ghost btn--danger',
+              onclick: async () => {
+                if (!confirmDialog('Eliminare definitivamente questa sessione salvata?')) return;
+                await api.del(`/documenti/${documento.id}/markup/${s.id}`);
+                res.data = res.data.filter((x) => x.id !== s.id);
+                toast('Sessione eliminata.');
+                disegnaLista();
+                await aggiornaCronologiaDropdown();
+              },
+            }, 'Elimina'),
+          ]),
+        ]));
+      });
+    }
+    disegnaLista();
+    openModal(`Cronologia markup — pagina ${paginaCorrente}`, lista);
+  }
+
+  async function salvaPagina(silenzioso) {
     try {
       await api.post(`/documenti/${documento.id}/markup`, { pagina: paginaCorrente, shapes: shapesPerPagina.get(paginaCorrente) });
-      toast(`Markup della pagina ${paginaCorrente} salvato.`);
+      if (!silenzioso) toast(`Markup della pagina ${paginaCorrente} salvato.`);
       await aggiornaCronologiaDropdown();
     } catch (err) {
       toast(err.message, { error: true });
@@ -401,6 +453,19 @@ export async function apriMarkup(documento) {
       ctx.strokeRect(b.x - 6, b.y - 6, b.w + 12, b.h + 12);
       ctx.restore();
     }
+
+    // bollino che segnala un'annotazione già diventata una criticità nel
+    // registro: evita di segnalarla due volte senza doverlo ricordare a memoria.
+    if (s.criticita_id) {
+      const b = boundingBox(s);
+      ctx.save();
+      ctx.fillStyle = '#1F3A4D';
+      ctx.beginPath(); ctx.arc(b.x + b.w + 4, b.y - 4, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#FFFFFF'; ctx.font = '700 11px Montserrat, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('!', b.x + b.w + 4, b.y - 3);
+      ctx.restore();
+    }
   }
 
   function ridisegnaOverlay() {
@@ -409,6 +474,45 @@ export async function apriMarkup(documento) {
     const shapes = shapesPerPagina.get(paginaCorrente) || [];
     shapes.forEach((s, i) => disegnaForma(ctx, s, i === selezionata));
     if (formaInCorso) disegnaForma(ctx, formaInCorso, false);
+    aggiornaStatoSegnalaCriticita();
+  }
+
+  function aggiornaStatoSegnalaCriticita() {
+    const shapes = shapesPerPagina.get(paginaCorrente) || [];
+    const s = selezionata >= 0 ? shapes[selezionata] : null;
+    if (!s) {
+      btnSegnalaCriticita.disabled = true;
+      btnSegnalaCriticita.textContent = 'Segnala criticità';
+      btnSegnalaCriticita.title = 'Seleziona prima un\'annotazione con lo strumento "Seleziona"';
+    } else if (s.criticita_id) {
+      btnSegnalaCriticita.disabled = true;
+      btnSegnalaCriticita.textContent = '✓ Già segnalata';
+      btnSegnalaCriticita.title = 'Questa annotazione è già collegata a una criticità del registro.';
+    } else {
+      btnSegnalaCriticita.disabled = false;
+      btnSegnalaCriticita.textContent = 'Segnala criticità';
+      btnSegnalaCriticita.title = 'Crea una criticità nel Registro Criticità a partire da questa annotazione.';
+    }
+  }
+
+  async function segnalaCriticitaSelezionata() {
+    const shapes = shapesPerPagina.get(paginaCorrente);
+    const s = selezionata >= 0 ? shapes[selezionata] : null;
+    if (!s || s.criticita_id) return;
+    btnSegnalaCriticita.disabled = true;
+    try {
+      const res = await api.post(`/documenti/${documento.id}/markup/segnala-criticita`, {
+        pagina: paginaCorrente, tipo: s.tipo, testo: s.tipo === 'testo' ? s.testo : null,
+      });
+      s.criticita_id = res.criticita_id;
+      pushCronologia();
+      ridisegnaOverlay();
+      await salvaPagina(true);
+      toast(`Criticità creata: "${res.tema}".`);
+    } catch (err) {
+      toast(err.message, { error: true });
+      aggiornaStatoSegnalaCriticita();
+    }
   }
 
   function puntoNelBox(x, y, b, tolleranza = 8) {

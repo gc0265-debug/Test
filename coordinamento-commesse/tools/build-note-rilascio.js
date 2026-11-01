@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.38';
+const VERSIONE_ATTUALE = '1.39';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -69,9 +69,18 @@ const VALUTAZIONI_CRITICHE = [
     ambito: 'Autovalutazione critica di cartelle e markup sui disegni (v1.38)',
     sintesi: 'Il markup chiude la lacuna più visibile rispetto agli strumenti di cantiere concorrenti (nessun modo di annotare un disegno restava il limite più citato): resta però uno strumento visivo a sé, non ancora collegato ai registri che tracciano davvero il seguito di un\'osservazione.',
     rilievi: [
-      { testo: 'Un markup su un disegno (es. una nuvola di revisione con "verificare quota") resta solo visivo: non genera una riga nel Registro Criticità come già avviene dalla sezione Misure di Lavorazioni. Chi annota un disegno deve ancora aprire a mano una criticità se vuole che quel rilievo abbia una scadenza e un responsabile.', stato: 'Aperta' },
-      { testo: 'Le sessioni di markup salvate restano tutte, per sempre: non c\'è modo dall\'interfaccia di eliminarne una creata per errore (la rotta esiste lato server ma non è ancora richiamata da nessun pulsante).', stato: 'Aperta' },
-      { testo: 'Su un elaborato PDF con molte pagine, l\'editor tiene in memoria il rendering di ogni pagina visitata per tutta la sessione: utile per non ridisegnarle ad ogni cambio pagina, ma su un fascicolo molto lungo può appesantire il browser. Non c\'è ancora un limite o un avviso.', stato: 'Aperta' },
+      { testo: 'Un markup su un disegno (es. una nuvola di revisione con "verificare quota") resta solo visivo: non genera una riga nel Registro Criticità come già avviene dalla sezione Misure di Lavorazioni. Chi annota un disegno deve ancora aprire a mano una criticità se vuole che quel rilievo abbia una scadenza e un responsabile.', stato: 'Risolta in v1.39' },
+      { testo: 'Le sessioni di markup salvate restano tutte, per sempre: non c\'è modo dall\'interfaccia di eliminarne una creata per errore (la rotta esiste lato server ma non è ancora richiamata da nessun pulsante).', stato: 'Risolta in v1.39' },
+      { testo: 'Su un elaborato PDF con molte pagine, l\'editor tiene in memoria il rendering di ogni pagina visitata per tutta la sessione: utile per non ridisegnarle ad ogni cambio pagina, ma su un fascicolo molto lungo può appesantire il browser. Non c\'è ancora un limite o un avviso.', stato: 'Risolta in v1.39' },
+    ],
+  },
+  {
+    data: '1 novembre 2026',
+    ambito: 'Autovalutazione critica del collegamento markup → Registro Criticità (v1.39)',
+    sintesi: 'I tre rilievi aperti sul markup (v1.38) sono chiusi in questo stesso round. Applicando lo stesso metro al collegamento appena costruito, restano due limiti minori, non bloccanti.',
+    rilievi: [
+      { testo: '"Segnala criticità" copre una sola annotazione alla volta: su un disegno con molti rilievi da aprire insieme non c\'è un\'azione cumulativa.', stato: 'Aperta' },
+      { testo: 'La criticità nasce sempre con urgenza "Normale" e senza Work Package assegnato: va comunque riaperta e completata a mano per scadenza, destinatario e WP — lo stesso comportamento già in uso da Misure di Lavorazioni, qui non ancora perfezionato per il caso specifico del disegno.', stato: 'Aperta' },
     ],
   },
 ];
@@ -79,7 +88,16 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.38', title: 'Documenti: cartelle nidificate e markup sui disegni', date: '1 novembre 2026', attuale: true,
+    v: '1.39', title: 'Markup collegato al Registro Criticità, cronologia gestibile, PDF lunghi più leggeri', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Nell\'editor di markup, selezionando un\'annotazione (con lo strumento "Seleziona") compare il pulsante "Segnala criticità": crea una nuova riga nel Registro Criticità collegata al disegno e alla pagina, pronta da completare con scadenza, destinatario e Work Package — sullo stesso modello già in uso da Misure di Lavorazioni.',
+      'Un\'annotazione già diventata una criticità resta riconoscibile da un piccolo bollino sul disegno, per non segnalarla due volte; nel Registro Criticità la riga mostra un link "📎 disegno collegato" per riaprire il disegno originale.',
+      'Il pulsante "Cronologia sessioni" apre ora un pannello con tutte le sessioni di markup salvate per la pagina corrente, ciascuna caricabile oppure eliminabile singolarmente — prima erano consultabili ma non si potevano più rimuovere.',
+      'Su un fascicolo PDF molto lungo, l\'editor ora tiene in memoria solo le ultime pagine visitate (il rendering si ricalcola al bisogno tornando su una pagina più vecchia): un avviso informa quando il documento supera questa soglia, così il browser resta leggero anche su elaborati di decine di pagine.',
+    ],
+  },
+  {
+    v: '1.38', title: 'Documenti: cartelle nidificate e markup sui disegni', date: '1 novembre 2026',
     points: [
       'La scheda Documenti ha ora delle cartelle, nidificabili a piacere (cartelle dentro cartelle): un pulsante "+ Nuova cartella", una barra di navigazione in stile Documenti › Disegni › Piano 3 e un campo "Cartella" nel modulo di ogni documento per archiviarlo o spostarlo.',
       'Sui disegni in PDF o immagine (JPG, PNG...) è ora disponibile un pulsante "Markup": un editor con gli strumenti classici di revisione — penna, evidenziatore, linea, freccia, rettangolo, ellisse, nuvola di revisione, testo — con colori, spessore del tratto, selezione/spostamento, annulla/ripeti e zoom.',

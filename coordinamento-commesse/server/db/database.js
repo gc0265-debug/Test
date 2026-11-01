@@ -36,6 +36,10 @@ ensureColumns('documenti', [
   { name: 'cartella_id', def: 'INTEGER REFERENCES cartelle_documenti(id) ON DELETE SET NULL' },
 ]);
 ensureColumns('decisioni', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
+ensureColumns('criticita', [
+  { name: 'rif_documento_id', def: 'INTEGER REFERENCES documenti(id) ON DELETE SET NULL' },
+  { name: 'rif_documento_pagina', def: 'INTEGER' },
+]);
 ensureColumns('allert', [{ name: 'rif_requisito_id', def: 'INTEGER REFERENCES requisiti(id) ON DELETE SET NULL' }]);
 ensureColumns('milestone', [
   { name: 'baseline_data_inizio', def: 'TEXT' },
