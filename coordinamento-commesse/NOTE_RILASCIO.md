@@ -162,6 +162,24 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## To-do e note veloci sul Cruscotto, lavorazioni in corso sempre in vista nella Timeline (1 novembre 2026)
+
+- Nuovo box **"To-do e note veloci"** sul Cruscotto: appunti rapidi con
+  una scadenza facoltativa impostata a mano da chi scrive la nota. Una
+  nota con scadenza vicina (entro 3 giorni) o già scaduta è evidenziata
+  in ambra/rosso e compare anche tra le "Scadenze della settimana" in
+  cima, lo stesso promemoria già in uso per criticità urgenti e
+  milestone.
+- Le note completate si spuntano con una casella e restano nascoste di
+  default (pulsante "Mostra completati" per rivederle), per tenere il
+  box compatto.
+- La **Timeline Montaggi** mostra ora in cima una barra sempre visibile
+  con le **lavorazioni attualmente in corso** (oggi compreso nel loro
+  intervallo, o marcate "In corso" a mano): non serve più scorrere il
+  Gantt per sapere cosa è in lavorazione in questo momento.
+
+---
+
 ## Cruscotto collassabile, sidebar riordinata, filtri a bottone su Criticità e Lavorazioni (1 novembre 2026)
 
 - Il box **"Attività recente"** in fondo al Cruscotto è ora

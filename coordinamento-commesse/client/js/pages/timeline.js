@@ -410,6 +410,42 @@ export async function renderTimeline(container) {
       'Vista aggregata di gruppo: clicca una barra o una riga per modificarla. Per creare una nuova riga, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
+  // Barra orizzontale in cima, sempre visibile: le lavorazioni
+  // attualmente in corso (oggi compreso nel loro intervallo, o marcate
+  // "In corso" a mano) senza dover scorrere il Gantt per trovarle.
+  const settimanaHost = el('div');
+  container.appendChild(settimanaHost);
+
+  function drawSettimanaBar() {
+    const oggi = todayISO();
+    const inCorso = items.filter((it) => it.type === 'lavorazione'
+      && !it.isSummary
+      && (it.statoReale === 'in-corso' || (it.data_inizio <= oggi && it.data_fine >= oggi)));
+
+    settimanaHost.innerHTML = '';
+    if (!inCorso.length) return;
+    const chips = inCorso.map((it) => el(soloLettura ? 'div' : 'button', {
+      type: soloLettura ? undefined : 'button',
+      class: 'scadenza-chip timeline-settimana__chip' + (it.in_ritardo ? ' alert' : ''),
+      onclick: soloLettura ? undefined : () => openForm(it, refresh),
+    }, [
+      el('div', { class: 'scadenza-chip__titolo' }, `⚙ ${it.titolo}`),
+      el('div', { class: 'scadenza-chip__meta' }, [
+        el('span', {}, [it.piano, it.zona].filter(Boolean).join(' · ') || (it.wp_codice || '—')),
+        el('span', { class: 'scadenza-chip__gg' }, `${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}`),
+      ]),
+    ]));
+    settimanaHost.appendChild(el('div', { class: 'cruscotto-scadenze timeline-settimana' }, [
+      el('div', { class: 'cruscotto-scadenze__head' }, [
+        el('div', { class: 'cruscotto-scadenze__titolo' }, [
+          'Lavorazioni in corso',
+          el('span', { class: 'pill pill--outline' }, `${inCorso.length} attive`),
+        ]),
+      ]),
+      el('div', { class: 'cruscotto-scadenze__row' }, chips),
+    ]));
+  }
+
   const zoomSlider = el('input', {
     type: 'range', min: '0.4', max: '3', step: '0.1', value: '1', class: 'gantt__zoom',
     title: 'Zoom timeline', oninput: (e) => { zoom = Number(e.target.value); draw(); },
@@ -511,6 +547,7 @@ export async function renderTimeline(container) {
     });
 
     items = [...milestoneItems, ...lavorazioneItems].sort((a, b) => (a.data_inizio < b.data_inizio ? -1 : 1));
+    drawSettimanaBar();
     draw();
   }
 

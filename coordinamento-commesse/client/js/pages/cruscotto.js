@@ -7,8 +7,12 @@
 
 import { api } from '../api.js';
 import { state, currentCommessa } from '../state.js';
-import { el, formatDate, formatDateTime, openModal } from '../components/ui.js';
+import { el, formatDate, formatDateTime, openModal, textInput, dateInput, toast, confirmDialog, todayISO } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+
+function daysBetween(a, b) {
+  return Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
+}
 
 const AZIONE_LABEL = {
   creata: 'Creata', modificata: 'Modificata', chiusa: 'Chiusa',
@@ -50,18 +54,27 @@ function box(title, tiles, { buildModal, openHref, openLabel } = {}) {
 
 // Barra orizzontale in cima: le scadenze della settimana già visibili
 // come fila di schede scorrevole, niente click per vederle.
+const TIPO_SCADENZA = {
+  milestone: { icona: '◈', href: '#/timeline', label: 'Milestone' },
+  criticita: { icona: '▲', href: '#/criticita', label: 'Criticità' },
+  todo: { icona: '✓', href: '#/cruscotto', label: 'To-do' },
+};
+
 function scadenzeBar(dash, commessa) {
   const scadute = dash.scadenze_settimana.filter((s) => s.giorni < 0).length;
-  const chips = dash.scadenze_settimana.map((s) => el('a', {
-    href: s.tipo === 'milestone' ? '#/timeline' : '#/criticita',
-    class: 'scadenza-chip' + (s.giorni < 0 ? ' alert' : (s.giorni <= 3 ? ' warn' : '')),
-  }, [
-    el('div', { class: 'scadenza-chip__titolo' }, `${s.tipo === 'milestone' ? '◈' : '▲'} ${s.titolo}`),
-    el('div', { class: 'scadenza-chip__meta' }, [
-      el('span', {}, formatDate(s.data)),
-      el('span', { class: 'scadenza-chip__gg' }, s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `tra ${s.giorni} gg`),
-    ]),
-  ]));
+  const chips = dash.scadenze_settimana.map((s) => {
+    const info = TIPO_SCADENZA[s.tipo] || TIPO_SCADENZA.criticita;
+    return el('a', {
+      href: info.href,
+      class: 'scadenza-chip' + (s.giorni < 0 ? ' alert' : (s.giorni <= 3 ? ' warn' : '')),
+    }, [
+      el('div', { class: 'scadenza-chip__titolo' }, `${info.icona} ${s.titolo}`),
+      el('div', { class: 'scadenza-chip__meta' }, [
+        el('span', {}, formatDate(s.data)),
+        el('span', { class: 'scadenza-chip__gg' }, s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `tra ${s.giorni} gg`),
+      ]),
+    ]);
+  });
 
   return el('div', { class: 'cruscotto-scadenze' }, [
     el('div', { class: 'cruscotto-scadenze__head' }, [
@@ -74,7 +87,7 @@ function scadenzeBar(dash, commessa) {
         heading: 'Prossimi 7 giorni',
         columns: ['Tipo', 'Voce', 'Data', 'Giorni'],
         rows: dash.scadenze_settimana.map((s) => [
-          s.tipo === 'milestone' ? 'Milestone' : 'Criticità', s.titolo, formatDate(s.data),
+          (TIPO_SCADENZA[s.tipo] || TIPO_SCADENZA.criticita).label, s.titolo, formatDate(s.data),
           s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `${s.giorni} gg`,
         ]),
       }]) }, 'Stampa'),
@@ -119,6 +132,107 @@ function attivitaBar(attivita) {
   return el('div', { class: 'cruscotto-attivita' }, [head, scrollHost]);
 }
 
+// Box "To-do e note veloci": appunti rapidi con scadenza facoltativa
+// impostata a mano da chi la scrive. Chi ha una scadenza vicina o scaduta
+// compare anche tra le "Scadenze della settimana" in cima (vedi
+// server/routes/dashboard.js), sullo stesso meccanismo già in uso per
+// criticità urgenti e milestone.
+async function todoBox(onCambiamento) {
+  let righe = [];
+  let mostraCompletati = false;
+
+  const listHost = el('div', { class: 'cruscotto-todo__lista' });
+  const testoInput = textInput('todo_testo', '', { placeholder: 'Nuovo promemoria o nota veloce…' });
+  const scadenzaInput = dateInput('todo_scadenza', '');
+  const toggleCompletati = el('button', { type: 'button', class: 'btn btn--sm btn--ghost' });
+
+  async function refresh() {
+    const res = await api.get(`/todo?commessa_id=${state.commessaId}`);
+    righe = res.data;
+    disegna();
+  }
+
+  async function aggiungi() {
+    const testo = testoInput.value.trim();
+    if (!testo) return;
+    try {
+      await api.post('/todo', { commessa_id: state.commessaId, testo, scadenza: scadenzaInput.value || null });
+      testoInput.value = '';
+      scadenzaInput.value = '';
+      await refresh();
+      await onCambiamento?.();
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  }
+  testoInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') aggiungi(); });
+
+  async function toggleFatto(riga) {
+    try {
+      await api.put(`/todo/${riga.id}`, { fatto: riga.fatto ? 0 : 1, _versione: riga.updated_at });
+      await refresh();
+      await onCambiamento?.();
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  }
+
+  async function elimina(riga) {
+    if (!confirmDialog('Eliminare questo promemoria?')) return;
+    try {
+      await api.del(`/todo/${riga.id}`);
+      await refresh();
+      await onCambiamento?.();
+    } catch (err) {
+      toast(err.message, { error: true });
+    }
+  }
+
+  function rigaTodo(riga) {
+    const oggi = todayISO();
+    const giorni = riga.scadenza ? daysBetween(oggi, riga.scadenza) : null;
+    const urgenza = riga.fatto || giorni === null ? '' : (giorni < 0 ? ' cruscotto-todo__item--alert' : (giorni <= 3 ? ' cruscotto-todo__item--warn' : ''));
+    return el('div', { class: 'cruscotto-todo__item' + (riga.fatto ? ' cruscotto-todo__item--fatto' : '') + urgenza }, [
+      el('input', { type: 'checkbox', checked: !!riga.fatto, onchange: () => toggleFatto(riga) }),
+      el('span', { class: 'cruscotto-todo__testo' }, riga.testo),
+      riga.scadenza ? el('span', { class: 'cruscotto-todo__scadenza' },
+        riga.fatto ? formatDate(riga.scadenza) : (giorni < 0 ? `scaduta da ${Math.abs(giorni)} gg` : (giorni === 0 ? 'scade oggi' : `tra ${giorni} gg`))) : null,
+      el('button', { type: 'button', class: 'btn btn--sm btn--ghost btn--danger', title: 'Elimina', onclick: () => elimina(riga) }, '×'),
+    ]);
+  }
+
+  function disegna() {
+    const aperti = righe.filter((r) => !r.fatto);
+    const completati = righe.filter((r) => r.fatto);
+    toggleCompletati.textContent = mostraCompletati ? 'Nascondi completati' : `Mostra completati (${completati.length})`;
+    toggleCompletati.hidden = completati.length === 0;
+
+    listHost.innerHTML = '';
+    if (!aperti.length && !mostraCompletati) {
+      listHost.appendChild(el('p', { class: 'muted', style: 'margin:4px 0 0' }, 'Nessun promemoria aperto.'));
+    } else {
+      aperti.forEach((r) => listHost.appendChild(rigaTodo(r)));
+      if (mostraCompletati) completati.forEach((r) => listHost.appendChild(rigaTodo(r)));
+    }
+  }
+  toggleCompletati.onclick = () => { mostraCompletati = !mostraCompletati; disegna(); };
+
+  await refresh();
+
+  return el('div', { class: 'cruscotto-todo' }, [
+    el('div', { class: 'cruscotto-todo__head' }, [
+      el('div', { class: 'cruscotto-attivita__titolo' }, 'To-do e note veloci'),
+      toggleCompletati,
+    ]),
+    el('div', { class: 'cruscotto-todo__form' }, [
+      testoInput,
+      scadenzaInput,
+      el('button', { type: 'button', class: 'btn btn--sm btn--primary', onclick: aggiungi }, '+ Aggiungi'),
+    ]),
+    listHost,
+  ]);
+}
+
 export async function renderCruscotto(container) {
   if (!state.commessaId) {
     container.appendChild(el('p', { class: 'muted' },
@@ -138,7 +252,20 @@ export async function renderCruscotto(container) {
     el('p', { class: 'muted', style: 'margin:0' }, [commessa.cliente, commessa.gc && `GC ${commessa.gc}`, commessa.dl && `DL ${commessa.dl}`].filter(Boolean).join(' · ')),
   ]));
 
-  container.appendChild(scadenzeBar(dash, commessa));
+  const scadenzeHost = el('div');
+  container.appendChild(scadenzeHost);
+  scadenzeHost.appendChild(scadenzeBar(dash, commessa));
+
+  // Aggiungere/completare/eliminare un to-do può far entrare o uscire una
+  // voce dalle "Scadenze della settimana" in cima: si ricarica solo quella
+  // barra, non tutta la pagina.
+  async function refreshScadenze() {
+    const freshDash = await api.get(`/dashboard/${state.commessaId}`);
+    scadenzeHost.innerHTML = '';
+    scadenzeHost.appendChild(scadenzeBar(freshDash, commessa));
+  }
+
+  container.appendChild(await todoBox(refreshScadenze));
 
   const grid = el('div', { class: 'cruscotto-grid' });
   container.appendChild(grid);

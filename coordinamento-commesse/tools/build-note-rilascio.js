@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.42';
+const VERSIONE_ATTUALE = '1.43';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,15 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.42', title: 'Cruscotto collassabile, sidebar riordinata, filtri a bottone su Criticità e Lavorazioni', date: '1 novembre 2026', attuale: true,
+    v: '1.43', title: 'To-do e note veloci sul Cruscotto, lavorazioni in corso sempre in vista nella Timeline', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Nuovo box "To-do e note veloci" sul Cruscotto: appunti rapidi con una scadenza facoltativa impostata a mano da chi scrive la nota. Una nota con scadenza vicina (entro 3 giorni) o già scaduta è evidenziata in ambra/rosso e compare anche tra le "Scadenze della settimana" in cima, lo stesso promemoria già in uso per criticità urgenti e milestone.',
+      'Le note completate si spuntano con una casella e restano nascoste di default (pulsante "Mostra completati" per rivederle), per tenere il box compatto.',
+      'La Timeline Montaggi mostra ora in cima una barra sempre visibile con le lavorazioni attualmente in corso (oggi compreso nel loro intervallo, o marcate "In corso" a mano): non serve più scorrere il Gantt per sapere cosa è in lavorazione in questo momento.',
+    ],
+  },
+  {
+    v: '1.42', title: 'Cruscotto collassabile, sidebar riordinata, filtri a bottone su Criticità e Lavorazioni', date: '1 novembre 2026',
     points: [
       'Il box "Attività recente" in fondo al Cruscotto è ora collassabile (clic sulla barra del titolo): lo stato aperto/chiuso resta ricordato tra una visita e l\'altra.',
       'Corretta la prima colonna dell\'elenco attività recente, che su un\'etichetta lunga (es. "Processo comunicazione") poteva sovrapporsi al testo della riga accanto.',

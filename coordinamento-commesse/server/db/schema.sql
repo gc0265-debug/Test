@@ -630,3 +630,20 @@ CREATE TABLE IF NOT EXISTS timeline_dipendenze (
 CREATE INDEX IF NOT EXISTS idx_timeline_dip_commessa ON timeline_dipendenze(commessa_id);
 CREATE INDEX IF NOT EXISTS idx_timeline_dip_pred ON timeline_dipendenze(pred_tipo, pred_id);
 CREATE INDEX IF NOT EXISTS idx_timeline_dip_succ ON timeline_dipendenze(succ_tipo, succ_id);
+
+-- To-do e note veloci sul Cruscotto: appunti personali, non un registro
+-- formale (nessuno storico/audit, nessun WP). La scadenza è facoltativa e
+-- impostata a mano da chi la scrive: se presente, la voce compare anche
+-- tra le "Scadenze della settimana" del Cruscotto quando si avvicina o è
+-- scaduta, sullo stesso meccanismo già in uso per criticità e milestone.
+CREATE TABLE IF NOT EXISTS todo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commessa_id INTEGER NOT NULL REFERENCES commesse(id) ON DELETE CASCADE,
+    testo TEXT NOT NULL,
+    scadenza TEXT,
+    fatto INTEGER NOT NULL DEFAULT 0 CHECK(fatto IN (0,1)),
+    autore TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+CREATE INDEX IF NOT EXISTS idx_todo_commessa ON todo(commessa_id);

@@ -28,6 +28,7 @@ const documentiRouter = require('./routes/documenti');
 const cartelleDocumentiRouter = require('./routes/cartelleDocumenti');
 const markupDisegniRouter = require('./routes/markupDisegni');
 const dashboardRouter = require('./routes/dashboard');
+const todoRouter = require('./routes/todo');
 const allertRouter = require('./routes/allert');
 const auditRouter = require('./routes/audit');
 const exportRouter = require('./routes/export');
@@ -111,6 +112,7 @@ app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('doc
 app.use('/api/cartelle-documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), cartelleDocumentiRouter);
 app.use('/api/documenti', requireAuth, blockWriteForCliente, requireSection('documenti'), markupDisegniRouter);
 app.use('/api/dashboard', requireAuth, blockWriteForCliente, requireSection('cruscotto'), dashboardRouter);
+app.use('/api/todo', requireAuth, blockWriteForCliente, requireSection('cruscotto'), todoRouter);
 app.use('/api/allert', requireAuth, blockWriteForCliente, requireSection('allert'), allertRouter);
 app.use('/api/audit', requireAuth, blockWriteForCliente, auditRouter);
 app.use('/api/export', requireAuth, blockWriteForCliente, exportRouter);

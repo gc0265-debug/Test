@@ -87,7 +87,10 @@ router.get('/:commessaId', (req, res) => {
     in_scadenza_7gg: milestoneInScadenza.length,
   };
 
-  // ---- scadenze della settimana (criticità urgenti + milestone, entro 7 giorni o già scadute) ----
+  // ---- to-do e note veloci con scadenza (stesso criterio delle altre scadenze) ----
+  const todoRows = db.prepare('SELECT * FROM todo WHERE commessa_id = ? AND fatto = 0 AND scadenza IS NOT NULL').all(commessaId);
+
+  // ---- scadenze della settimana (criticità urgenti + milestone + to-do con scadenza, entro 7 giorni o già scadute) ----
   const scadenzeSettimana = [
     ...violaAperte
       .filter(c => c.entro_quando <= limite7)
@@ -95,6 +98,9 @@ router.get('/:commessaId', (req, res) => {
     ...milestoneAperte
       .filter(m => m.data_fine <= limite7)
       .map(m => ({ tipo: 'milestone', id: m.id, titolo: m.titolo, data: m.data_fine, giorni: daysBetween(oggi, m.data_fine) })),
+    ...todoRows
+      .filter(t => t.scadenza <= limite7)
+      .map(t => ({ tipo: 'todo', id: t.id, titolo: t.testo, data: t.scadenza, giorni: daysBetween(oggi, t.scadenza) })),
   ].sort((a, b) => a.giorni - b.giorni);
 
   // ---- requisiti ----
