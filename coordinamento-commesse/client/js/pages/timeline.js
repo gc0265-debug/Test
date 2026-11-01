@@ -77,6 +77,34 @@ function monthLabel(dateStr) {
   const d = new Date(dateStr + 'T00:00:00Z');
   return d.toLocaleDateString('it-IT', { month: 'short', year: 'numeric' });
 }
+function firstOfQuarter(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCMonth(Math.floor(d.getUTCMonth() / 3) * 3, 1);
+  return d.toISOString().slice(0, 10);
+}
+function firstOfNextQuarter(dateStr) {
+  const d = new Date(firstOfQuarter(dateStr) + 'T00:00:00Z');
+  d.setUTCMonth(d.getUTCMonth() + 3);
+  return d.toISOString().slice(0, 10);
+}
+function quarterLabel(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  return `T${Math.floor(d.getUTCMonth() / 3) + 1} ${d.getUTCFullYear()}`;
+}
+function firstOfSemester(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCMonth(d.getUTCMonth() < 6 ? 0 : 6, 1);
+  return d.toISOString().slice(0, 10);
+}
+function firstOfNextSemester(dateStr) {
+  const d = new Date(firstOfSemester(dateStr) + 'T00:00:00Z');
+  d.setUTCMonth(d.getUTCMonth() + 6);
+  return d.toISOString().slice(0, 10);
+}
+function semesterLabel(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  return `${d.getUTCMonth() < 6 ? '1°' : '2°'} sem. ${d.getUTCFullYear()}`;
+}
 function formatShort(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return `${d}/${m}`;
@@ -111,44 +139,42 @@ function isoWeek(dateStr) {
 }
 
 // px/giorno per granularità: scelto perché ogni colonna (settimana ~90px,
-// mese ~150px) resti leggibile anche su commesse che coprono molti mesi —
-// il grafico cresce in larghezza (scroll orizzontale) invece di schiacciare
-// le colonne. zoom è un moltiplicatore continuo (slider) sopra questa base.
+// mese ~150px, trimestre ~220px, semestre ~280px) resti leggibile anche su
+// commesse che coprono molti mesi — il grafico cresce in larghezza (scroll
+// orizzontale) invece di schiacciare le colonne. zoom è un moltiplicatore
+// continuo (slider) sopra questa base.
+const PX_PER_DAY_BASE = { week: 90 / 7, month: 150 / 30.44, quarter: 220 / 91.3, semester: 280 / 182.6 };
 function pxPerDay(granularity, zoom) {
-  return (granularity === 'week' ? 90 / 7 : 150 / 30.44) * zoom;
+  return (PX_PER_DAY_BASE[granularity] || PX_PER_DAY_BASE.week) * zoom;
 }
+
+// Un'unica tabella con l'inizio del periodo che contiene una data, il
+// periodo successivo e l'etichetta, invece di un ramo if/else per ogni
+// granularità: aggiungere una nuova vista (qui Trimestri/Semestri, oltre
+// a Settimane/Mesi già presenti) significa solo aggiungere una riga.
+const GRANULARITA = {
+  week: { inizioPeriodo: mondayOnOrBefore, periodoSuccessivo: (c) => addDays(c, 7), etichetta: (c) => `S${isoWeek(c)}`, sottotitolo: (c) => `${formatShort(c)}–${formatShort(addDays(c, 6))}` },
+  month: { inizioPeriodo: firstOfMonth, periodoSuccessivo: firstOfNextMonth, etichetta: monthLabel, sottotitolo: () => '' },
+  quarter: { inizioPeriodo: firstOfQuarter, periodoSuccessivo: firstOfNextQuarter, etichetta: quarterLabel, sottotitolo: () => '' },
+  semester: { inizioPeriodo: firstOfSemester, periodoSuccessivo: firstOfNextSemester, etichetta: semesterLabel, sottotitolo: () => '' },
+};
 
 function buildAxis(rangeStart, rangeEnd, granularity, zoom) {
   const ppd = pxPerDay(granularity, zoom);
+  const g = GRANULARITA[granularity] || GRANULARITA.week;
   const segments = [];
-  if (granularity === 'week') {
-    let cursor = mondayOnOrBefore(rangeStart);
-    while (cursor < rangeEnd) {
-      const segEnd = addDays(cursor, 7);
-      const startOffset = Math.max(0, daysBetween(rangeStart, cursor));
-      const endOffset = daysBetween(rangeStart, segEnd);
-      segments.push({
-        label: `S${isoWeek(cursor)}`,
-        sub: `${formatShort(cursor)}–${formatShort(addDays(cursor, 6))}`,
-        leftPx: startOffset * ppd,
-        widthPx: Math.max(0, endOffset - startOffset) * ppd,
-      });
-      cursor = segEnd;
-    }
-  } else {
-    let cursor = firstOfMonth(rangeStart);
-    while (cursor < rangeEnd) {
-      const segEnd = firstOfNextMonth(cursor);
-      const startOffset = Math.max(0, daysBetween(rangeStart, cursor));
-      const endOffset = daysBetween(rangeStart, segEnd);
-      segments.push({
-        label: monthLabel(cursor),
-        sub: '',
-        leftPx: startOffset * ppd,
-        widthPx: Math.max(0, endOffset - startOffset) * ppd,
-      });
-      cursor = segEnd;
-    }
+  let cursor = g.inizioPeriodo(rangeStart);
+  while (cursor < rangeEnd) {
+    const segEnd = g.periodoSuccessivo(cursor);
+    const startOffset = Math.max(0, daysBetween(rangeStart, cursor));
+    const endOffset = daysBetween(rangeStart, segEnd);
+    segments.push({
+      label: g.etichetta(cursor),
+      sub: g.sottotitolo(cursor),
+      leftPx: startOffset * ppd,
+      widthPx: Math.max(0, endOffset - startOffset) * ppd,
+    });
+    cursor = segEnd;
   }
   return segments;
 }
@@ -526,7 +552,7 @@ export async function renderTimeline(container) {
   function drawGranularityButtons() {
     const host = toolbar.firstChild;
     host.innerHTML = '';
-    [['week', 'Settimane'], ['month', 'Mesi']].forEach(([value, label]) => {
+    [['week', 'Settimane'], ['month', 'Mesi'], ['quarter', 'Trimestri'], ['semester', 'Semestri']].forEach(([value, label]) => {
       host.appendChild(el('button', {
         class: 'btn btn--sm' + (granularity === value ? ' btn--primary' : ''),
         onclick: () => { granularity = value; drawGranularityButtons(); draw(); },
@@ -621,7 +647,7 @@ export async function renderTimeline(container) {
     const minStart = items.reduce((m, r) => (r.data_inizio < m ? r.data_inizio : m), items[0].data_inizio);
     const maxEnd = items.reduce((m, r) => (r.data_fine > m ? r.data_fine : m), items[0].data_fine);
     const paddedStart = addDays(minStart, -3);
-    const rangeStart = granularity === 'week' ? mondayOnOrBefore(paddedStart) : firstOfMonth(paddedStart);
+    const rangeStart = (GRANULARITA[granularity] || GRANULARITA.week).inizioPeriodo(paddedStart);
     const rangeEnd = addDays(maxEnd, 7);
     const ppd = pxPerDay(granularity, zoom);
     const totalWidthPx = Math.max(1, daysBetween(rangeStart, rangeEnd)) * ppd;
@@ -641,7 +667,7 @@ export async function renderTimeline(container) {
       class: 'gantt__gridline', style: `left: calc(var(--gantt-label-w) + ${s.leftPx}px)`,
     }));
 
-    const labelCols = (wbs, nome, meta, durata, inizio, fine, pred, onEdit) => el('div', {
+    const labelCols = (wbs, nome, meta, durata, baseInizio, baseFine, inizio, fine, pred, onEdit) => el('div', {
       class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : ''),
       onclick: onEdit || null,
     }, [
@@ -651,13 +677,15 @@ export async function renderTimeline(container) {
         meta ? el('div', { class: 'gantt__label-meta' }, meta) : null,
       ]),
       el('div', { class: 'gantt__label-col gantt__label-col--durata' }, durata),
+      el('div', { class: 'gantt__label-col gantt__label-col--data gantt__label-col--baseline' }, baseInizio),
+      el('div', { class: 'gantt__label-col gantt__label-col--data gantt__label-col--baseline' }, baseFine),
       el('div', { class: 'gantt__label-col gantt__label-col--data' }, inizio),
       el('div', { class: 'gantt__label-col gantt__label-col--data' }, fine),
       el('div', { class: 'gantt__label-col gantt__label-col--pred' }, pred),
     ]);
 
     const headerRow = el('div', { class: 'gantt__row gantt__row--head' }, [
-      labelCols('#', 'Attività', null, 'Durata', 'Inizio', 'Fine', 'Pred.'),
+      labelCols('#', 'Attività', null, 'Durata', 'Base. inizio', 'Base. fine', 'Inizio', 'Fine', 'Pred.'),
       el('div', { class: 'gantt__axis', style: `width:${totalWidthPx}px` }, axis.map((s) => el('div', {
         class: 'gantt__col', style: `left:${s.leftPx}px;width:${s.widthPx}px`,
       }, [
@@ -833,6 +861,8 @@ export async function renderTimeline(container) {
           metaParts.length ? el('div', { class: 'gantt__label-meta' }, metaParts.join(' · ')) : null,
         ]),
         el('div', { class: 'gantt__label-col gantt__label-col--durata' }, `${durataGg(it)} gg`),
+        el('div', { class: 'gantt__label-col gantt__label-col--data gantt__label-col--baseline' }, it.baseline_data_inizio ? formatDate(it.baseline_data_inizio) : '—'),
+        el('div', { class: 'gantt__label-col gantt__label-col--data gantt__label-col--baseline' }, it.baseline_data_fine ? formatDate(it.baseline_data_fine) : '—'),
         el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(it.data_inizio)),
         el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(it.data_fine)),
         el('div', { class: 'gantt__label-col gantt__label-col--pred' }, codiciPredecessori(it)),
@@ -924,6 +954,8 @@ export async function renderTimeline(container) {
               ]),
             ]),
             el('div', { class: 'gantt__label-col gantt__label-col--durata' }, `${daysBetween(g.dataInizio, g.dataFine) + 1} gg`),
+            el('div', { class: 'gantt__label-col gantt__label-col--data gantt__label-col--baseline' }, '—'),
+            el('div', { class: 'gantt__label-col gantt__label-col--data gantt__label-col--baseline' }, '—'),
             el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(g.dataInizio)),
             el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(g.dataFine)),
             el('div', { class: 'gantt__label-col gantt__label-col--pred' }, ''),
@@ -942,8 +974,8 @@ export async function renderTimeline(container) {
       el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + ${todayOffsetPx}px)` }),
     ]);
 
-    // WBS(32) + Nome + Durata(62) + Inizio(85) + Fine(85) + Predecessori(85)
-    const labelWidthPx = nomeWidth + 32 + 62 + 85 + 85 + 85;
+    // WBS(32) + Nome + Durata(62) + Base.Inizio(85) + Base.Fine(85) + Inizio(85) + Fine(85) + Predecessori(85)
+    const labelWidthPx = nomeWidth + 32 + 62 + 85 + 85 + 85 + 85 + 85;
     ganttHost.innerHTML = '';
     const ganttEl = el('div', {
       class: 'gantt',

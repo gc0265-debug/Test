@@ -343,7 +343,12 @@ export async function renderDocumenti(container) {
       },
     ].filter(Boolean), lastRows, {
       emptyLabel: cartellaId ? 'Nessun documento in questa cartella.' : 'Nessun documento registrato per questa commessa.',
-      onRowClick: (row) => apriModifica(row),
+      // Su un disegno (PDF/immagine) il clic sulla riga apre direttamente
+      // l'anteprima con gli strumenti di markup e la segnalazione criticità,
+      // invece del modulo di modifica titolo/tipo/link — il pulsante
+      // "Markup" nella colonna azioni fa la stessa cosa, qui si evita il
+      // doppio passaggio per il caso più comune (aprire il disegno).
+      onRowClick: (row) => (documentoSupportaMarkup(row) ? apriMarkup(row) : apriModifica(row)),
       selection: { selectedId, onSelect: (id) => { selectedId = id; refresh(); } },
     });
 

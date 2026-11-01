@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.44';
+const VERSIONE_ATTUALE = '1.45';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,16 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.44', title: 'Timeline in stile MS Project: WBS, durata, predecessori, avanzamento, trascinamento e colori a scelta', date: '1 novembre 2026', attuale: true,
+    v: '1.45', title: 'Guida e Supporto in linea, baseline a confronto in Timeline, trimestri/semestri, markup con un clic', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Nuova voce "Guida e Supporto" in fondo al menu laterale, raggiungibile da qualunque pagina dell\'app: un pannello di consultazione con una guida per ogni scheda (organizzata come il menu), una casella di ricerca che filtra subito i contenuti e un indice cliccabile per saltare direttamente alla sezione che serve. Non sostituisce il "?" già presente in alto in ogni pagina né le spiegazioni sotto i singoli campi dei moduli, ma affianca entrambi come punto di riferimento unico su tutta l\'app.',
+      'Nella Timeline, ogni milestone mostra ora due colonne in più — "Base. inizio" e "Base. fine" — accanto a "Inizio" e "Fine", per confrontare a colpo d\'occhio la data pianificata in origine con quella attuale senza aprire la scheda di modifica. Sul Gantt, la barra della baseline è ora allineata esattamente a metà altezza sotto quella dell\'attività corrente, invece che sopra di essa su una riga propria.',
+      'Aggiunte le viste "Trimestri" e "Semestri" alla Timeline, accanto a Settimane e Mesi già presenti: utili per guardare l\'avanzamento dell\'intera commessa senza perdersi nel dettaglio delle singole settimane.',
+      'Nella scheda Documenti, cliccare la riga di un disegno (PDF o immagine) apre direttamente l\'anteprima con gli strumenti di markup e le note, senza passare dal pulsante "Markup" a parte — che resta comunque disponibile. Il clic su un documento senza file caricato (solo link, o un documento scritto in app) continua ad aprire il modulo di modifica come prima.',
+    ],
+  },
+  {
+    v: '1.44', title: 'Timeline in stile MS Project: WBS, durata, predecessori, avanzamento, trascinamento e colori a scelta', date: '1 novembre 2026',
     points: [
       'La Timeline Montaggi assomiglia ora più da vicino a un vero foglio MPP: numerazione gerarchica WBS (1, 1.1, 1.1.1...) a sinistra di ogni riga, colonna "Durata" in giorni, colonna "Pred." con il codice del predecessore (es. "2.1FS+2gg" = dopo la fine dell\'attività 2.1 più 2 giorni di ritardo) e righe più dense per vedere più attività senza scorrere.',
       'Ogni lavorazione ha ora un campo "Avanzamento (%)", modificabile a mano indipendentemente dallo stato: viene mostrato come una sottile barra scura sovrapposta alla barra del Gantt, in proporzione.',

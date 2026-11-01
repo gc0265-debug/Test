@@ -105,6 +105,13 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
 .side__ico{width:16px;text-align:center;color:var(--ink-3);font-size:12px;flex:none;}
 .side__nav a.active .side__ico{color:var(--red);}
 .side__foot{padding:12px 20px 0;font-size:9.5px;color:var(--ink-3);letter-spacing:.05em;border-top:1px solid var(--rule);margin-top:10px;}
+.side__guida{
+  display:flex;align-items:center;gap:10px;width:100%;margin:4px 12px 0;padding:8px 8px;
+  border:none;background:none;font:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer;
+  border-radius:6px;text-align:left;
+}
+.side__guida:hover{background:var(--paper-3);color:var(--ink);}
+.side__guida .side__ico{color:var(--ambra);}
 
 .main{min-width:0;display:flex;flex-direction:column;}
 .topbar{
@@ -404,6 +411,22 @@ td.select input{cursor:pointer;}
 .docs-cartella__nome{font-size:13px;font-weight:500;}
 .docs-cartella__azioni{display:flex;gap:2px;}
 
+/* ---------- Guida e Supporto ---------- */
+.guida-supporto{display:flex;flex-direction:column;height:100%;min-height:0;}
+.guida-supporto__search{padding:10px 16px;border-bottom:1px solid var(--rule);flex:none;}
+.guida-supporto__search input{width:100%;padding:7px 10px;border:1px solid var(--rule);border-radius:6px;font-size:12.5px;background:var(--paper);color:var(--ink);}
+.guida-supporto__body{flex:1;min-height:0;display:flex;flex-direction:row;overflow:hidden;}
+.guida-supporto__nav{width:230px;flex:none;overflow-y:auto;border-right:1px solid var(--rule);background:var(--paper-2);padding:10px 0;}
+.guida-supporto__nav-gruppo{padding:14px 16px 4px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700;}
+.guida-supporto__nav-link{display:block;width:100%;text-align:left;padding:6px 16px;border:none;background:none;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer;}
+.guida-supporto__nav-link:hover{background:var(--paper-3);color:var(--ink);}
+.guida-supporto__content{flex:1;min-width:0;overflow-y:auto;padding:20px 28px;}
+.guida-supporto__voce{margin-bottom:28px;}
+.guida-supporto__voce h4{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px;}
+.guida-supporto__voce p.muted{margin:0 0 8px;font-style:italic;}
+.guida-supporto__voce ul{margin:0;padding-left:18px;}
+.guida-supporto__voce li{margin-bottom:6px;font-size:12.5px;line-height:1.5;}
+
 /* ---------- Documenti: editor di markup sui disegni ---------- */
 .markup-editor{display:flex;flex-direction:column;height:100%;min-height:0;}
 .markup-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--rule);background:var(--paper-2);flex:none;}
@@ -494,6 +517,7 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__label-col--nome{width:var(--gantt-nome-w, 180px);display:flex;flex-direction:column;justify-content:center;gap:2px;}
 .gantt__label-col--durata{width:var(--gantt-durata-w, 62px);display:flex;align-items:center;justify-content:flex-end;font-size:10.5px;color:var(--ink-2);font-variant-numeric:tabular-nums;border-left:1px solid var(--rule-2);white-space:nowrap;}
 .gantt__label-col--data{width:85px;display:flex;align-items:center;font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;border-left:1px solid var(--rule-2);white-space:nowrap;}
+.gantt__label-col--baseline{color:var(--ambra);font-style:italic;}
 .gantt__label-col--pred{width:var(--gantt-pred-w, 85px);display:flex;align-items:center;font-size:10px;color:var(--ink-3);border-left:1px solid var(--rule-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .gantt__row--head .gantt__label-col--wbs, .gantt__row--head .gantt__label-col--nome,
 .gantt__row--head .gantt__label-col--durata, .gantt__row--head .gantt__label-col--data, .gantt__row--head .gantt__label-col--pred{
@@ -510,7 +534,7 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__gridline{position:absolute;top:0;bottom:0;width:1px;background:var(--rule-2);pointer-events:none;}
 
 .gantt__track{flex:none;position:relative;min-height:26px;}
-.gantt__row--scostamento .gantt__track{min-height:36px;}
+.gantt__row--scostamento .gantt__track{min-height:30px;}
 
 /* barre sottili: altezza fissa invece della vecchia fascia piena della riga */
 .gantt__bar{
@@ -520,7 +544,6 @@ div.timeline-settimana__chip{cursor:default;}
 }
 .gantt__bar--dragging{cursor:grabbing;opacity:.85;box-shadow:0 0 0 2px var(--red);z-index:2;}
 .gantt__bar-progress{position:absolute;top:50%;left:1px;height:3px;transform:translateY(-50%);background:rgba(0,0,0,.45);border-radius:1px;pointer-events:none;}
-.gantt__row--scostamento .gantt__bar{top:24px;transform:none;}
 .gantt__bar--pianificata{background:var(--gantt-color-pianificata);}
 .gantt__bar--in-corso{background:var(--gantt-color-in-corso);}
 .gantt__bar--completata{background:var(--gantt-color-completata);}
@@ -561,9 +584,14 @@ div.timeline-settimana__chip{cursor:default;}
 
 /* barra baseline: posizione/durata originali, in trasparenza, non cliccabile.
    Colore ambra per legarla visivamente al pallino "scostamento" (stesso
-   accento), distinguendola dalle barre di stato e dal gruppo Piano. */
+   accento), distinguendola dalle barre di stato e dal gruppo Piano.
+   Parte esattamente dal centro della riga (dove la barra attività — alta
+   11px, centrata con translateY(-50%) — ha il suo bordo inferiore) e
+   scende per la stessa altezza: così resta sempre esattamente al 50%
+   sovrapposta/nascosta sotto la barra attività, che viene disegnata dopo
+   nel DOM e quindi sopra. */
 .gantt__bar-baseline{
-  position:absolute;top:5px;height:8px;border-radius:2px;pointer-events:none;
+  position:absolute;top:50%;height:11px;border-radius:2px;pointer-events:none;
   background:var(--ambra-wash);opacity:.8;border:1px dashed var(--ambra);
 }
 
