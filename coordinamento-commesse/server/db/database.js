@@ -60,6 +60,10 @@ ensureColumns('lavorazioni', [
   { name: 'data_fine', def: 'TEXT' },
   { name: 'contratto_id', def: 'INTEGER REFERENCES contratti(id) ON DELETE SET NULL' },
   { name: 'parent_id', def: 'INTEGER REFERENCES lavorazioni(id) ON DELETE SET NULL' },
+  // Avanzamento reale (0-100), mostrato come riempimento della barra nel
+  // Gantt in stile MPP: non derivato dallo stato (che ha solo 4 valori
+  // discreti) ma un numero a sé, modificabile a mano in qualunque stato.
+  { name: 'percentuale_completamento', def: 'INTEGER NOT NULL DEFAULT 0' },
 ]);
 // scadenza era l'unica data prima dell'introduzione di data_inizio/data_fine:
 // la si riporta come data_fine così le lavorazioni esistenti non perdono la scadenza già registrata.

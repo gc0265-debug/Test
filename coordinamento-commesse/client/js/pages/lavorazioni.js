@@ -200,6 +200,8 @@ async function openForm(existing, onSaved) {
     'Determina il colore della barra nella Timeline e conta nei grafici di avanzamento e nel SAL.'));
   form.appendChild(field('Priorità', select('priorita', Object.entries(PRIORITA).map(([k, v]) => [k, v[0]]), existing?.priorita ?? 'media'),
     'Solo informativa: non influisce sul calcolo delle date.'));
+  form.appendChild(field('Avanzamento (%)', textInput('percentuale_completamento', existing?.percentuale_completamento ?? 0, { type: 'number', min: '0', max: '100', step: '5' }),
+    'Riempie la barra nella Timeline in proporzione: non è legato allo stato, va aggiornato a mano quando cambia l\'avanzamento reale in cantiere.'));
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Data inizio', dateInput('data_inizio', existing?.data_inizio ?? ''),
       'Lasciare vuoto se la lavorazione non ha ancora una pianificazione: non comparirà nella Timeline Montaggi finché non ha entrambe le date.'),

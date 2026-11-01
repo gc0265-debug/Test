@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.43';
+const VERSIONE_ATTUALE = '1.44';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,17 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.43', title: 'To-do e note veloci sul Cruscotto, lavorazioni in corso sempre in vista nella Timeline', date: '1 novembre 2026', attuale: true,
+    v: '1.44', title: 'Timeline in stile MS Project: WBS, durata, predecessori, avanzamento, trascinamento e colori a scelta', date: '1 novembre 2026', attuale: true,
+    points: [
+      'La Timeline Montaggi assomiglia ora più da vicino a un vero foglio MPP: numerazione gerarchica WBS (1, 1.1, 1.1.1...) a sinistra di ogni riga, colonna "Durata" in giorni, colonna "Pred." con il codice del predecessore (es. "2.1FS+2gg" = dopo la fine dell\'attività 2.1 più 2 giorni di ritardo) e righe più dense per vedere più attività senza scorrere.',
+      'Ogni lavorazione ha ora un campo "Avanzamento (%)", modificabile a mano indipendentemente dallo stato: viene mostrato come una sottile barra scura sovrapposta alla barra del Gantt, in proporzione.',
+      'Si trascina direttamente la barra di un\'attività nel Gantt per spostarla avanti o indietro nel tempo (snap al giorno): un semplice clic, senza trascinare, continua ad aprire il modulo di modifica come prima. Le righe di riepilogo (lavorazioni madre con sotto-attività) non si trascinano, perché le loro date derivano dalle sotto-attività.',
+      'In vista "Settimane" e "Mesi" compaiono ora delle righe verticali sottili ad ogni confine di periodo, per leggere a colpo d\'occhio su quale settimana o mese cade una barra.',
+      'Nuovo pulsante "Colori" nella Timeline: permette di scegliere liberamente il colore delle barre per ciascuno stato (Pianificata, In corso, Completata, In ritardo), con anteprima immediata. La scelta resta salvata nel browser; "Ripristina predefiniti" torna ai colori di tema.',
+    ],
+  },
+  {
+    v: '1.43', title: 'To-do e note veloci sul Cruscotto, lavorazioni in corso sempre in vista nella Timeline', date: '1 novembre 2026',
     points: [
       'Nuovo box "To-do e note veloci" sul Cruscotto: appunti rapidi con una scadenza facoltativa impostata a mano da chi scrive la nota. Una nota con scadenza vicina (entro 3 giorni) o già scaduta è evidenziata in ambra/rosso e compare anche tra le "Scadenze della settimana" in cima, lo stesso promemoria già in uso per criticità urgenti e milestone.',
       'Le note completate si spuntano con una casella e restano nascoste di default (pulsante "Mostra completati" per rivederle), per tenere il box compatto.',

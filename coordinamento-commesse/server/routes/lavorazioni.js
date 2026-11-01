@@ -43,16 +43,25 @@ router.get('/', (req, res) => {
   res.json({ data: rows, total: rows.length });
 });
 
+// 0-100, qualunque cosa arrivi dal client (anche assente o fuori range).
+function clampPercentuale(v, fallback) {
+  if (v === undefined || v === null || v === '') return fallback;
+  const n = Math.round(Number(v));
+  if (Number.isNaN(n)) return fallback;
+  return Math.max(0, Math.min(100, n));
+}
+
 router.post('/', (req, res) => {
-  const { commessa_id, wp_id, titolo, descrizione, stato, priorita, piano, zona, data_inizio, data_fine, impresa, contratto_id, parent_id } = req.body;
+  const { commessa_id, wp_id, titolo, descrizione, stato, priorita, piano, zona, data_inizio, data_fine, impresa, contratto_id, parent_id, percentuale_completamento } = req.body;
   if (!commessa_id || !titolo) return res.status(400).json({ error: 'commessa_id e titolo sono obbligatori' });
   const erroreParent = validaParent(parent_id, commessa_id, null);
   if (erroreParent) return res.status(400).json({ error: erroreParent });
   const result = db.prepare(`
-    INSERT INTO lavorazioni (commessa_id, wp_id, titolo, descrizione, stato, priorita, piano, zona, data_inizio, data_fine, impresa, contratto_id, parent_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO lavorazioni (commessa_id, wp_id, titolo, descrizione, stato, priorita, piano, zona, data_inizio, data_fine, impresa, contratto_id, parent_id, percentuale_completamento)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(commessa_id, wp_id || null, titolo, descrizione || null, stato || 'da-fare', priorita || 'media',
-    piano || null, zona || null, data_inizio || null, data_fine || null, impresa || null, contratto_id || null, parent_id || null);
+    piano || null, zona || null, data_inizio || null, data_fine || null, impresa || null, contratto_id || null, parent_id || null,
+    clampPercentuale(percentuale_completamento, 0));
   res.status(201).json(db.prepare('SELECT * FROM lavorazioni WHERE id = ?').get(result.lastInsertRowid));
 });
 
@@ -70,12 +79,13 @@ router.put('/:id', (req, res) => {
     const haFigli = db.prepare('SELECT COUNT(*) AS n FROM lavorazioni WHERE parent_id = ?').get(existing.id).n;
     if (haFigli > 0) return res.status(400).json({ error: 'questa lavorazione ha già delle sotto-attività: non può diventare a sua volta una sotto-attività' });
   }
+  const percentuale = clampPercentuale(req.body.percentuale_completamento, existing.percentuale_completamento);
   db.prepare(`
-    UPDATE lavorazioni SET wp_id=?, titolo=?, descrizione=?, stato=?, priorita=?, piano=?, zona=?, data_inizio=?, data_fine=?, impresa=?, contratto_id=?, parent_id=?, updated_at=unixepoch() WHERE id=?
+    UPDATE lavorazioni SET wp_id=?, titolo=?, descrizione=?, stato=?, priorita=?, piano=?, zona=?, data_inizio=?, data_fine=?, impresa=?, contratto_id=?, parent_id=?, percentuale_completamento=?, updated_at=unixepoch() WHERE id=?
   `).run(
     next.wp_id || null, next.titolo, next.descrizione || null, next.stato, next.priorita,
     next.piano || null, next.zona || null, next.data_inizio || null, next.data_fine || null,
-    next.impresa || null, next.contratto_id || null, next.parent_id || null, req.params.id
+    next.impresa || null, next.contratto_id || null, next.parent_id || null, percentuale, req.params.id
   );
   res.json(db.prepare('SELECT * FROM lavorazioni WHERE id = ?').get(req.params.id));
 });

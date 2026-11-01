@@ -472,7 +472,11 @@ div.timeline-settimana__chip{cursor:default;}
    invece di inseguire lo scroll di pagina (che altrimenti la sposta più
    in basso del previsto, nascondendo la riga sottostante: visto con i
    gruppi Piano espansi). */
-.gantt{--gantt-label-w:350px;border:1px solid var(--rule);overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 300px);}
+.gantt{
+  --gantt-label-w:350px;border:1px solid var(--rule);overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 300px);
+  --gantt-color-pianificata:var(--ink-3);--gantt-color-in-corso:var(--blue);
+  --gantt-color-completata:var(--verde);--gantt-color-ritardo:var(--red);
+}
 .gantt__chart{position:relative;min-width:1000px;}
 .gantt__row{display:flex;border-bottom:1px solid var(--rule-2);}
 .gantt__row:last-child{border-bottom:0;}
@@ -485,35 +489,42 @@ div.timeline-settimana__chip{cursor:default;}
   border-right:1px solid var(--rule);
 }
 .gantt__row--head .gantt__label{background:var(--paper-2);z-index:4;border-bottom:1px solid var(--rule);}
-.gantt__label-col{flex:none;padding:9px 10px;overflow:hidden;}
+.gantt__label-col{flex:none;padding:4px 10px;overflow:hidden;}
+.gantt__label-col--wbs{width:var(--gantt-wbs-w, 32px);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
 .gantt__label-col--nome{width:var(--gantt-nome-w, 180px);display:flex;flex-direction:column;justify-content:center;gap:2px;}
+.gantt__label-col--durata{width:var(--gantt-durata-w, 62px);display:flex;align-items:center;justify-content:flex-end;font-size:10.5px;color:var(--ink-2);font-variant-numeric:tabular-nums;border-left:1px solid var(--rule-2);white-space:nowrap;}
 .gantt__label-col--data{width:85px;display:flex;align-items:center;font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;border-left:1px solid var(--rule-2);white-space:nowrap;}
-.gantt__row--head .gantt__label-col--nome, .gantt__row--head .gantt__label-col--data{
+.gantt__label-col--pred{width:var(--gantt-pred-w, 85px);display:flex;align-items:center;font-size:10px;color:var(--ink-3);border-left:1px solid var(--rule-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gantt__row--head .gantt__label-col--wbs, .gantt__row--head .gantt__label-col--nome,
+.gantt__row--head .gantt__label-col--durata, .gantt__row--head .gantt__label-col--data, .gantt__row--head .gantt__label-col--pred{
   font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;
 }
 .gantt__label-titolo{font-size:12px;font-weight:600;display:flex;align-items:center;}
 .gantt__label-meta{font-size:10.5px;color:var(--ink-3);margin-top:2px;}
 .gantt__scostamento-dot{width:6px;height:6px;border-radius:50%;background:var(--ambra);display:inline-block;margin-left:6px;flex:none;}
 
-.gantt__axis{flex:none;position:relative;height:40px;}
-.gantt__col{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule-2);padding:6px 8px;overflow:hidden;}
+.gantt__axis{flex:none;position:relative;height:36px;}
+.gantt__col{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule-2);padding:5px 8px;overflow:hidden;}
 .gantt__col-label{font-size:10.5px;font-weight:600;color:var(--ink-2);white-space:nowrap;}
 .gantt__col-sub{font-size:9.5px;color:var(--ink-3);white-space:nowrap;}
+.gantt__gridline{position:absolute;top:0;bottom:0;width:1px;background:var(--rule-2);pointer-events:none;}
 
-.gantt__track{flex:none;position:relative;min-height:40px;}
-.gantt__row--scostamento .gantt__track{min-height:48px;}
+.gantt__track{flex:none;position:relative;min-height:26px;}
+.gantt__row--scostamento .gantt__track{min-height:36px;}
 
 /* barre sottili: altezza fissa invece della vecchia fascia piena della riga */
 .gantt__bar{
-  position:absolute;top:50%;transform:translateY(-50%);height:11px;border-radius:2px;cursor:pointer;
+  position:absolute;top:50%;transform:translateY(-50%);height:11px;border-radius:2px;cursor:grab;
   display:flex;align-items:center;justify-content:flex-end;padding-right:5px;
   color:#fff;font-size:9.5px;min-width:6px;box-shadow:0 0 0 1px rgba(0,0,0,.05);
 }
-.gantt__row--scostamento .gantt__bar{top:29px;transform:none;}
-.gantt__bar--pianificata{background:var(--ink-3);}
-.gantt__bar--in-corso{background:var(--blue);}
-.gantt__bar--completata{background:var(--verde);}
-.gantt__bar--ritardo{background:var(--red);}
+.gantt__bar--dragging{cursor:grabbing;opacity:.85;box-shadow:0 0 0 2px var(--red);z-index:2;}
+.gantt__bar-progress{position:absolute;top:50%;left:1px;height:3px;transform:translateY(-50%);background:rgba(0,0,0,.45);border-radius:1px;pointer-events:none;}
+.gantt__row--scostamento .gantt__bar{top:24px;transform:none;}
+.gantt__bar--pianificata{background:var(--gantt-color-pianificata);}
+.gantt__bar--in-corso{background:var(--gantt-color-in-corso);}
+.gantt__bar--completata{background:var(--gantt-color-completata);}
+.gantt__bar--ritardo{background:var(--gantt-color-ritardo);}
 .gantt__bar--thin{height:7px;opacity:.78;}
 .gantt__row--lavorazione{background:var(--paper-2);}
 .gantt__row--lavorazione .gantt__label-titolo{font-weight:500;}
@@ -552,7 +563,7 @@ div.timeline-settimana__chip{cursor:default;}
    Colore ambra per legarla visivamente al pallino "scostamento" (stesso
    accento), distinguendola dalle barre di stato e dal gruppo Piano. */
 .gantt__bar-baseline{
-  position:absolute;top:9px;height:9px;border-radius:2px;pointer-events:none;
+  position:absolute;top:5px;height:8px;border-radius:2px;pointer-events:none;
   background:var(--ambra-wash);opacity:.8;border:1px dashed var(--ambra);
 }
 
@@ -560,10 +571,10 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;}
 .gantt__legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2);}
 .gantt__legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
-.gantt__legend-dot--pianificata{background:var(--ink-3);}
-.gantt__legend-dot--in-corso{background:var(--blue);}
-.gantt__legend-dot--completata{background:var(--verde);}
-.gantt__legend-dot--ritardo{background:var(--red);}
+.gantt__legend-dot--pianificata{background:var(--gantt-color-pianificata);}
+.gantt__legend-dot--in-corso{background:var(--gantt-color-in-corso);}
+.gantt__legend-dot--completata{background:var(--gantt-color-completata);}
+.gantt__legend-dot--ritardo{background:var(--gantt-color-ritardo);}
 .gantt__legend-dot--baseline{background:var(--ambra-wash);opacity:.9;border:1px dashed var(--ambra);border-radius:2px;}
 .gantt__legend-bar{width:16px;height:6px;border-radius:3px;display:inline-block;}
 .gantt__legend-bar--group{background:var(--viola);opacity:.85;}

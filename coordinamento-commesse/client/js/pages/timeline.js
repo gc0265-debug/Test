@@ -28,6 +28,31 @@ let PRIORITA = PRIORITA_FIXED;
 function daysBetween(a, b) {
   return Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
 }
+
+// Colori delle barre del Gantt personalizzabili a piacere: salvati solo
+// nel browser (non è un dato di commessa, è una preferenza visiva di chi
+// guarda), applicati come variabili CSS sopra i colori di tema di default
+// — lasciando un colore non impostato, resta quello di tema (anche in
+// dark mode) invece di forzare un esadecimale fisso.
+const CHIAVE_COLORI_GANTT = 'cc.ganttColori';
+const GANTT_COLORI_STATO = [
+  { key: 'pianificata', label: 'Pianificata / Da fare', default: '#8A8A8A' },
+  { key: 'in-corso', label: 'In corso', default: '#2E6FA8' },
+  { key: 'completata', label: 'Completata', default: '#2E7D5B' },
+  { key: 'ritardo', label: 'In ritardo / Bloccata', default: '#C0332B' },
+];
+function leggiColoriGantt() {
+  try {
+    const raw = localStorage.getItem(CHIAVE_COLORI_GANTT);
+    return raw ? JSON.parse(raw) : {};
+  } catch (_) { return {}; }
+}
+function applicaColoriGantt(host, colori) {
+  GANTT_COLORI_STATO.forEach(({ key }) => {
+    if (colori[key]) host.style.setProperty(`--gantt-color-${key}`, colori[key]);
+    else host.style.removeProperty(`--gantt-color-${key}`);
+  });
+}
 function addDays(dateStr, n) {
   const d = new Date(dateStr + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + n);
@@ -451,11 +476,46 @@ export async function renderTimeline(container) {
     title: 'Zoom timeline', oninput: (e) => { zoom = Number(e.target.value); draw(); },
   });
 
+  // Colori delle barre a scelta: cambiano subito in anteprima mentre si
+  // sceglie, salvati nel browser (vedi leggiColoriGantt/applicaColoriGantt
+  // in cima al file) — non un dato della commessa, una preferenza visiva.
+  function apriColoriModal() {
+    const colori = leggiColoriGantt();
+    const righe = GANTT_COLORI_STATO.map(({ key, label, default: def }) => {
+      const input = el('input', {
+        type: 'color', value: colori[key] || def,
+        oninput: (e) => {
+          colori[key] = e.target.value;
+          try { localStorage.setItem(CHIAVE_COLORI_GANTT, JSON.stringify(colori)); } catch (_) { /* privacy mode: preferenza non salvata, resta solo per questa sessione */ }
+          const ganttEl = ganttHost.querySelector('.gantt');
+          if (ganttEl) applicaColoriGantt(ganttEl, colori);
+        },
+      });
+      return el('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px' }, [
+        el('span', { style: 'font-size:12.5px' }, label), input,
+      ]);
+    });
+    openModal('Colori della Timeline', el('div', {}, [
+      ...righe,
+      el('div', { class: 'modal__actions' }, [
+        el('button', {
+          type: 'button', class: 'btn', onclick: () => {
+            try { localStorage.removeItem(CHIAVE_COLORI_GANTT); } catch (_) { /* vedi sopra */ }
+            closeModal();
+            draw();
+          },
+        }, 'Ripristina predefiniti'),
+        el('button', { type: 'button', class: 'btn btn--primary', onclick: () => closeModal() }, 'Fatto'),
+      ]),
+    ]));
+  }
+
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:10px;align-items:center' }),
     el('div', { style: 'display:flex;gap:8px;align-items:center' }, [
       el('span', { class: 'muted', style: 'font-size:11px' }, 'Zoom'),
       zoomSlider,
+      el('button', { class: 'btn btn--sm', onclick: apriColoriModal }, 'Colori'),
       el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova riga'),
       settingsGear(),
@@ -573,20 +633,31 @@ export async function renderTimeline(container) {
     // una lavorazione madre, dentro un gruppo Piano) più lo chevron.
     const nomeWidth = computeNomeWidth(items) + 40;
 
-    const labelCols = (nome, meta, inizio, fine, onEdit) => el('div', {
+    // Righe sottili verticali ad ogni confine di colonna dell'asse (una
+    // per settimana in vista "Settimane", una per mese in vista "Mesi"):
+    // aiutano a leggere a colpo d'occhio su quale periodo cade una barra,
+    // come le righe di sfondo di un vero foglio MPP.
+    const gridlines = axis.map((s) => el('div', {
+      class: 'gantt__gridline', style: `left: calc(var(--gantt-label-w) + ${s.leftPx}px)`,
+    }));
+
+    const labelCols = (wbs, nome, meta, durata, inizio, fine, pred, onEdit) => el('div', {
       class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : ''),
       onclick: onEdit || null,
     }, [
+      el('div', { class: 'gantt__label-col gantt__label-col--wbs' }, wbs),
       el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
         el('div', { class: 'gantt__label-titolo' }, nome),
         meta ? el('div', { class: 'gantt__label-meta' }, meta) : null,
       ]),
+      el('div', { class: 'gantt__label-col gantt__label-col--durata' }, durata),
       el('div', { class: 'gantt__label-col gantt__label-col--data' }, inizio),
       el('div', { class: 'gantt__label-col gantt__label-col--data' }, fine),
+      el('div', { class: 'gantt__label-col gantt__label-col--pred' }, pred),
     ]);
 
     const headerRow = el('div', { class: 'gantt__row gantt__row--head' }, [
-      labelCols('Attività', null, 'Inizio', 'Fine'),
+      labelCols('#', 'Attività', null, 'Durata', 'Inizio', 'Fine', 'Pred.'),
       el('div', { class: 'gantt__axis', style: `width:${totalWidthPx}px` }, axis.map((s) => el('div', {
         class: 'gantt__col', style: `left:${s.leftPx}px;width:${s.widthPx}px`,
       }, [
@@ -609,6 +680,64 @@ export async function renderTimeline(container) {
       });
     }
 
+    // Trascinamento orizzontale di una barra per spostarla nel tempo
+    // (avanti o indietro), snapping al giorno: un movimento sotto i 4px
+    // resta un semplice click (apre il modulo di modifica) invece di uno
+    // spostamento involontario. Mai per le righe di riepilogo: le loro
+    // date sono calcolate dalle sotto-attività, non un campo salvato a sé.
+    function attachDragReschedule(barEl, it, onEdit) {
+      if (!onEdit) return;
+      let startX = null;
+      let startLeft = 0;
+      let dragging = false;
+      let deltaGiorni = 0;
+
+      barEl.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        startX = e.clientX;
+        startLeft = parseFloat(barEl.style.left) || 0;
+        dragging = false;
+        deltaGiorni = 0;
+        barEl.setPointerCapture(e.pointerId);
+      });
+      barEl.addEventListener('pointermove', (e) => {
+        if (startX === null) return;
+        const dxPx = e.clientX - startX;
+        if (!dragging && Math.abs(dxPx) < 4) return;
+        dragging = true;
+        barEl.classList.add('gantt__bar--dragging');
+        deltaGiorni = Math.round(dxPx / ppd);
+        barEl.style.left = `${startLeft + deltaGiorni * ppd}px`;
+      });
+      async function concludi(e) {
+        if (startX === null) return;
+        try { barEl.releasePointerCapture(e.pointerId); } catch (_) { /* già rilasciato */ }
+        const eraTrascinamento = dragging;
+        startX = null;
+        dragging = false;
+        barEl.classList.remove('gantt__bar--dragging');
+        if (!eraTrascinamento) { onEdit(); return; }
+        if (deltaGiorni === 0) { barEl.style.left = `${startLeft}px`; return; }
+        const nuovaInizio = addDays(it.data_inizio, deltaGiorni);
+        const nuovaFine = addDays(it.data_fine, deltaGiorni);
+        try {
+          const path = it.type === 'milestone' ? 'milestone' : 'lavorazioni';
+          await api.put(`/${path}/${it.id}`, { data_inizio: nuovaInizio, data_fine: nuovaFine, _versione: it.updated_at });
+          toast(`Spostata al ${formatDate(nuovaInizio)} → ${formatDate(nuovaFine)}.`);
+          await refresh();
+        } catch (err) {
+          toast(err.message, { error: true });
+          barEl.style.left = `${startLeft}px`;
+        }
+      }
+      barEl.addEventListener('pointerup', concludi);
+      barEl.addEventListener('pointercancel', () => {
+        startX = null;
+        dragging = false;
+        barEl.classList.remove('gantt__bar--dragging');
+      });
+    }
+
     // Figli (sotto-attività) indicizzati per id della lavorazione madre —
     // le righe di primo livello sono tutte le milestone più le lavorazioni
     // senza madre; le sotto-attività si trovano solo annidate sotto la
@@ -622,6 +751,24 @@ export async function renderTimeline(container) {
     });
     const primoLivello = items.filter((it) => it.type === 'milestone' || !it.parent_id);
 
+    // Numerazione WBS (1, 1.1, 1.2...) e codici dei predecessori (es.
+    // "2.1FS+2gg", sempre Fine-Inizio come da timeline_dipendenze) in
+    // stile MPP: popolata subito dopo aver calcolato i gruppi "Piano" più
+    // sotto, letta da buildItemRow quando disegna le righe.
+    const wbsMap = new Map();
+    function durataGg(it) {
+      return daysBetween(it.data_inizio, it.data_fine) + 1;
+    }
+    function codiciPredecessori(it) {
+      const miei = dipendenze.filter((d) => d.succ_tipo === it.type && d.succ_id === it.id);
+      if (!miei.length) return '—';
+      return miei.map((d) => {
+        const num = wbsMap.get(`${d.pred_tipo}:${d.pred_id}`) || '?';
+        const ritardo = d.ritardo_giorni ? `${d.ritardo_giorni > 0 ? '+' : ''}${d.ritardo_giorni}gg` : '';
+        return `${num}FS${ritardo}`;
+      }).join(', ');
+    }
+
     function buildItemRow(it, livello) {
       const isLavorazione = it.type === 'lavorazione';
       const cls = it.in_ritardo ? 'ritardo' : it.stato;
@@ -633,13 +780,25 @@ export async function renderTimeline(container) {
         ));
       }
       const onEdit = clienteSoloLettura ? null : (() => openForm(it, refresh));
-      track.appendChild(bar(
+      // Le righe di riepilogo non si trascinano: le loro date sono il
+      // minimo/massimo calcolato delle sotto-attività, non un campo
+      // salvato a sé — trascinarle scriverebbe date sbagliate sul server.
+      const trascinabile = !!onEdit && !it.isSummary;
+      const barEl = bar(
         it.data_inizio, it.data_fine,
         `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}${it.isSummary ? ' gantt__bar--summary' : ''}`,
         `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}${it.isSummary ? ' · riepilogo sotto-attività' : ''}`,
-        onEdit,
+        trascinabile ? null : onEdit,
         `${it.type}:${it.id}`
-      ));
+      );
+      if (trascinabile) attachDragReschedule(barEl, it, onEdit);
+      if (isLavorazione && !it.isSummary && it.percentuale_completamento > 0) {
+        barEl.appendChild(el('div', {
+          class: 'gantt__bar-progress', style: `width:${Math.min(100, it.percentuale_completamento)}%`,
+          title: `Avanzamento ${it.percentuale_completamento}%`,
+        }));
+      }
+      track.appendChild(barEl);
 
       const figli = isLavorazione ? figliPerMadre.get(it.id) : null;
       const haFigli = !!(figli && figli.length);
@@ -668,12 +827,15 @@ export async function renderTimeline(container) {
         class: 'gantt__label' + (onEdit ? ' gantt__label--clickable' : '') + (livello ? ` gantt__label--indent-${livello}` : ''),
         onclick: onEdit || null,
       }, [
+        el('div', { class: 'gantt__label-col gantt__label-col--wbs' }, wbsMap.get(`${it.type}:${it.id}`) || ''),
         el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
           el('div', { class: 'gantt__label-titolo' }, nomeChildren),
           metaParts.length ? el('div', { class: 'gantt__label-meta' }, metaParts.join(' · ')) : null,
         ]),
+        el('div', { class: 'gantt__label-col gantt__label-col--durata' }, `${durataGg(it)} gg`),
         el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(it.data_inizio)),
         el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(it.data_fine)),
+        el('div', { class: 'gantt__label-col gantt__label-col--pred' }, codiciPredecessori(it)),
       ]);
 
       const rowEl = el('div', {
@@ -719,8 +881,28 @@ export async function renderTimeline(container) {
     });
 
     const mostraGruppi = gruppi.length > 1 || (gruppi.length === 1 && gruppi[0].piano);
+
+    // Popola la numerazione WBS: 1, 2, 3... per i gruppi Piano (se mostrati),
+    // 1.1/1.2 per le attività di primo livello dentro ciascun gruppo,
+    // 1.1.1/1.1.2 per le sotto-attività — deve girare prima di disegnare le
+    // righe, perché una riga può referenziare come predecessore una riga
+    // che compare più avanti nell'elenco.
+    gruppi.forEach((g, gIdx) => {
+      const gNum = mostraGruppi ? String(gIdx + 1) : null;
+      g.items.forEach((it, iIdx) => {
+        const iNum = gNum ? `${gNum}.${iIdx + 1}` : String(iIdx + 1);
+        wbsMap.set(`${it.type}:${it.id}`, iNum);
+        if (it.type === 'lavorazione') {
+          (figliPerMadre.get(it.id) || [])
+            .slice()
+            .sort((a, b) => (a.data_inizio < b.data_inizio ? -1 : 1))
+            .forEach((f, cIdx) => wbsMap.set(`lavorazione:${f.id}`, `${iNum}.${cIdx + 1}`));
+        }
+      });
+    });
+
     const rows = [];
-    gruppi.forEach((g) => {
+    gruppi.forEach((g, gIdx) => {
       if (mostraGruppi) {
         const label = g.piano || 'Senza piano';
         const chiave = g.piano || '\u0000senza-piano';
@@ -734,14 +916,17 @@ export async function renderTimeline(container) {
             class: 'gantt__label gantt__label--clickable',
             onclick: () => { if (collassato) collapsedGroups.delete(chiave); else collapsedGroups.add(chiave); draw(); },
           }, [
+            el('div', { class: 'gantt__label-col gantt__label-col--wbs' }, String(gIdx + 1)),
             el('div', { class: 'gantt__label-col gantt__label-col--nome' }, [
               el('div', { class: 'gantt__label-titolo' }, [
                 el('span', { class: 'gantt__chevron' + (collassato ? ' gantt__chevron--collapsed' : '') }, '▾'),
                 `${label} (${nTotale})`,
               ]),
             ]),
+            el('div', { class: 'gantt__label-col gantt__label-col--durata' }, `${daysBetween(g.dataInizio, g.dataFine) + 1} gg`),
             el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(g.dataInizio)),
             el('div', { class: 'gantt__label-col gantt__label-col--data' }, formatDate(g.dataFine)),
+            el('div', { class: 'gantt__label-col gantt__label-col--pred' }, ''),
           ]),
           track,
         ]));
@@ -752,12 +937,20 @@ export async function renderTimeline(container) {
 
     const chart = el('div', { class: 'gantt__chart' }, [
       headerRow,
+      ...gridlines,
       ...rows,
       el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + ${todayOffsetPx}px)` }),
     ]);
 
+    // WBS(32) + Nome + Durata(62) + Inizio(85) + Fine(85) + Predecessori(85)
+    const labelWidthPx = nomeWidth + 32 + 62 + 85 + 85 + 85;
     ganttHost.innerHTML = '';
-    ganttHost.appendChild(el('div', { class: 'gantt', style: `--gantt-nome-w:${nomeWidth}px;--gantt-label-w:${nomeWidth + 170}px` }, chart));
+    const ganttEl = el('div', {
+      class: 'gantt',
+      style: `--gantt-nome-w:${nomeWidth}px;--gantt-wbs-w:32px;--gantt-durata-w:62px;--gantt-pred-w:85px;--gantt-label-w:${labelWidthPx}px`,
+    }, chart);
+    applicaColoriGantt(ganttEl, leggiColoriGantt());
+    ganttHost.appendChild(ganttEl);
     disegnaDipendenze(chart);
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),

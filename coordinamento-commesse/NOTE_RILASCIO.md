@@ -162,6 +162,33 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Timeline in stile MS Project: WBS, durata, predecessori, avanzamento, trascinamento e colori a scelta (1 novembre 2026)
+
+- La Timeline Montaggi assomiglia ora più da vicino a un vero foglio MPP:
+  **numerazione gerarchica WBS** (1, 1.1, 1.1.1...) a sinistra di ogni
+  riga, colonna **"Durata"** in giorni, colonna **"Pred."** con il codice
+  del predecessore (es. "2.1FS+2gg" = dopo la fine dell'attività 2.1 più
+  2 giorni di ritardo) e righe più dense per vedere più attività senza
+  scorrere.
+- Ogni lavorazione ha ora un campo **"Avanzamento (%)"**, modificabile a
+  mano indipendentemente dallo stato: viene mostrato come una sottile
+  barra scura sovrapposta alla barra del Gantt, in proporzione.
+- Si **trascina direttamente la barra** di un'attività nel Gantt per
+  spostarla avanti o indietro nel tempo (snap al giorno): un semplice
+  clic, senza trascinare, continua ad aprire il modulo di modifica come
+  prima. Le righe di riepilogo (lavorazioni madre con sotto-attività)
+  non si trascinano, perché le loro date derivano dalle sotto-attività.
+- In vista "Settimane" e "Mesi" compaiono ora delle **righe verticali
+  sottili** ad ogni confine di periodo, per leggere a colpo d'occhio su
+  quale settimana o mese cade una barra.
+- Nuovo pulsante **"Colori"** nella Timeline: permette di scegliere
+  liberamente il colore delle barre per ciascuno stato (Pianificata, In
+  corso, Completata, In ritardo), con anteprima immediata. La scelta
+  resta salvata nel browser; "Ripristina predefiniti" torna ai colori
+  di tema.
+
+---
+
 ## To-do e note veloci sul Cruscotto, lavorazioni in corso sempre in vista nella Timeline (1 novembre 2026)
 
 - Nuovo box **"To-do e note veloci"** sul Cruscotto: appunti rapidi con
