@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.41';
+const VERSIONE_ATTUALE = '1.42';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,16 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.41', title: 'Blocco sulle modifiche concorrenti e ricerca cross-registro', date: '1 novembre 2026', attuale: true,
+    v: '1.42', title: 'Cruscotto collassabile, sidebar riordinata, filtri a bottone su Criticità e Lavorazioni', date: '1 novembre 2026', attuale: true,
+    points: [
+      'Il box "Attività recente" in fondo al Cruscotto è ora collassabile (clic sulla barra del titolo): lo stato aperto/chiuso resta ricordato tra una visita e l\'altra.',
+      'Corretta la prima colonna dell\'elenco attività recente, che su un\'etichetta lunga (es. "Processo comunicazione") poteva sovrapporsi al testo della riga accanto.',
+      'La voce "Dashboard Finanziaria" in sidebar è stata spostata sotto il gruppo "Commessa", invece che sopra di esso.',
+      'Registro Criticità e Lavorazioni hanno ora, in alto, un filtro a bottoni per Work Package (un clic per WP, come già avviene per lo stato in Criticità): la stessa possibilità di filtrare per WP già offerta dal Registro Decisioni con un menu a tendina, qui come pulsanti diretti. Lavorazioni guadagna anche il filtro a bottoni per stato, prima assente.',
+    ],
+  },
+  {
+    v: '1.41', title: 'Blocco sulle modifiche concorrenti e ricerca cross-registro', date: '1 novembre 2026',
     points: [
       'Ogni modulo di modifica dei registri principali (Criticità, Decisioni, Allert, Requisiti, Contratti, Stakeholder, Piano Comunicazioni, Lavorazioni, Misure, Approvazioni Drawings, Response Matrix, Capitolato Requisiti, Note di Coordinamento, Diario, Lezioni Apprese, Maestranze, Timeline/Milestone, Documenti) porta con sé la versione della riga caricata: se nel frattempo qualcun altro ha già salvato quella stessa riga, il salvataggio viene rifiutato con un avviso ("questa riga è stata modificata da qualcun altro nel frattempo: ricarica la pagina...") invece di sovrascrivere in silenzio il lavoro del primo.',
       'Una nuova casella "Cerca in tutti i registri…" in alto in ogni pagina interroga insieme tutti i registri della commessa selezionata (o del gruppo progetto, in vista aggregata): i risultati compaiono raggruppati per registro con un estratto del testo trovato, e cliccandone uno si apre direttamente la pagina giusta — con la riga trovata già aperta in modifica per i registri principali (Criticità, Decisioni, Allert, Requisiti, Contratti, Stakeholder, Piano Comunicazioni, Lavorazioni, Diario).',

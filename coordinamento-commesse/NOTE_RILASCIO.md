@@ -162,6 +162,25 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Cruscotto collassabile, sidebar riordinata, filtri a bottone su Criticità e Lavorazioni (1 novembre 2026)
+
+- Il box **"Attività recente"** in fondo al Cruscotto è ora
+  **collassabile** (clic sulla barra del titolo): lo stato aperto/chiuso
+  resta ricordato tra una visita e l'altra.
+- Corretta la prima colonna dell'elenco attività recente, che su
+  un'etichetta lunga (es. "Processo comunicazione") poteva sovrapporsi
+  al testo della riga accanto.
+- La voce **"Dashboard Finanziaria"** in sidebar è stata spostata sotto
+  il gruppo "Commessa", invece che sopra di esso.
+- Registro Criticità e Lavorazioni hanno ora, in alto, un **filtro a
+  bottoni per Work Package** (un clic per WP, come già avviene per lo
+  stato in Criticità): la stessa possibilità di filtrare per WP già
+  offerta dal Registro Decisioni con un menu a tendina, qui come
+  pulsanti diretti. Lavorazioni guadagna anche il filtro a bottoni per
+  stato, prima assente.
+
+---
+
 ## Blocco sulle modifiche concorrenti e ricerca cross-registro (1 novembre 2026)
 
 - Ogni modulo di modifica dei registri principali (Criticità, Decisioni,

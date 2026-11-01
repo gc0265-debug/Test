@@ -87,20 +87,36 @@ function scadenzeBar(dash, commessa) {
 
 // Barra orizzontale in fondo: cronologia delle ultime modifiche, in
 // righe scorrevoli come un elenco, senza bisogno di aprirla in modale.
+// Collassabile (stato ricordato tra una visita e l'altra del Cruscotto):
+// utile perché può diventare lunga e non è la prima cosa da guardare ogni
+// volta che si apre la home page.
+const CHIAVE_COLLASSATA = 'cc.cruscottoAttivitaCollassata';
+
 function attivitaBar(attivita) {
-  return el('div', { class: 'cruscotto-attivita' }, [
-    el('div', { class: 'cruscotto-attivita__head' }, [
-      el('div', { class: 'cruscotto-attivita__titolo' }, 'Attività recente'),
-      el('span', { class: 'muted', style: 'font-size:11px' }, `${attivita.length} ultime registrate`),
-    ]),
-    el('div', { class: 'cruscotto-attivita__scroll' }, [
-      el('div', { class: 'activity-list' }, attivita.map((a) => el('div', { class: 'activity-item' }, [
-        el('span', { class: 'activity-item__tipo' }, ENTITY_LABEL[a.entity_type] || a.entity_type),
-        el('span', {}, `${AZIONE_LABEL[a.azione] || a.azione}${a.dettaglio ? ' — ' + a.dettaglio : ''}`),
-        el('span', { class: 'activity-item__meta' }, `${a.utente || '—'} · ${formatDateTime(a.created_at)}`),
-      ]))),
-    ]),
+  let collassata = false;
+  try { collassata = localStorage.getItem(CHIAVE_COLLASSATA) === '1'; } catch (_) { /* privacy mode: parte sempre aperta */ }
+
+  const chevron = el('span', { class: 'gantt__chevron' + (collassata ? ' gantt__chevron--collapsed' : '') }, '▾');
+  const scrollHost = el('div', { class: 'cruscotto-attivita__scroll' }, [
+    el('div', { class: 'activity-list' }, attivita.map((a) => el('div', { class: 'activity-item' }, [
+      el('span', { class: 'activity-item__tipo' }, ENTITY_LABEL[a.entity_type] || a.entity_type),
+      el('span', {}, `${AZIONE_LABEL[a.azione] || a.azione}${a.dettaglio ? ' — ' + a.dettaglio : ''}`),
+      el('span', { class: 'activity-item__meta' }, `${a.utente || '—'} · ${formatDateTime(a.created_at)}`),
+    ]))),
   ]);
+  scrollHost.hidden = collassata;
+
+  const head = el('div', { class: 'cruscotto-attivita__head', onclick: () => {
+    collassata = !collassata;
+    scrollHost.hidden = collassata;
+    chevron.classList.toggle('gantt__chevron--collapsed', collassata);
+    try { localStorage.setItem(CHIAVE_COLLASSATA, collassata ? '1' : '0'); } catch (_) { /* vedi sopra */ }
+  } }, [
+    el('div', { class: 'cruscotto-attivita__titolo' }, [chevron, 'Attività recente']),
+    el('span', { class: 'muted', style: 'font-size:11px' }, `${attivita.length} ultime registrate`),
+  ]);
+
+  return el('div', { class: 'cruscotto-attivita' }, [head, scrollHost]);
 }
 
 export async function renderCruscotto(container) {

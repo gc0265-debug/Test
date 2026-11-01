@@ -99,6 +99,7 @@ export async function renderCriticita(container) {
   container.appendChild(dashHost);
 
   let filtroStato = 'aperta';
+  let filtroWp = '';
   let lastRows = [];
   let selectedId = null;
 
@@ -119,11 +120,17 @@ export async function renderCriticita(container) {
     }
   });
 
+  const statoPillHost = el('div', { style: 'display:flex;gap:6px' }, [
+    pillFilter('aperta', 'Aperte'),
+    pillFilter('', 'Tutte'),
+    pillFilter('chiusa', 'Chiuse'),
+  ]);
+  const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div', { style: 'display:flex;gap:6px' }, [
-      pillFilter('aperta', 'Aperte'),
-      pillFilter('', 'Tutte'),
-      pillFilter('chiusa', 'Chiuse'),
+    el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center' }, [
+      statoPillHost,
+      soloLettura ? null : wpPillHost,
     ]),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
@@ -161,9 +168,17 @@ export async function renderCriticita(container) {
     return btn;
   }
 
+  function wpPillFilter(value, label) {
+    return el('button', {
+      class: 'btn btn--sm' + (String(filtroWp) === String(value) ? ' btn--primary' : ''),
+      onclick: () => { filtroWp = value; refresh(); },
+    }, label);
+  }
+
   async function refresh() {
     const query = new URLSearchParams(scopeParams());
     if (filtroStato) query.set('stato', filtroStato);
+    if (filtroWp) query.set('wp_id', filtroWp);
     const [res, allRes, urgenzaList, statoList] = await Promise.all([
       api.get(`/criticita?${query.toString()}`),
       api.get(`/criticita?${new URLSearchParams(scopeParams())}`),
@@ -224,10 +239,16 @@ export async function renderCriticita(container) {
     });
 
     // ridisegna i filtri per riflettere la selezione corrente
-    toolbar.firstChild.innerHTML = '';
-    toolbar.firstChild.appendChild(pillFilter('aperta', 'Aperte'));
-    toolbar.firstChild.appendChild(pillFilter('', 'Tutte'));
-    toolbar.firstChild.appendChild(pillFilter('chiusa', 'Chiuse'));
+    statoPillHost.innerHTML = '';
+    statoPillHost.appendChild(pillFilter('aperta', 'Aperte'));
+    statoPillHost.appendChild(pillFilter('', 'Tutte'));
+    statoPillHost.appendChild(pillFilter('chiusa', 'Chiuse'));
+
+    if (!soloLettura) {
+      wpPillHost.innerHTML = '';
+      wpPillHost.appendChild(wpPillFilter('', 'Tutti i WP'));
+      state.workPackages.forEach((w) => wpPillHost.appendChild(wpPillFilter(w.id, w.codice)));
+    }
   }
 
   await refresh();

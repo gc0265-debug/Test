@@ -310,14 +310,35 @@ export async function renderLavorazioni(container) {
 
   let lastRows = [];
   let selectedId = null;
+  let filtroStato = '';
+  let filtroWp = '';
   const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
   const soloLettura = clienteSoloLettura || inVistaGruppo();
   if (inVistaGruppo() && !clienteSoloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
       'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova lavorazione, seleziona prima una singola commessa dal menu a sinistra.'));
   }
+  const statoPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+  const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+
+  function statoPillFilter(value, label) {
+    return el('button', {
+      class: 'btn btn--sm' + (filtroStato === value ? ' btn--primary' : ''),
+      onclick: () => { filtroStato = value; refresh(); },
+    }, label);
+  }
+  function wpPillFilter(value, label) {
+    return el('button', {
+      class: 'btn btn--sm' + (String(filtroWp) === String(value) ? ' btn--primary' : ''),
+      onclick: () => { filtroWp = value; refresh(); },
+    }, label);
+  }
+
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div'),
+    el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center' }, [
+      statoPillHost,
+      soloLettura ? null : wpPillHost,
+    ]),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
@@ -339,14 +360,26 @@ export async function renderLavorazioni(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
+    let query = queryScopeCommessa();
+    if (filtroStato) query += `&stato=${encodeURIComponent(filtroStato)}`;
+    if (filtroWp) query += `&wp_id=${encodeURIComponent(filtroWp)}`;
     const [res, statoList, prioritaList] = await Promise.all([
-      api.get(`/lavorazioni?${queryScopeCommessa()}`),
+      api.get(`/lavorazioni?${query}`),
       getCategoria('lavorazioni_stato'),
       getCategoria('lavorazioni_priorita'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
     PRIORITA = mergeLabels(PRIORITA_FIXED, prioritaList);
     lastRows = res.data;
+
+    statoPillHost.innerHTML = '';
+    statoPillHost.appendChild(statoPillFilter('', 'Tutte'));
+    Object.entries(STATO).forEach(([key, v]) => statoPillHost.appendChild(statoPillFilter(key, v[0])));
+    if (!soloLettura) {
+      wpPillHost.innerHTML = '';
+      wpPillHost.appendChild(wpPillFilter('', 'Tutti i WP'));
+      state.workPackages.forEach((w) => wpPillHost.appendChild(wpPillFilter(w.id, w.codice)));
+    }
     chartsHost.innerHTML = '';
     chartsHost.appendChild(renderCharts(res.data));
 

@@ -212,10 +212,11 @@ h2{font-size:14px;font-weight:700;letter-spacing:.02em;margin:0 0 4px;}
 
 /* ---------- barra attività recente (orizzontale, in fondo) ---------- */
 .cruscotto-attivita{background:var(--paper);border:1px solid var(--rule);padding:14px 16px;}
-.cruscotto-attivita__head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;}
-.cruscotto-attivita__titolo{font-size:14px;font-weight:700;color:var(--ink);}
+.cruscotto-attivita__head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;cursor:pointer;user-select:none;}
+.cruscotto-attivita__titolo{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
 .cruscotto-attivita__scroll{max-height:260px;overflow-y:auto;}
 .cruscotto-attivita__scroll .activity-list{border-top:0;}
+.cruscotto-attivita__scroll[hidden]{display:none;}
 
 /* ---------- testo limitato a 2 righe (es. Diario di Cantiere) ---------- */
 .text-2lines{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:260px;line-height:1.4;}
@@ -416,8 +417,11 @@ td.select input{cursor:pointer;}
 
 /* ---------- attività recente (cruscotto) ---------- */
 .activity-list{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);}
-.activity-item{display:grid;grid-template-columns:90px 1fr auto;gap:12px;padding:9px 14px;background:var(--paper);font-size:12px;align-items:baseline;}
-.activity-item__tipo{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;}
+.activity-item{display:grid;grid-template-columns:130px 1fr auto;gap:12px;padding:9px 14px;background:var(--paper);font-size:12px;align-items:baseline;}
+.activity-item__tipo{
+  font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;
+  min-width:0;overflow-wrap:break-word;
+}
 .activity-item__meta{font-size:11px;color:var(--ink-3);white-space:nowrap;}
 
 /* ---------- storico (modale) ---------- */
