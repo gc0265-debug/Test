@@ -14,6 +14,7 @@ require('./db/seed');     // popola solo se il database è vuoto
 const { requireAuth, requireAdmin, requireSection, blockWriteForCliente } = require('./utils/auth');
 const SqliteSessionStore = require('./utils/sessionStore');
 const logger = require('./utils/logger');
+const { notificaCambiamento } = require('./utils/eventBus');
 
 const authRouter = require('./routes/auth');
 const commesseRouter = require('./routes/commesse');
@@ -47,6 +48,7 @@ const misureRouter = require('./routes/misure');
 const reportConfigRouter = require('./routes/reportConfig');
 const timelineDipendenzeRouter = require('./routes/timelineDipendenze');
 const ricercaRouter = require('./routes/ricerca');
+const eventiRouter = require('./routes/eventi');
 
 // Il secret firma i cookie di sessione: deve restare lo stesso tra un
 // riavvio e l'altro, altrimenti ogni riavvio invaliderebbe tutte le
@@ -91,6 +93,21 @@ app.use(session({
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRouter);
+
+// Sincronizzazione in tempo reale: qualunque scrittura (POST/PUT/DELETE)
+// andata a buon fine sotto /api notifica le schede collegate via SSE
+// (vedi routes/eventi.js), che si ricaricano da sole — senza che ogni
+// singola rotta debba ricordarsi di "avvisare" esplicitamente. Un errore
+// (4xx/5xx) non genera notifiche: non è stato scritto nulla di nuovo.
+app.use('/api', (req, res, next) => {
+  if (req.method !== 'GET') {
+    res.on('finish', () => {
+      if (res.statusCode >= 200 && res.statusCode < 400) notificaCambiamento();
+    });
+  }
+  next();
+});
+app.use('/api/eventi', requireAuth, eventiRouter);
 
 // tutto il resto delle API richiede una sessione autenticata. Un utente
 // "cliente" è in sola lettura ovunque (blockWriteForCliente) e, per

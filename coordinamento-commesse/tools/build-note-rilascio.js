@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.56';
+const VERSIONE_ATTUALE = '1.57';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.56', title: 'Stampa del Gantt: titolo e intestazione di cantiere, leggenda su una riga sola', date: '2 novembre 2026', attuale: true,
+    v: '1.57', title: 'Aggiornamento in tempo reale fra dispositivi diversi, legenda del Gantt sempre visibile', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Ogni modifica salvata da un utente viene ora notificata in tempo reale a chiunque abbia l\'app aperta: non serve più premere F5 per vedere una modifica fatta da un collega da un altro PC o tablet — la pagina aperta si aggiorna da sola (un modulo di modifica eventualmente aperto non viene toccato, resta possibile continuare a scrivere).',
+      'Nella Timeline, la legenda dei colori in fondo alla pagina resta ora sempre visibile in basso durante lo scorrimento, invece di sparire sotto al bordo della finestra.',
+    ],
+  },
+  {
+    v: '1.56', title: 'Stampa del Gantt: titolo e intestazione di cantiere, leggenda su una riga sola', date: '2 novembre 2026',
     points: [
       'La stampa della vista Gantt della Timeline mostra ora un\'intestazione sopra al grafico: "Crono di cantiere - Rev N - [data di stampa]" seguita da commessa ed "Emesso da: Giovanni Cazzola - Direttore di cantiere". Il numero di revisione viene proposto in automatico (l\'ultimo usato + 1) nel modulo "Stampa Timeline", ma resta modificabile a mano prima di stampare.',
       'Corretto un difetto per cui la leggenda in fondo alla pagina, nelle stampe, andava a capo su più righe: ora resta sempre su una sola riga orizzontale, come nella vista a schermo.',

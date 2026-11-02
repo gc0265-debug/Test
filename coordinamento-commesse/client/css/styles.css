@@ -644,7 +644,17 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);opacity:.55;z-index:1;pointer-events:none;}
 .gantt__resize-handle{position:absolute;top:0;width:7px;margin-left:-3px;cursor:col-resize;z-index:6;}
 .gantt__resize-handle:hover,.gantt__resize-handle--active{background:var(--red-wash);}
-.gantt__legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;}
+/* Fissa a fondo schermo (non solo a fondo pagina): resta visibile mentre
+   si scorre il Gantt, invece di sparire sotto al bordo della finestra.
+   .gantt-print-area guadagna lo spazio in basso per non far nascondere
+   dietro di essa l'ultima riga del grafico (vedi .gantt-print-area più sotto). */
+.gantt__legend{
+  display:flex;gap:18px;flex-wrap:wrap;
+  position:fixed;left:var(--side-w);right:0;bottom:0;z-index:30;
+  margin:0;padding:9px 28px;background:var(--paper);border-top:1px solid var(--rule);
+  box-shadow:0 -2px 8px rgba(0,0,0,.08);
+}
+.gantt-print-area{padding-bottom:52px;}
 .gantt__legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2);}
 .gantt__legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
 .gantt__legend-dot--pianificata{background:var(--gantt-color-pianificata, var(--ink-3));}
@@ -718,8 +728,12 @@ div.timeline-settimana__chip{cursor:default;}
   /* La leggenda deve restare su una sola riga anche in stampa, con 10
      voci da far stare nella larghezza utile di una pagina landscape:
      niente a-capo, testo e distanze ridotti quel tanto che basta. */
-  body.printing-gantt .gantt__legend{flex-wrap:nowrap;white-space:nowrap;gap:9px;font-size:7.3px;margin-top:6px;}
+  body.printing-gantt .gantt__legend{
+    position:static;flex-wrap:nowrap;white-space:nowrap;gap:9px;font-size:7.3px;
+    margin-top:6px;padding:0;background:none;border-top:0;box-shadow:none;
+  }
   body.printing-gantt .gantt__legend-item{gap:3px;}
+  body.printing-gantt .gantt-print-area{padding-bottom:0;}
   @page{size:landscape;margin:10mm;}
 }
 
@@ -727,4 +741,5 @@ div.timeline-settimana__chip{cursor:default;}
   .shell{grid-template-columns:1fr;}
   .side{position:static;height:auto;}
   .field--row{grid-template-columns:1fr;}
+  .gantt__legend{left:0;}
 }

@@ -162,6 +162,19 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Aggiornamento in tempo reale fra dispositivi diversi, legenda del Gantt sempre visibile (2 novembre 2026)
+
+- Ogni modifica salvata da un utente viene ora **notificata in tempo
+  reale** a chiunque abbia l'app aperta: non serve più premere F5 per
+  vedere una modifica fatta da un collega da un altro PC o tablet — la
+  pagina aperta si aggiorna da sola (un modulo di modifica eventualmente
+  aperto non viene toccato, resta possibile continuare a scrivere).
+- Nella Timeline, la legenda dei colori in fondo alla pagina resta ora
+  **sempre visibile in basso** durante lo scorrimento, invece di
+  sparire sotto al bordo della finestra.
+
+---
+
 ## Stampa del Gantt: titolo e intestazione di cantiere, leggenda su una riga sola (2 novembre 2026)
 
 - La stampa della vista Gantt della Timeline mostra ora un'**intestazione
