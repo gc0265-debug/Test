@@ -80,7 +80,13 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
 :root{--side-w:232px;}
 .shell{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh;}
 .side{
-  background:linear-gradient(180deg,var(--side-bg-from) 0%,var(--side-bg-to) 100%);
+  /* Colori scritti qui per esteso (non solo tramite le variabili
+     --side-bg-*) perché questo sfondo deve restare scuro in ogni
+     circostanza, senza dipendere dalla risoluzione delle custom
+     property in un gradiente — un punto dove un problema di
+     visualizzazione sarebbe particolarmente vistoso. */
+  background-color:#161B22;
+  background-image:linear-gradient(180deg,#1E2530 0%,#12161D 100%);
   border-right:1px solid var(--side-rule);box-shadow:var(--side-shadow);
   display:flex;flex-direction:column;padding:20px 0 16px;
   position:sticky;top:0;height:100vh;overflow-y:auto;

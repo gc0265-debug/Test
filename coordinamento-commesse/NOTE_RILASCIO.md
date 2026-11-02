@@ -162,6 +162,19 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Fix: sfondo scuro della sidebar non sempre visibile (2 novembre 2026)
+
+- Lo sfondo scuro del menu laterale introdotto in v1.61 in alcuni casi
+  non compariva (restava chiaro pur con le icone colorate già attive):
+  i colori ora sono scritti direttamente nella regola, senza passare da
+  variabili che in quel punto potevano non risolversi correttamente.
+- Aggiunto anche un numero di versione al file di stile caricato dal
+  browser, così un aggiornamento dell'aspetto grafico si vede subito
+  dopo un ricaricamento della pagina, senza dover forzare lo
+  svuotamento della cache.
+
+---
+
 ## Sidebar più leggibile a colpo d'occhio, documento Word anche dal Diario di Cantiere (2 novembre 2026)
 
 - Il menu laterale ha ora uno **sfondo scuro** invece che chiaro, con

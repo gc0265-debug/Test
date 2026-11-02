@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.61';
+const VERSIONE_ATTUALE = '1.62';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.61', title: 'Sidebar più leggibile a colpo d\'occhio, documento Word anche dal Diario di Cantiere', date: '2 novembre 2026', attuale: true,
+    v: '1.62', title: 'Fix: sfondo scuro della sidebar non sempre visibile', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Lo sfondo scuro del menu laterale introdotto in v1.61 in alcuni casi non compariva (restava chiaro pur con le icone colorate già attive): i colori ora sono scritti direttamente nella regola, senza passare da variabili che in quel punto potevano non risolversi correttamente.',
+      'Aggiunto anche un numero di versione al file di stile caricato dal browser, così un aggiornamento dell\'aspetto grafico si vede subito dopo un ricaricamento della pagina, senza dover forzare lo svuotamento della cache.',
+    ],
+  },
+  {
+    v: '1.61', title: 'Sidebar più leggibile a colpo d\'occhio, documento Word anche dal Diario di Cantiere', date: '2 novembre 2026',
     points: [
       'Il menu laterale ha ora uno sfondo scuro invece che chiaro, con un\'icona colorata per ogni funzione (stessi 5 colori già usati in tutta l\'app per stati e avvisi, nessun colore nuovo introdotto) e un\'evidenziazione più marcata al passaggio del mouse: più facile individuare a colpo d\'occhio la voce cercata in un menu lungo.',
       'Diario di Cantiere: aggiunto il pulsante "+ Scrivi documento Word", già presente in Note di Coordinamento — scrive un verbale direttamente in app e lo salva come file .docx vero nell\'archivio Documenti.',
