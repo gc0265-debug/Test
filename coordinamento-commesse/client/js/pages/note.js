@@ -10,6 +10,7 @@ import {
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, mergeLabels } from '../components/categorie.js';
+import { openWordEditor } from '../components/wordEditor.js';
 
 const STATO_FIXED = { bozza: ['Bozza', 'outline'], inviata: ['Inviata', 'verde'] };
 let STATO = STATO_FIXED;
@@ -92,7 +93,11 @@ function openGeneraBozza(onSaved) {
     'Destinatari in copia conoscenza.'));
   form.appendChild(field('Work package', select('wp_id', wpOptions, ''),
     'Limita i punti generati alle criticità di un solo WP, invece di tutta la commessa.'));
-  form.appendChild(el('p', { class: 'muted' }, 'Genera un punto numerato per ogni criticità ancora aperta, ordinato per work package e urgenza. Il testo resta modificabile prima dell\'invio.'));
+  form.appendChild(el('div', { class: 'field--row' }, [
+    field('Aperte dal', textInput('data_da', '', { type: 'date' }), 'Solo le criticità aperte da questa data in poi. Lascia vuoto per non avere un limite iniziale.'),
+    field('Aperte fino al', textInput('data_a', '', { type: 'date' }), 'Solo le criticità aperte fino a questa data. Lascia vuoto per non avere un limite finale.'),
+  ]));
+  form.appendChild(el('p', { class: 'muted' }, 'Genera un punto numerato per ogni criticità ancora aperta nel WP e nel periodo scelti, ordinato per work package e urgenza. Il testo resta modificabile prima dell\'invio.'));
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, 'Genera bozza'),
@@ -153,6 +158,7 @@ export async function renderNote(container) {
 
   let lastRows = [];
   let selectedId = null;
+  let cartelle = [];
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -165,6 +171,11 @@ export async function renderNote(container) {
         }]);
       } }, 'Stampa elenco'),
       soloLettura ? null : el('button', { class: 'btn', onclick: () => openGeneraBozza(refresh) }, 'Genera da criticità aperte'),
+      soloLettura ? null : el('button', {
+        class: 'btn', onclick: () => openWordEditor({
+          cartelle, titoloDefault: `Nota di coordinamento — ${formatDate(todayISO())}`, onSaved: () => {},
+        }),
+      }, '+ Scrivi documento Word'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nota vuota'),
       settingsGear(),
     ]),
@@ -175,11 +186,13 @@ export async function renderNote(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
-    const [res, statoList] = await Promise.all([
+    const [res, statoList, cartelleRes] = await Promise.all([
       api.get(`/note-coordinamento?${queryScopeCommessa()}`),
       getCategoria('note_stato'),
+      soloLettura ? Promise.resolve({ data: [] }) : api.get(`/cartelle-documenti?${queryScopeCommessa()}`),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
+    cartelle = cartelleRes.data;
     lastRows = res.data;
     renderTable(tableHost, [
       soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (n) => n.commessa_codice || '—' } : null,

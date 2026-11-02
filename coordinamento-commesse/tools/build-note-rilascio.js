@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.46';
+const VERSIONE_ATTUALE = '1.47';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.46', title: 'Timeline più chiara (chevron, colori, barra in corso) e filtro Work Package su 4 schede in più', date: '2 novembre 2026', attuale: true,
+    v: '1.47', title: 'Note di Coordinamento: documento Word diretto e bozza filtrabile per data', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Note di Coordinamento ha ora, come Documenti, un pulsante "+ Scrivi documento Word": lo stesso editor di testo con titoli, grassetto/corsivo/sottolineato ed elenchi, salvato come vero file .docx — il documento creato compare nell\'archivio Documenti della commessa, pronto da scaricare o riaprire per modificarlo.',
+      '"Genera da criticità aperte" accetta ora anche un intervallo di date ("Aperte dal" / "Aperte fino al"): la bozza include solo le criticità aperte in quel periodo, invece di includerle sempre tutte. Il filtro per Work Package resta disponibile come prima e si combina con quello per data.',
+    ],
+  },
+  {
+    v: '1.46', title: 'Timeline più chiara (chevron, colori, barra in corso) e filtro Work Package su 4 schede in più', date: '2 novembre 2026',
     points: [
       'Timeline: la freccina per comprimere/espandere un gruppo o una lavorazione madre è ora più grande e scura, invece di un segno grigio chiaro quasi invisibile.',
       'Timeline: nel pulsante "Colori" si può ora scegliere anche il colore della barra Baseline e quello della barra di riepilogo di una lavorazione madre, oltre ai 4 colori di stato già personalizzabili.',

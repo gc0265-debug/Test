@@ -162,6 +162,21 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Note di Coordinamento: documento Word diretto e bozza filtrabile per data (2 novembre 2026)
+
+- Note di Coordinamento ha ora, come Documenti, un pulsante **"+ Scrivi
+  documento Word"**: lo stesso editor di testo con titoli,
+  grassetto/corsivo/sottolineato ed elenchi, salvato come vero file .docx —
+  il documento creato compare nell'archivio Documenti della commessa,
+  pronto da scaricare o riaprire per modificarlo.
+- **"Genera da criticità aperte"** accetta ora anche un intervallo di date
+  ("Aperte dal" / "Aperte fino al"): la bozza include solo le criticità
+  aperte in quel periodo, invece di includerle sempre tutte. Il filtro per
+  Work Package resta disponibile come prima e si combina con quello per
+  data.
+
+---
+
 ## Timeline più chiara (chevron, colori, barra in corso) e filtro Work Package su 4 schede in più (2 novembre 2026)
 
 - Timeline: la freccina per comprimere/espandere un gruppo o una lavorazione

@@ -33,7 +33,7 @@ router.get('/:id', (req, res) => {
 // commessa (filtrabili per wp_id), nello stesso formato della Nota di
 // Coordinamento ATI: un punto per criticità, con WP e stato.
 router.post('/genera-bozza', (req, res) => {
-  const { commessa_id, wp_id, destinatari, per_conoscenza, oggetto } = req.body;
+  const { commessa_id, wp_id, destinatari, per_conoscenza, oggetto, data_da, data_a } = req.body;
   if (!commessa_id) return res.status(400).json({ error: 'commessa_id è obbligatorio' });
 
   let sql = `
@@ -43,6 +43,8 @@ router.post('/genera-bozza', (req, res) => {
   `;
   const params = [commessa_id];
   if (wp_id) { sql += ' AND c.wp_id = ?'; params.push(wp_id); }
+  if (data_da) { sql += ' AND c.data_apertura >= ?'; params.push(data_da); }
+  if (data_a) { sql += ' AND c.data_apertura <= ?'; params.push(data_a); }
   sql += ' ORDER BY w.ordine ASC, (c.urgenza = \'viola\') DESC, c.entro_quando ASC';
 
   const aperte = db.prepare(sql).all(...params);
