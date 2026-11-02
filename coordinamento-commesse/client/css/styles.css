@@ -500,6 +500,7 @@ div.timeline-settimana__chip{cursor:default;}
   --gantt-color-pianificata:var(--ink-3);--gantt-color-in-corso:var(--blue);
   --gantt-color-completata:var(--verde);--gantt-color-ritardo:var(--red);
   --gantt-color-baseline:var(--ambra);--gantt-color-riepilogo:var(--ink);
+  --gantt-color-gruppo:#1B3A6B;--gantt-color-milestone:var(--ink);
 }
 .gantt__chart{position:relative;min-width:1000px;}
 .gantt__row{display:flex;border-bottom:1px solid var(--rule-2);}
@@ -527,6 +528,7 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__label-titolo{font-size:12px;font-weight:600;display:flex;align-items:center;}
 .gantt__label-meta{font-size:10.5px;color:var(--ink-3);margin-top:2px;}
 .gantt__scostamento-dot{width:6px;height:6px;border-radius:50%;background:var(--ambra);display:inline-block;margin-left:6px;flex:none;}
+.gantt__overrun-flag{font-size:11px;color:var(--red);display:inline-block;margin-left:6px;flex:none;line-height:1;}
 
 .gantt__axis{flex:none;position:relative;height:36px;}
 .gantt__col{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule-2);padding:5px 8px;overflow:hidden;}
@@ -537,11 +539,15 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__track{flex:none;position:relative;min-height:26px;}
 .gantt__row--scostamento .gantt__track{min-height:30px;}
 
-/* barre sottili: altezza fissa invece della vecchia fascia piena della riga */
+/* barre sottili: altezza fissa invece della vecchia fascia piena della riga.
+   Leggero effetto di profondità (velatura chiaro/scuro + ombra) invece del
+   colore piatto, per distinguere meglio le barre sovrapposte sullo sfondo. */
 .gantt__bar{
   position:absolute;top:50%;transform:translateY(-50%);height:11px;border-radius:2px;cursor:grab;
   display:flex;align-items:center;justify-content:flex-end;padding-right:5px;
-  color:#fff;font-size:9.5px;min-width:6px;box-shadow:0 0 0 1px rgba(0,0,0,.05);
+  color:#fff;font-size:9.5px;min-width:6px;
+  background-image:linear-gradient(to bottom, rgba(255,255,255,.22), rgba(0,0,0,.1));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3), inset 0 -1px 0 rgba(0,0,0,.2), 0 1px 2px rgba(0,0,0,.2);
 }
 .gantt__bar--dragging{cursor:grabbing;opacity:.85;box-shadow:0 0 0 2px var(--red);z-index:2;}
 .gantt__bar-progress{position:absolute;top:50%;left:1px;height:3px;transform:translateY(-50%);background:rgba(0,0,0,.45);border-radius:1px;pointer-events:none;}
@@ -579,26 +585,60 @@ div.timeline-settimana__chip{cursor:default;}
   cursor:pointer;margin-left:8px;padding:2px 4px;opacity:0;white-space:nowrap;
 }
 .gantt__label:hover .gantt__add-child{opacity:1;}
+/* barra di un gruppo "Piano": piatta, con una punta triangolare rivolta
+   verso il basso ad ogni estremità (la "mezza freccia" che la distingue a
+   colpo d'occhio da una barra di attività, come le barre di riepilogo di
+   MS Project). */
 .gantt__bar--group{
-  position:absolute;top:50%;transform:translateY(-50%);height:7px;border-radius:3px;
-  background:var(--viola);opacity:.85;cursor:default;
+  position:absolute;top:50%;transform:translateY(-50%);height:7px;border-radius:0;
+  background:var(--gantt-color-gruppo, #1B3A6B);opacity:.92;cursor:default;
+}
+.gantt__bar--group::before,.gantt__bar--group::after{
+  content:'';position:absolute;top:100%;width:0;height:0;border-style:solid;
+}
+.gantt__bar--group::before{
+  left:0;border-width:0 0 6px 6px;
+  border-color:transparent transparent transparent var(--gantt-color-gruppo, #1B3A6B);
+}
+.gantt__bar--group::after{
+  right:0;border-width:0 6px 6px 0;
+  border-color:transparent var(--gantt-color-gruppo, #1B3A6B) transparent transparent;
 }
 .gantt__bar--summary{background:var(--gantt-color-riepilogo, var(--ink));opacity:.85;}
 
-/* barra baseline: posizione/durata originali, in trasparenza, non cliccabile.
-   Colore ambra di default per legarla visivamente al pallino "scostamento"
-   (stesso accento), distinguendola dalle barre di stato e dal gruppo Piano
-   — personalizzabile dal pulsante "Colori" come le altre (--gantt-color-baseline).
-   Parte esattamente dal centro della riga (dove la barra attività — alta
-   11px, centrata con translateY(-50%) — ha il suo bordo inferiore) e
-   scende per la stessa altezza: così resta sempre esattamente al 50%
-   sovrapposta/nascosta sotto la barra attività, che viene disegnata dopo
-   nel DOM e quindi sopra. */
+/* barra baseline: posizione/durata originali della milestone, in
+   trasparenza, non cliccabile (solo le milestone hanno una baseline).
+   Colore ambra di default per legarla visivamente al pallino
+   "scostamento" (stesso accento) — personalizzabile dal pulsante
+   "Colori" come le altre (--gantt-color-baseline). Il rombo della
+   milestone è un quadrato di 12px ruotato di 45°, quindi il suo riquadro
+   visivo (allineato agli assi) è alto 12·√2≈16.97px, centrato sulla riga:
+   ±8.485px dal centro. La baseline, alta 11px, parte 0.785px sotto il
+   centro riga: 7.7 dei suoi 11px (70%) finiscono così coperti dal rombo
+   — disegnato dopo nel DOM e quindi sopra — lasciando visibile solo una
+   sottile fascia (30%) sotto, a mostrare lo scostamento senza coprire
+   interamente l'uno o l'altra. */
 .gantt__bar-baseline{
-  position:absolute;top:50%;height:11px;border-radius:2px;pointer-events:none;
+  position:absolute;top:calc(50% + 0.785px);height:11px;border-radius:2px;pointer-events:none;
   background:color-mix(in srgb, var(--gantt-color-baseline, var(--ambra)) 25%, var(--paper));
   opacity:.85;border:1px dashed var(--gantt-color-baseline, var(--ambra));
 }
+
+/* Milestone: il classico rombo di MS Project invece di una barra piena,
+   centrato sulla data di fine. Un colore unico e personalizzabile
+   (--gantt-color-milestone), non legato allo stato, per restare un segno
+   di riferimento sempre riconoscibile; un anello rosso segnala a parte una
+   milestone in ritardo. Se inizio e fine non coincidono, un sottile
+   segmento (vedi .gantt__milestone-span) collega le due date dietro al
+   rombo, che resta comunque l'elemento trascinabile. */
+.gantt__bar-milestone{
+  position:absolute;top:50%;width:12px;height:12px;margin-left:-6px;
+  transform:translateY(-50%) rotate(45deg);cursor:grab;border-radius:2px;
+  background:var(--gantt-color-milestone, var(--ink));
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.3), inset -1px -1px 0 rgba(0,0,0,.2), 0 1px 2px rgba(0,0,0,.2);
+}
+.gantt__bar-milestone--ritardo{box-shadow:0 0 0 2px var(--gantt-color-ritardo), 0 1px 2px rgba(0,0,0,.2);}
+.gantt__milestone-span{position:absolute;top:50%;height:3px;transform:translateY(-50%);background:var(--gantt-color-milestone, var(--ink));opacity:.4;pointer-events:none;border-radius:2px;}
 
 .gantt__today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);opacity:.55;z-index:1;pointer-events:none;}
 .gantt__legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;}
@@ -610,8 +650,9 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__legend-dot--ritardo{background:var(--gantt-color-ritardo);}
 .gantt__legend-dot--baseline{background:color-mix(in srgb, var(--gantt-color-baseline, var(--ambra)) 25%, var(--paper));opacity:.9;border:1px dashed var(--gantt-color-baseline, var(--ambra));border-radius:2px;}
 .gantt__legend-bar{width:16px;height:6px;border-radius:3px;display:inline-block;}
-.gantt__legend-bar--group{background:var(--viola);opacity:.85;}
+.gantt__legend-bar--group{background:var(--gantt-color-gruppo, #1B3A6B);opacity:.92;border-radius:0;}
 .gantt__legend-bar--summary{background:var(--gantt-color-riepilogo, var(--ink));opacity:.85;}
+.gantt__legend-diamond{width:9px;height:9px;display:inline-block;transform:rotate(45deg);background:var(--gantt-color-milestone, var(--ink));border-radius:1px;}
 .gantt__zoom{width:110px;vertical-align:middle;}
 
 /* Frecce di dipendenza fra attività (Fine-Inizio), disegnate come overlay

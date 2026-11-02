@@ -162,6 +162,33 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Timeline: milestone a rombo, barra di gruppo blu, flag di scostamento e profondità alle barre (2 novembre 2026)
+
+- Le milestone sono ora mostrate con il classico simbolo a rombo di MS
+  Project, invece di una barra piena, centrato sulla data di fine —
+  colore unico e personalizzabile dal pulsante "Colori" ("Milestone
+  (rombo)"), con un anello rosso quando sono in ritardo. Una milestone
+  con inizio e fine diversi mantiene comunque un sottile segmento che ne
+  mostra la durata, dietro al rombo.
+- Una milestone la cui data di fine attuale supera quella della baseline
+  (uno slittamento, non un semplice spostamento) è ora segnalata con un
+  **flag rosso ⚑** accanto al titolo, oltre al pallino ambra già presente
+  per qualunque scostamento.
+- La barra di un gruppo "Piano" è ora **blu scuro** (colore
+  personalizzabile, "Barra di gruppo") invece di viola, con una punta
+  triangolare ad ogni estremità che la distingue a colpo d'occhio da una
+  barra di attività, come le barre di riepilogo di MS Project.
+- Le barre del Gantt hanno ora una leggera profondità (una velatura
+  chiaro/scuro e un'ombra sottile) invece del colore completamente piatto
+  di prima.
+- La sovrapposizione fra la barra Baseline e l'elemento corrente è stata
+  portata dal 50% al 70% (ricalcolata per la nuova forma a rombo delle
+  milestone).
+- Il box in cima alla Timeline con le lavorazioni in corso si chiama ora
+  **"Cantieri e sotto cantieri attivi"**.
+
+---
+
 ## Timeline: corretto lo scorrimento che si azzerava da solo con zoom e altri comandi (2 novembre 2026)
 
 - Risolto un difetto per cui, scorrendo a mano il Gantt della Timeline e

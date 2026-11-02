@@ -42,6 +42,8 @@ const GANTT_COLORI_STATO = [
   { key: 'ritardo', label: 'In ritardo / Bloccata', default: '#C0332B' },
   { key: 'baseline', label: 'Baseline (scostamento)', default: '#A8761E' },
   { key: 'riepilogo', label: 'Lavorazione madre (riepilogo)', default: '#1A1A1A' },
+  { key: 'gruppo', label: 'Barra di gruppo (Piano)', default: '#1B3A6B' },
+  { key: 'milestone', label: 'Milestone (rombo)', default: '#1A1A1A' },
 ];
 function leggiColoriGantt() {
   try {
@@ -494,7 +496,7 @@ export async function renderTimeline(container) {
     settimanaHost.appendChild(el('div', { class: 'cruscotto-scadenze timeline-settimana' }, [
       el('div', { class: 'cruscotto-scadenze__head' }, [
         el('div', { class: 'cruscotto-scadenze__titolo' }, [
-          'Lavorazioni in corso',
+          'Cantieri e sotto cantieri attivi',
           el('span', { class: 'pill pill--outline' }, `${inCorso.length} attive`),
         ]),
       ]),
@@ -722,6 +724,35 @@ export async function renderTimeline(container) {
       });
     }
 
+    // Rombo di una milestone, centrato sul giorno di "dataFine" (il
+    // margin-left:-6px del CSS lo ricentra sulla colonna del giorno,
+    // .gantt__bar-milestone è larga 12px). Stesso meccanismo di style.left
+    // di bar(), quindi attachDragReschedule funziona identico sui due.
+    function milestoneMarker(dataFine, extraClass, titleText, clickable, depKey) {
+      const offsetGiorni = Math.max(0, daysBetween(rangeStart, dataFine));
+      const leftPx = (offsetGiorni + 0.5) * ppd;
+      return el('div', {
+        class: extraClass,
+        style: `left:${leftPx}px`,
+        title: titleText,
+        onclick: clickable || null,
+        'data-dep-key': depKey || null,
+      });
+    }
+
+    // Sottile segmento dietro al rombo, per non perdere l'informazione
+    // visiva di una milestone con una vera durata (inizio ≠ fine).
+    function milestoneSpan(dataInizio, dataFine) {
+      const startOffset = Math.max(0, daysBetween(rangeStart, dataInizio));
+      const endOffset = daysBetween(rangeStart, dataFine) + 1;
+      const leftPx = startOffset * ppd;
+      const widthPx = Math.max(2, (endOffset - startOffset) * ppd);
+      return el('div', {
+        class: 'gantt__milestone-span',
+        style: `left:${leftPx}px;width:${widthPx}px`,
+      });
+    }
+
     // Trascinamento orizzontale di una barra per spostarla nel tempo
     // (avanti o indietro), snapping al giorno: un movimento sotto i 4px
     // resta un semplice click (apre il modulo di modifica) invece di uno
@@ -826,20 +857,34 @@ export async function renderTimeline(container) {
       // minimo/massimo calcolato delle sotto-attività, non un campo
       // salvato a sé — trascinarle scriverebbe date sbagliate sul server.
       const trascinabile = !!onEdit && !it.isSummary;
-      const barEl = bar(
-        it.data_inizio, it.data_fine,
-        `gantt__bar gantt__bar--${cls}${isLavorazione ? ' gantt__bar--thin' : ''}${it.isSummary ? ' gantt__bar--summary' : ''}`,
-        `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}${it.isSummary ? ' · riepilogo sotto-attività' : ''}`,
-        trascinabile ? null : onEdit,
-        `${it.type}:${it.id}`
-      );
-      if (trascinabile) attachDragReschedule(barEl, it, onEdit);
-      if (isLavorazione && !it.isSummary && it.percentuale_completamento > 0) {
-        barEl.appendChild(el('div', {
-          class: 'gantt__bar-progress', style: `width:${Math.min(100, it.percentuale_completamento)}%`,
-          title: `Avanzamento ${it.percentuale_completamento}%`,
-        }));
+      const titleText = `${it.titolo} · ${formatDate(it.data_inizio)} → ${formatDate(it.data_fine)}${it.in_ritardo ? ' · IN RITARDO' : ''}${it.ha_scostamento ? ' · scostamento dalla baseline' : ''}${it.isSummary ? ' · riepilogo sotto-attività' : ''}`;
+      let barEl;
+      if (isLavorazione) {
+        barEl = bar(
+          it.data_inizio, it.data_fine,
+          `gantt__bar gantt__bar--${cls} gantt__bar--thin${it.isSummary ? ' gantt__bar--summary' : ''}`,
+          titleText, trascinabile ? null : onEdit, `${it.type}:${it.id}`
+        );
+        if (!it.isSummary && it.percentuale_completamento > 0) {
+          barEl.appendChild(el('div', {
+            class: 'gantt__bar-progress', style: `width:${Math.min(100, it.percentuale_completamento)}%`,
+            title: `Avanzamento ${it.percentuale_completamento}%`,
+          }));
+        }
+      } else {
+        // Milestone: il classico rombo di MPP, centrato sulla data di
+        // fine (il riferimento che conta per una milestone), con un
+        // sottile segmento che collega inizio e fine quando differiscono
+        // — così una milestone con una vera durata non perde l'informazione
+        // di quanto si estende, pur restando un rombo e non una barra.
+        if (it.data_inizio !== it.data_fine) track.appendChild(milestoneSpan(it.data_inizio, it.data_fine));
+        barEl = milestoneMarker(
+          it.data_fine,
+          `gantt__bar-milestone${it.in_ritardo ? ' gantt__bar-milestone--ritardo' : ''}`,
+          titleText, trascinabile ? null : onEdit, `${it.type}:${it.id}`
+        );
       }
+      if (trascinabile) attachDragReschedule(barEl, it, onEdit);
       track.appendChild(barEl);
 
       const figli = isLavorazione ? figliPerMadre.get(it.id) : null;
@@ -859,6 +904,10 @@ export async function renderTimeline(container) {
         it.titolo,
         el('span', { class: 'gantt__type-tag' }, isLavorazione ? (it.isSummary ? `LAVORAZIONE · ${it.nFigli} sotto-attività` : 'Lavorazione') : 'Milestone'),
         it.ha_scostamento ? el('span', { class: 'gantt__scostamento-dot', title: 'Scostamento dalla baseline' }) : null,
+        (it.ha_scostamento && it.baseline_data_fine && it.data_fine > it.baseline_data_fine) ? el('span', {
+          class: 'gantt__overrun-flag',
+          title: `Supera la baseline: la fine è slittata dal ${formatDate(it.baseline_data_fine)} al ${formatDate(it.data_fine)}.`,
+        }, '⚑') : null,
         (isLavorazione && !it.parent_id && !clienteSoloLettura) ? el('button', {
           type: 'button', class: 'gantt__add-child', title: 'Aggiungi sotto-attività',
           onclick: (e) => { e.stopPropagation(); openForm(null, refresh, { type: 'lavorazione', parent_id: it.id, parent_titolo: it.titolo, piano: it.piano, commessa_id: it.commessa_id }); },
@@ -1004,7 +1053,9 @@ export async function renderTimeline(container) {
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dot gantt__legend-dot--baseline' }), 'Baseline (scostamento)']),
-      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__type-tag' }, 'Lavorazione'), 'riga più sottile = lavorazione, non milestone']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__overrun-flag' }, '⚑'), 'Supera la baseline']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-diamond' }), 'Milestone']),
+      el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__type-tag' }, 'Lavorazione'), 'riga più sottile']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--group' }), 'Gruppo Piano']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-bar gantt__legend-bar--summary' }), 'Riepilogo sotto-attività']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dep gantt__legend-dep--critica' }), 'Dipendenza sul percorso critico']),
