@@ -162,6 +162,17 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Timeline: corretto lo scorrimento che si azzerava da solo con zoom e altri comandi (2 novembre 2026)
+
+- Risolto un difetto per cui, scorrendo a mano il Gantt della Timeline e
+  poi muovendo lo slider dello zoom (o comprimendo un gruppo, o cambiando
+  un colore), la vista tornava di scatto all'inizio ad ogni intervento,
+  dando la sensazione di uno scorrimento automatico incontrollabile. Ora
+  la posizione di scorrimento resta quella scelta finché non la si cambia
+  di nuovo a mano.
+
+---
+
 ## Lavorazioni: il campo Impresa mostra l'organizzazione, non il referente (2 novembre 2026)
 
 - Il campo **"Impresa / squadra"** del modulo Lavorazioni elencava finora

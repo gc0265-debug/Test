@@ -643,6 +643,15 @@ export async function renderTimeline(container) {
   }
 
   function draw() {
+    // draw() ricostruisce da zero l'elemento scrollabile .gantt (vedi
+    // ganttHost.innerHTML = '' più sotto) — senza salvare e riapplicare lo
+    // scroll qui, ogni chiamata (anche solo muovere lo slider dello zoom,
+    // che chiama draw() ad ogni variazione) lo riportava a sinistra/in
+    // alto, dando la sensazione di uno scorrimento automatico incontrollabile.
+    const ganttPrecedente = ganttHost.querySelector('.gantt');
+    const scrollLeftPrecedente = ganttPrecedente ? ganttPrecedente.scrollLeft : null;
+    const scrollTopPrecedente = ganttPrecedente ? ganttPrecedente.scrollTop : null;
+
     if (!items.length) {
       ganttHost.innerHTML = '';
       ganttHost.appendChild(el('p', { class: 'muted' }, 'Nessuna milestone o lavorazione con date registrata. Aggiungine una per vedere la timeline.'));
@@ -988,6 +997,8 @@ export async function renderTimeline(container) {
     }, chart);
     applicaColoriGantt(ganttEl, leggiColoriGantt());
     ganttHost.appendChild(ganttEl);
+    if (scrollLeftPrecedente !== null) ganttEl.scrollLeft = scrollLeftPrecedente;
+    if (scrollTopPrecedente !== null) ganttEl.scrollTop = scrollTopPrecedente;
     disegnaDipendenze(chart);
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),

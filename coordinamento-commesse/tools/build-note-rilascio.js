@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.49';
+const VERSIONE_ATTUALE = '1.50';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,13 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.49', title: 'Lavorazioni: il campo Impresa mostra l\'organizzazione, non il referente', date: '2 novembre 2026', attuale: true,
+    v: '1.50', title: 'Timeline: corretto lo scorrimento che si azzerava da solo con zoom e altri comandi', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Risolto un difetto per cui, scorrendo a mano il Gantt della Timeline e poi muovendo lo slider dello zoom (o comprimendo un gruppo, o cambiando un colore), la vista tornava di scatto all\'inizio ad ogni intervento, dando la sensazione di uno scorrimento automatico incontrollabile. Ora la posizione di scorrimento resta quella scelta finché non la si cambia di nuovo a mano.',
+    ],
+  },
+  {
+    v: '1.49', title: 'Lavorazioni: il campo Impresa mostra l\'organizzazione, non il referente', date: '2 novembre 2026',
     points: [
       'Il campo "Impresa / squadra" del modulo Lavorazioni elencava finora il nome della persona di riferimento registrata nel Registro Stakeholder (es. "Tommaso Battista"), invece dell\'impresa a cui appartiene. Ora elenca l\'organizzazione (es. "SAC Spa"): più referenti della stessa azienda contano come un\'unica voce, e uno stakeholder senza organizzazione compilata resta comunque in elenco con il proprio nome.',
     ],
