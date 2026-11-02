@@ -326,9 +326,14 @@ async function openForm(existing, onSaved, presets = {}) {
       extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata'),
         'Determina il colore della barra nel Gantt.'));
       if (existing) {
-        extraHost.appendChild(field('Baseline (data di riferimento)',
-          dateInput('baseline_data_fine', existing.baseline_data_fine || existing.data_fine || todayISO()),
-          `Determina dove viene disegnata nel Gantt la barra tratteggiata di riferimento, per confronto con la data di scadenza attuale (${formatDate(existing.data_fine)}). Modificala per far coincidere il riferimento con un nuovo piano, oppure con le date correnti per azzerare lo scostamento.`));
+        extraHost.appendChild(el('div', { class: 'field--row' }, [
+          field('Baseline inizio', dateInput('baseline_data_inizio', existing.baseline_data_inizio || existing.data_inizio || todayISO()),
+            'Inizio del piano di riferimento, mostrato come barra tratteggiata nel Gantt.'),
+          field('Baseline fine', dateInput('baseline_data_fine', existing.baseline_data_fine || existing.data_fine || todayISO()),
+            `Fine del piano di riferimento, per confronto con la scadenza attuale (${formatDate(existing.data_fine)}).`),
+        ]));
+        extraHost.appendChild(el('div', { class: 'field__hint', style: 'margin:-10px 0 14px' },
+          'Modifica queste due date per far coincidere il riferimento con un nuovo piano concordato, oppure con le date correnti per azzerare lo scostamento.'));
       }
       extraHost.appendChild(field('Note', textarea('note', existing?.note ?? ''),
         'Annotazioni libere, visibili solo qui.'));

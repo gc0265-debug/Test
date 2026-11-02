@@ -1,9 +1,12 @@
 const express = require('express');
+const multer = require('multer');
 const db = require('../db/database');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { verificaVersione } = require('../utils/concorrenza');
+const { parseCsv } = require('../utils/csv');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // Una lavorazione madre deve: esistere, appartenere alla stessa commessa,
 // non essere la lavorazione stessa e non avere a sua volta una madre —
@@ -95,6 +98,116 @@ router.delete('/:id', (req, res) => {
   const result = db.prepare('DELETE FROM lavorazioni WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'lavorazione non trovata' });
   res.status(204).end();
+});
+
+// Import cronoprogramma da CSV: un file con intestazioni in italiano
+// (Titolo, WP, Piano, Zona, Data inizio, Data fine, Stato, Priorità,
+// Impresa, Descrizione) genera in blocco le lavorazioni corrispondenti —
+// visibili subito anche in Timeline, che legge le stesse righe. Pensato
+// per chi ha già un cronoprogramma in Excel/MS Project e vuole evitare di
+// re-inserire a mano riga per riga. Non gestisce le sotto-attività
+// (Lavorazione madre): quelle, essendo rare, restano da collegare a mano
+// dopo l'import, dal modulo della singola riga.
+function normalizzaTestoLav(v) {
+  return String(v || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ').trim().toLowerCase();
+}
+const ALIAS_COLONNE_LAVORAZIONE = {
+  titolo: ['titolo', 'attivita', 'nome', 'descrizione attivita', 'task', 'lavorazione'],
+  wp: ['wp', 'work package', 'workpackage', 'codice wp'],
+  piano: ['piano'],
+  zona: ['zona', 'area'],
+  data_inizio: ['data inizio', 'inizio', 'start', 'data di inizio'],
+  data_fine: ['data fine', 'fine', 'end', 'data di fine', 'scadenza'],
+  stato: ['stato', 'status'],
+  priorita: ['priorita', 'priority'],
+  impresa: ['impresa', 'ditta', 'fornitore', 'subappaltatore', 'azienda'],
+  descrizione: ['descrizione', 'note', 'dettagli'],
+};
+function parseDataLav(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  const eu = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if (eu) return `${eu[3]}-${eu[2].padStart(2, '0')}-${eu[1].padStart(2, '0')}`;
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+  return null;
+}
+const STATO_ALIAS_LAV = {
+  'da fare': 'da-fare', 'dafare': 'da-fare', 'pianificata': 'da-fare', 'non iniziata': 'da-fare', 'to do': 'da-fare', '': 'da-fare',
+  'in corso': 'in-corso', 'in-corso': 'in-corso', 'incorso': 'in-corso', 'in lavorazione': 'in-corso',
+  completata: 'completata', completato: 'completata', conclusa: 'completata', fatta: 'completata', done: 'completata',
+  bloccata: 'bloccata', bloccato: 'bloccata', sospesa: 'bloccata',
+};
+const PRIORITA_ALIAS_LAV = {
+  alta: 'alta', high: 'alta', '': 'media', media: 'media', medium: 'media', normale: 'media', bassa: 'bassa', low: 'bassa',
+};
+
+router.post('/import', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'nessun file caricato' });
+  const commessaId = req.body.commessa_id;
+  if (!commessaId) return res.status(400).json({ error: 'commessa_id obbligatorio' });
+
+  let righe;
+  try {
+    righe = parseCsv(req.file.buffer.toString('utf8'));
+  } catch (err) {
+    return res.status(400).json({ error: 'file CSV non leggibile' });
+  }
+  if (!righe.length) return res.status(400).json({ error: 'il file è vuoto' });
+
+  const intestazione = righe[0].map(normalizzaTestoLav);
+  const colIndex = {};
+  for (const [campo, alias] of Object.entries(ALIAS_COLONNE_LAVORAZIONE)) {
+    const idx = intestazione.findIndex((h) => alias.includes(h));
+    if (idx !== -1) colIndex[campo] = idx;
+  }
+  if (colIndex.titolo === undefined) {
+    return res.status(400).json({ error: 'non trovo una colonna "Titolo" nel file: le intestazioni attese sono Titolo, WP, Piano, Zona, Data inizio, Data fine, Stato, Priorità, Impresa, Descrizione' });
+  }
+  const cella = (riga, campo) => (colIndex[campo] !== undefined ? String(riga[colIndex[campo]] || '').trim() : '');
+
+  const wpRows = db.prepare('SELECT id, codice FROM work_packages WHERE commessa_id = ?').all(commessaId);
+  const wpByCodice = new Map(wpRows.map((w) => [w.codice.toLowerCase(), w.id]));
+
+  const insert = db.prepare(`
+    INSERT INTO lavorazioni (commessa_id, wp_id, titolo, descrizione, stato, priorita, piano, zona, data_inizio, data_fine, impresa)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  let imported = 0;
+  const skippedMotivi = [];
+  const avvisi = [];
+  db.transaction(() => {
+    for (let r = 1; r < righe.length; r++) {
+      const riga = righe[r];
+      const numeroRiga = r + 1; // +1: righe[0] è l'intestazione, cioè la riga 1 del file
+      const titolo = cella(riga, 'titolo');
+      if (!titolo) { skippedMotivi.push(`riga ${numeroRiga}: manca il titolo`); continue; }
+      const dataInizio = parseDataLav(cella(riga, 'data_inizio'));
+      const dataFine = parseDataLav(cella(riga, 'data_fine'));
+      if (!dataInizio || !dataFine) { skippedMotivi.push(`riga ${numeroRiga} ("${titolo}"): data inizio/fine mancante o non riconosciuta (usare GG/MM/AAAA o AAAA-MM-GG)`); continue; }
+      if (dataFine < dataInizio) { skippedMotivi.push(`riga ${numeroRiga} ("${titolo}"): la data di fine precede la data di inizio`); continue; }
+
+      const wpTxt = cella(riga, 'wp');
+      const wpId = wpTxt ? (wpByCodice.get(wpTxt.toLowerCase()) || null) : null;
+      if (wpTxt && !wpId) avvisi.push(`riga ${numeroRiga} ("${titolo}"): WP "${wpTxt}" non trovato in questa commessa — importata senza WP`);
+
+      insert.run(
+        commessaId, wpId, titolo, cella(riga, 'descrizione') || null,
+        STATO_ALIAS_LAV[normalizzaTestoLav(cella(riga, 'stato'))] || 'da-fare',
+        PRIORITA_ALIAS_LAV[normalizzaTestoLav(cella(riga, 'priorita'))] || 'media',
+        cella(riga, 'piano') || null, cella(riga, 'zona') || null,
+        dataInizio, dataFine, cella(riga, 'impresa') || null
+      );
+      imported++;
+    }
+  })();
+
+  res.status(201).json({
+    imported, skipped: skippedMotivi.length, dettaglioScarti: skippedMotivi.slice(0, 30), avvisi: avvisi.slice(0, 30),
+  });
 });
 
 module.exports = router;

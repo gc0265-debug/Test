@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.53';
+const VERSIONE_ATTUALE = '1.54';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.53', title: 'Timeline: baseline modificabile a mano, colonne ridimensionabili, fix colori legenda', date: '2 novembre 2026', attuale: true,
+    v: '1.54', title: 'Lavorazioni: import cronoprogramma da CSV, baseline con date indipendenti', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Nella scheda Lavorazioni è ora possibile importare in blocco un cronoprogramma da un file CSV, invece di inserire ogni riga a mano: pulsante "Modello CSV" per scaricare un esempio con le intestazioni attese (Titolo, WP, Piano, Zona, Data inizio, Data fine, Stato, Priorità, Impresa, Descrizione), pulsante "Importa cronoprogramma (CSV)" per caricare il file compilato. Le righe importate sono lavorazioni a tutti gli effetti e compaiono subito anche nella Timeline. Le righe non valide (titolo o date mancanti) vengono scartate con il motivo indicato, senza bloccare l\'import delle altre.',
+      'Il campo "Baseline (data di riferimento)" aggiunto in v1.53 è stato diviso in due campi indipendenti, "Baseline inizio" e "Baseline fine": a differenza della scadenza vera e propria di una milestone (sempre puntuale), il piano di riferimento può avere un proprio intervallo, utile per confrontarlo correttamente con l\'intervallo osservato nella colonna Base. inizio/Base. fine della Timeline.',
+    ],
+  },
+  {
+    v: '1.53', title: 'Timeline: baseline modificabile a mano, colonne ridimensionabili, fix colori legenda', date: '2 novembre 2026',
     points: [
       'Il modulo di modifica di una milestone mostra ora un campo "Baseline (data di riferimento)": la data di riferimento con cui viene confrontata la scadenza attuale non è più modificabile solo "in blocco" con la casella "Reimposta la baseline su queste date" (rimossa), ma si può impostare a qualunque data, ad esempio per allinearla a un nuovo piano concordato senza perdere la scadenza originale.',
       'Nella vista Gantt della Timeline, la linea che separa le colonne delle attività (Attività, Durata, Baseline, Inizio, Fine, Predecessori) dal grafico a barre è ora trascinabile con il mouse, esattamente come la barra laterale della sidebar: la larghezza scelta resta memorizzata nel browser.',

@@ -81,15 +81,25 @@ router.put('/:id', (req, res) => {
   if (next.data_fine < next.data_inizio) return res.status(400).json({ error: 'la data di fine non può precedere la data di inizio' });
 
   // la baseline resta ferma sulle date congelate alla creazione, a meno di
-  // un reset esplicito (reimposta_baseline) o di una modifica manuale del
-  // campo "Baseline" nel modulo — così un edit normale continua a mostrare
-  // lo scostamento rispetto al piano originale. Stesso modello a singola
-  // data delle milestone: baseline_data_inizio rispecchia sempre baseline_data_fine.
+  // un reset esplicito (reimposta_baseline) o di una modifica manuale dei
+  // campi "Baseline inizio"/"Baseline fine" nel modulo — così un edit
+  // normale continua a mostrare lo scostamento rispetto al piano
+  // originale. A differenza delle date vere e proprie, la baseline può
+  // avere inizio e fine diversi anche per una milestone: congela il piano
+  // di riferimento, non è vincolata al modello "scadenza puntuale".
   const reimpostaBaseline = req.body.reimposta_baseline === true || req.body.reimposta_baseline === '1';
+  let baselineInizio = existing.baseline_data_inizio;
   let baselineFine = existing.baseline_data_fine;
-  if (reimpostaBaseline) baselineFine = next.data_fine;
-  else if (req.body.baseline_data_fine) baselineFine = req.body.baseline_data_fine;
-  const baselineInizio = baselineFine;
+  if (reimpostaBaseline) {
+    baselineInizio = next.data_inizio;
+    baselineFine = next.data_fine;
+  } else {
+    if (req.body.baseline_data_inizio) baselineInizio = req.body.baseline_data_inizio;
+    if (req.body.baseline_data_fine) baselineFine = req.body.baseline_data_fine;
+  }
+  if (baselineInizio && baselineFine && baselineFine < baselineInizio) {
+    return res.status(400).json({ error: 'la data di fine della baseline non può precedere la data di inizio della baseline' });
+  }
 
   db.prepare(`
     UPDATE milestone SET wp_id=?, piano=?, zona=?, titolo=?, data_inizio=?, data_fine=?,
@@ -102,8 +112,9 @@ router.put('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM milestone WHERE id = ?').get(req.params.id);
   let dettaglio = diffFields(existing, next, TRACKED);
   if (reimpostaBaseline) dettaglio = (dettaglio ? dettaglio + '; ' : '') + 'Baseline reimpostata sulle date correnti';
-  else if (req.body.baseline_data_fine && String(req.body.baseline_data_fine) !== String(existing.baseline_data_fine)) {
-    dettaglio = (dettaglio ? dettaglio + '; ' : '') + `Baseline: ${existing.baseline_data_fine ?? '—'} → ${baselineFine}`;
+  else if (String(baselineInizio) !== String(existing.baseline_data_inizio) || String(baselineFine) !== String(existing.baseline_data_fine)) {
+    dettaglio = (dettaglio ? dettaglio + '; ' : '') +
+      `Baseline: ${existing.baseline_data_inizio ?? '—'} → ${existing.baseline_data_fine ?? '—'} ⇒ ${baselineInizio ?? '—'} → ${baselineFine ?? '—'}`;
   }
   const azione = (existing.stato !== 'completata' && next.stato === 'completata') ? 'chiusa'
     : (existing.stato === 'completata' && next.stato !== 'completata') ? 'riaperta' : 'modificata';

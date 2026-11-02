@@ -162,6 +162,26 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Lavorazioni: import cronoprogramma da CSV, baseline con date indipendenti (2 novembre 2026)
+
+- Nella scheda Lavorazioni è ora possibile **importare in blocco un
+  cronoprogramma da un file CSV**, invece di inserire ogni riga a mano:
+  pulsante "Modello CSV" per scaricare un esempio con le intestazioni
+  attese (Titolo, WP, Piano, Zona, Data inizio, Data fine, Stato,
+  Priorità, Impresa, Descrizione), pulsante "Importa cronoprogramma
+  (CSV)" per caricare il file compilato. Le righe importate sono
+  lavorazioni a tutti gli effetti e compaiono subito anche nella
+  Timeline. Le righe non valide (titolo o date mancanti) vengono
+  scartate con il motivo indicato, senza bloccare l'import delle altre.
+- Il campo "Baseline (data di riferimento)" aggiunto in v1.53 è stato
+  diviso in **due campi indipendenti**, "Baseline inizio" e "Baseline
+  fine": a differenza della scadenza vera e propria di una milestone
+  (sempre puntuale), il piano di riferimento può avere un proprio
+  intervallo, utile per confrontarlo correttamente con l'intervallo
+  osservato nella colonna Base. inizio/Base. fine della Timeline.
+
+---
+
 ## Timeline: baseline modificabile a mano, colonne ridimensionabili, fix colori legenda (2 novembre 2026)
 
 - Il modulo di modifica di una milestone mostra ora un campo **"Baseline

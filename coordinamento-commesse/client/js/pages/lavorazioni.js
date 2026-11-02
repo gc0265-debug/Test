@@ -326,7 +326,10 @@ export async function renderLavorazioni(container) {
   const soloLettura = clienteSoloLettura || inVistaGruppo();
   if (inVistaGruppo() && !clienteSoloLettura) {
     container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
-      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova lavorazione, seleziona prima una singola commessa dal menu a sinistra.'));
+      'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova lavorazione o importare un cronoprogramma, seleziona prima una singola commessa dal menu a sinistra.'));
+  } else if (!soloLettura) {
+    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      'Compilabile a mano o importando in blocco un cronoprogramma da CSV ("Modello CSV" per scaricare l\'esempio con le intestazioni attese) — le righe importate compaiono subito anche in Timeline.'));
   }
   const statoPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
   const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
@@ -344,12 +347,52 @@ export async function renderLavorazioni(container) {
     }, label);
   }
 
+  // Import in blocco di un cronoprogramma da CSV: stesse intestazioni del
+  // modello scaricabile dal pulsante "Modello CSV" qui accanto. Le righe
+  // importate sono lavorazioni a tutti gli effetti, quindi compaiono
+  // subito anche in Timeline (che legge dalla stessa tabella).
+  const fileInputCsv = el('input', { type: 'file', accept: '.csv,text/csv', style: 'display:none' });
+  fileInputCsv.addEventListener('change', async () => {
+    const file = fileInputCsv.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('commessa_id', state.commessaId);
+    try {
+      const res = await api.postForm('/lavorazioni/import', fd);
+      const messaggi = [`Importate ${res.imported} lavorazioni.`];
+      if (res.skipped) messaggi.push(`${res.skipped} righe scartate${res.dettaglioScarti?.length ? ': ' + res.dettaglioScarti.slice(0, 3).join('; ') + (res.dettaglioScarti.length > 3 ? '…' : '') : ''}`);
+      if (res.avvisi?.length) messaggi.push(`${res.avvisi.length} avvisi (es. WP non riconosciuto)`);
+      toast(messaggi.join(' '), { error: !res.imported });
+      await refresh();
+    } catch (err) {
+      toast(err.message, { error: true });
+    } finally {
+      fileInputCsv.value = '';
+    }
+  });
+  function scaricaModelloCsv() {
+    const righe = [
+      ['Titolo', 'WP', 'Piano', 'Zona', 'Data inizio', 'Data fine', 'Stato', 'Priorità', 'Impresa', 'Descrizione'],
+      ['Montaggio boiserie corridoio', 'WP2', 'Piano 3', 'Ala nord', '2026-03-01', '2026-03-20', 'da fare', 'alta', 'Rossi Allestimenti Srl', ''],
+    ];
+    const csv = righe.map((r) => r.map((v) => (/[,;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'modello-cronoprogramma.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center' }, [
       statoPillHost,
       soloLettura ? null : wpPillHost,
     ]),
     el('div', { style: 'display:flex;gap:8px' }, [
+      soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: scaricaModelloCsv, title: 'Scarica un file CSV di esempio con le intestazioni attese' }, 'Modello CSV'),
+      soloLettura ? null : el('button', { class: 'btn btn--sm', onclick: () => fileInputCsv.click() }, 'Importa cronoprogramma (CSV)'),
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
         printReport('Stato avanzamento dei montaggi', inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find(c => c.id === state.commessaId), [{
@@ -366,6 +409,7 @@ export async function renderLavorazioni(container) {
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(fileInputCsv);
   const tableHost = el('div');
   container.appendChild(tableHost);
 
