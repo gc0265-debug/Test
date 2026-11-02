@@ -48,9 +48,14 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { commessa_id, wp_id, piano, zona, titolo, data_inizio, data_fine, stato, note } = req.body;
-  if (!commessa_id || !titolo || !data_inizio || !data_fine) {
-    return res.status(400).json({ error: 'commessa_id, titolo, data_inizio e data_fine sono obbligatori' });
+  const { commessa_id, wp_id, piano, zona, titolo, data_fine, stato, note } = req.body;
+  // Una milestone è per definizione una scadenza, non un intervallo: la
+  // data di inizio non si chiede più nel modulo e, se non indicata
+  // esplicitamente (es. da un vecchio client o da un'importazione),
+  // coincide con quella di fine.
+  const data_inizio = req.body.data_inizio || data_fine;
+  if (!commessa_id || !titolo || !data_fine) {
+    return res.status(400).json({ error: 'commessa_id, titolo e data di scadenza sono obbligatori' });
   }
   if (data_fine < data_inizio) return res.status(400).json({ error: 'la data di fine non può precedere la data di inizio' });
 
@@ -70,6 +75,9 @@ router.put('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'milestone non trovata' });
   if (!verificaVersione(req, res, existing)) return;
   const next = { ...existing, ...req.body };
+  // Come in creazione: senza una data di inizio esplicita nella richiesta,
+  // la milestone resta (o torna) una scadenza puntuale.
+  if (!req.body.data_inizio) next.data_inizio = next.data_fine;
   if (next.data_fine < next.data_inizio) return res.status(400).json({ error: 'la data di fine non può precedere la data di inizio' });
 
   // la baseline resta ferma sulle date congelate alla creazione, a meno di

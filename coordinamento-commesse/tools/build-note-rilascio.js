@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.51';
+const VERSIONE_ATTUALE = '1.52';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,13 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.51', title: 'Timeline: milestone a rombo, barra di gruppo blu, flag di scostamento e profondità alle barre', date: '2 novembre 2026', attuale: true,
+    v: '1.52', title: 'Timeline: una milestone ha ora una sola data di scadenza', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Il modulo di una milestone mostra ora un solo campo "Data di scadenza", invece di "Data inizio" e "Data fine": una milestone è per definizione una scadenza puntuale, non un intervallo, e non c\'era più bisogno di compilare (o lasciare vuota, bloccando il salvataggio) una data di inizio che non serviva. Il modulo di una Lavorazione, che ha davvero una durata, continua a mostrare entrambe le date come prima.',
+    ],
+  },
+  {
+    v: '1.51', title: 'Timeline: milestone a rombo, barra di gruppo blu, flag di scostamento e profondità alle barre', date: '2 novembre 2026',
     points: [
       'Le milestone sono ora mostrate con il classico simbolo a rombo di MS Project, invece di una barra piena, centrato sulla data di fine — colore unico e personalizzabile dal pulsante "Colori" ("Milestone (rombo)"), con un anello rosso quando sono in ritardo. Una milestone con inizio e fine diversi mantiene comunque un sottile segmento che ne mostra la durata, dietro al rombo.',
       'Una milestone la cui data di fine attuale supera quella della baseline (uno slittamento, non un semplice spostamento) è ora segnalata con un flag rosso ⚑ accanto al titolo, oltre al pallino ambra già presente per qualunque scostamento.',

@@ -162,6 +162,17 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Timeline: una milestone ha ora una sola data di scadenza (2 novembre 2026)
+
+- Il modulo di una milestone mostra ora un solo campo **"Data di
+  scadenza"**, invece di "Data inizio" e "Data fine": una milestone è per
+  definizione una scadenza puntuale, non un intervallo, e non c'era più
+  bisogno di compilare (o lasciare vuota, bloccando il salvataggio) una
+  data di inizio che non serviva. Il modulo di una Lavorazione, che ha
+  davvero una durata, continua a mostrare entrambe le date come prima.
+
+---
+
 ## Timeline: milestone a rombo, barra di gruppo blu, flag di scostamento e profondità alle barre (2 novembre 2026)
 
 - Le milestone sono ora mostrate con il classico simbolo a rombo di MS

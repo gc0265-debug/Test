@@ -269,12 +269,29 @@ async function openForm(existing, onSaved, presets = {}) {
     field('Zona', textInput('zona', existing?.zona ?? '', { placeholder: 'es. Ala nord' }),
       'Dettaglio della posizione all\'interno del piano.'),
   ]));
-  form.appendChild(el('div', { class: 'field--row' }, [
-    field('Data inizio', dateInput('data_inizio', existing?.data_inizio || todayISO(), { required: true }),
-      'Determina dove inizia la barra nel Gantt.'),
-    field('Data fine', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true }),
-      'Una milestone con data inizio = data fine appare come un punto, non come una barra.'),
-  ]));
+  const dateHost = el('div');
+  form.appendChild(dateHost);
+
+  function drawDate() {
+    dateHost.innerHTML = '';
+    if (tipoCheckbox.checked) {
+      dateHost.appendChild(el('div', { class: 'field--row' }, [
+        field('Data inizio', dateInput('data_inizio', existing?.data_inizio || todayISO(), { required: true }),
+          'Determina dove inizia la barra nel Gantt.'),
+        field('Data fine', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true }),
+          'Data entro cui la lavorazione deve concludersi.'),
+      ]));
+    } else {
+      // Una milestone è per definizione una scadenza, non un intervallo:
+      // un solo campo data invece dei due di una lavorazione. Il nome del
+      // campo resta "data_fine" — è quella la data che conta per una
+      // milestone (posizione del rombo, calcolo del ritardo, dipendenze) —
+      // "data_inizio" viene impostata dal server uguale alla scadenza.
+      dateHost.appendChild(field('Data di scadenza', dateInput('data_fine', existing?.data_fine || todayISO(), { required: true }),
+        'Il giorno della milestone, mostrato nel Gantt come un rombo.'));
+    }
+  }
+  drawDate();
 
   const extraHost = el('div');
   form.appendChild(extraHost);
@@ -309,7 +326,7 @@ async function openForm(existing, onSaved, presets = {}) {
     }
   }
   drawExtra();
-  tipoCheckbox.addEventListener('change', drawExtra);
+  tipoCheckbox.addEventListener('change', () => { drawDate(); drawExtra(); });
 
   // Predecessori: solo su un'attività già salvata (serve il suo id). Un
   // collegamento in conflitto con le date attuali è segnalato in rosso,
@@ -381,6 +398,7 @@ async function openForm(existing, onSaved, presets = {}) {
         if (existing) await api.put(`/lavorazioni/${existing.id}`, data);
         else await api.post('/lavorazioni', data);
       } else {
+        data.data_inizio = data.data_fine;
         data.reimposta_baseline = data.reimposta_baseline === '1';
         if (existing) await api.put(`/milestone/${existing.id}`, data);
         else await api.post('/milestone', data);
