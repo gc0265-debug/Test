@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.60';
+const VERSIONE_ATTUALE = '1.61';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.60', title: 'Titolo di pagina cliccabile, annulla/ripeti ultima modifica, fasce comandi fisse durante lo scroll', date: '2 novembre 2026', attuale: true,
+    v: '1.61', title: 'Sidebar più leggibile a colpo d\'occhio, documento Word anche dal Diario di Cantiere', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Il menu laterale ha ora uno sfondo scuro invece che chiaro, con un\'icona colorata per ogni funzione (stessi 5 colori già usati in tutta l\'app per stati e avvisi, nessun colore nuovo introdotto) e un\'evidenziazione più marcata al passaggio del mouse: più facile individuare a colpo d\'occhio la voce cercata in un menu lungo.',
+      'Diario di Cantiere: aggiunto il pulsante "+ Scrivi documento Word", già presente in Note di Coordinamento — scrive un verbale direttamente in app e lo salva come file .docx vero nell\'archivio Documenti.',
+    ],
+  },
+  {
+    v: '1.60', title: 'Titolo di pagina cliccabile, annulla/ripeti ultima modifica, fasce comandi fisse durante lo scroll', date: '2 novembre 2026',
     points: [
       'Il titolo in alto a ogni pagina è ora cliccabile: riporta alla pagina visitata precedentemente, come un pulsante "indietro".',
       'Due nuove freccette ↶/↷ accanto al titolo permettono di annullare l\'ultimo salvataggio fatto su un registro, e di ripeterlo se l\'annullamento non era quello voluto — un livello, valido su tutta l\'app.',

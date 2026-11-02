@@ -8,6 +8,7 @@ export const renderDiario = createCrudPage({
   titleSingular: 'Voce di diario',
   tipoRicerca: 'diario',
   emptyLabel: 'Nessuna voce di diario per questa commessa.',
+  wordEditor: { titoloPrefix: 'Diario di cantiere' },
   fields: [
     { name: 'data', label: 'Data', type: 'date', default: todayISO(), required: true, hint: 'Un\'unica voce per ogni giornata di cantiere.' },
     { name: 'squadre', label: 'Squadre o soggetti coinvolti', type: 'textarea', hint: 'Chi era presente in cantiere quel giorno.' },

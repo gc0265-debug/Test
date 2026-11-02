@@ -5,8 +5,9 @@
 
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
-import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, fasciaFissa } from '../components/ui.js';
+import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, fasciaFissa, formatDate, todayISO } from '../components/ui.js';
 import { printReport } from '../components/report.js';
+import { openWordEditor } from '../components/wordEditor.js';
 
 function buildFieldNode(f, value) {
   if (f.type === 'select') {
@@ -18,7 +19,7 @@ function buildFieldNode(f, value) {
   return textInput(f.name, value ?? '', { required: f.required || false, placeholder: f.placeholder || '' });
 }
 
-export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true, printColumns, tipoRicerca }) {
+export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyLabel, scopedByCommessa = true, printColumns, tipoRicerca, wordEditor }) {
   async function fetchRows() {
     const query = scopedByCommessa ? `?${queryScopeCommessa()}` : '';
     const res = await api.get(`${apiPath}${query}`);
@@ -69,6 +70,7 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
 
     let lastRows = [];
     let selectedId = null;
+    let cartelle = [];
     const toolbar = el('div', { class: 'section__head' }, [
       el('div'),
       el('div', { style: 'display:flex;gap:8px' }, [
@@ -83,6 +85,11 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
             }]);
           },
         }, 'Stampa') : null,
+        (wordEditor && !soloLettura) ? el('button', {
+          class: 'btn', onclick: () => openWordEditor({
+            cartelle, titoloDefault: `${wordEditor.titoloPrefix} — ${formatDate(todayISO())}`, onSaved: () => {},
+          }),
+        }, '+ Scrivi documento Word') : null,
         soloLettura ? null : el('button', {
           class: 'btn btn--primary',
           onclick: () => openForm(null, refresh),
@@ -98,6 +105,10 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
     async function refresh() {
       const rows = await fetchRows();
       lastRows = rows;
+      if (wordEditor && !soloLettura) {
+        const cartelleRes = await api.get(`/cartelle-documenti?${queryScopeCommessa()}`);
+        cartelle = cartelleRes.data;
+      }
       const cols = [
         ...(soloLettura ? [{ key: 'commessa_codice', label: 'Commessa', render: (row) => row.commessa_codice || '—' }] : []),
         ...columns,

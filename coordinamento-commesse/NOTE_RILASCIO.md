@@ -162,6 +162,19 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Sidebar più leggibile a colpo d'occhio, documento Word anche dal Diario di Cantiere (2 novembre 2026)
+
+- Il menu laterale ha ora uno **sfondo scuro** invece che chiaro, con
+  un'**icona colorata per ogni funzione** (stessi 5 colori già usati in
+  tutta l'app per stati e avvisi, nessun colore nuovo introdotto) e
+  un'**evidenziazione più marcata** al passaggio del mouse: più facile
+  individuare a colpo d'occhio la voce cercata in un menu lungo.
+- **Diario di Cantiere**: aggiunto il pulsante "+ Scrivi documento Word",
+  già presente in Note di Coordinamento — scrive un verbale direttamente
+  in app e lo salva come file .docx vero nell'archivio Documenti.
+
+---
+
 ## Titolo di pagina cliccabile, annulla/ripeti ultima modifica, fasce comandi fisse durante lo scroll (2 novembre 2026)
 
 - Il titolo in alto a ogni pagina è ora **cliccabile**: riporta alla
