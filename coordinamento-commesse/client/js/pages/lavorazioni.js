@@ -176,7 +176,15 @@ async function openForm(existing, onSaved) {
   // diverse da questa: la gerarchia resta a 2 soli livelli, come in Timeline.
   const parentOptions = [['', '— nessuna (lavorazione autonoma)'],
     ...lavorazioniRes.data.filter((l) => !l.parent_id && l.id !== existing?.id).map((l) => [l.id, l.titolo])];
-  const impresaOptions = [['', '—'], ...stakeholderRes.data.filter((s) => s.stato === 'attivo').map((s) => [s.nome, s.nome])];
+  // L'elenco mostra l'organizzazione (l'impresa vera e propria), non il
+  // nome della persona di riferimento: più stakeholder della stessa
+  // azienda (es. due referenti SAC Spa) contano come una sola opzione.
+  // Uno stakeholder senza organizzazione compilata resta identificato dal
+  // proprio nome, per non perderlo dall'elenco.
+  const organizzazioniAttive = [...new Set(
+    stakeholderRes.data.filter((s) => s.stato === 'attivo').map((s) => s.organizzazione || s.nome)
+  )].sort((a, b) => a.localeCompare(b, 'it'));
+  const impresaOptions = [['', '—'], ...organizzazioniAttive.map((o) => [o, o])];
   if (existing?.impresa && !impresaOptions.some(([v]) => v === existing.impresa)) {
     impresaOptions.push([existing.impresa, `${existing.impresa} (non più nel Registro Stakeholder)`]);
   }
@@ -210,7 +218,7 @@ async function openForm(existing, onSaved) {
   form.appendChild(field('Impresa (collegata a un contratto)', select('contratto_id', contrattoOptions, existing?.contratto_id ?? ''),
     'Se l\'impresa ha un contratto registrato in Contratti, collegalo qui invece di scriverlo a mano.'));
   form.appendChild(field('Impresa / squadra (da Registro Stakeholder)', select('impresa', impresaOptions, existing?.impresa ?? ''),
-    'Usato solo se non è collegato un contratto sopra.'));
+    'L\'organizzazione dello stakeholder, non la singola persona di riferimento. Usato solo se non è collegato un contratto sopra.'));
   form.appendChild(field('Lavorazione madre', select('parent_id', parentOptions, existing?.parent_id ?? ''),
     'Scegli una lavorazione madre per renderla una sotto-attività, mostrata rientrata sotto di essa nella Timeline Montaggi.'));
 

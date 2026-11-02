@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.48';
+const VERSIONE_ATTUALE = '1.49';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,13 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.48', title: 'Etichetta "Tutti i WP" al posto di "—" nei moduli di modifica', date: '2 novembre 2026', attuale: true,
+    v: '1.49', title: 'Lavorazioni: il campo Impresa mostra l\'organizzazione, non il referente', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Il campo "Impresa / squadra" del modulo Lavorazioni elencava finora il nome della persona di riferimento registrata nel Registro Stakeholder (es. "Tommaso Battista"), invece dell\'impresa a cui appartiene. Ora elenca l\'organizzazione (es. "SAC Spa"): più referenti della stessa azienda contano come un\'unica voce, e uno stakeholder senza organizzazione compilata resta comunque in elenco con il proprio nome.',
+    ],
+  },
+  {
+    v: '1.48', title: 'Etichetta "Tutti i WP" al posto di "—" nei moduli di modifica', date: '2 novembre 2026',
     points: [
       'Nel campo "Work package" dei moduli di modifica (Lavorazioni, Registro Criticità, Registro Decisioni, Registro Allert, Maestranze, Requisiti, Approvazioni Drawings, e il modulo "Segnala criticità" dal markup sui disegni), l\'opzione per non assegnare un Work Package specifico si chiama ora "Tutti i WP" invece di "—" — stesso comportamento, solo più chiara e coerente con i filtri a bottoni già presenti nelle stesse schede.',
     ],

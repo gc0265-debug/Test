@@ -162,6 +162,17 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Lavorazioni: il campo Impresa mostra l'organizzazione, non il referente (2 novembre 2026)
+
+- Il campo **"Impresa / squadra"** del modulo Lavorazioni elencava finora
+  il nome della persona di riferimento registrata nel Registro Stakeholder
+  (es. "Tommaso Battista"), invece dell'impresa a cui appartiene. Ora
+  elenca l'organizzazione (es. "SAC Spa"): più referenti della stessa
+  azienda contano come un'unica voce, e uno stakeholder senza
+  organizzazione compilata resta comunque in elenco con il proprio nome.
+
+---
+
 ## Etichetta "Tutti i WP" al posto di "—" nei moduli di modifica (2 novembre 2026)
 
 - Nel campo **"Work package"** dei moduli di modifica (Lavorazioni,
