@@ -4,13 +4,16 @@
 // cui il Contratto rileva le variazioni rispetto alla propria baseline.
 
 const express = require('express');
+const multer = require('multer');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { logAudit } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { verificaVersione } = require('../utils/concorrenza');
+const { parseCsv, normalizzaTestoCsv, mappaColonne } = require('../utils/csv');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 router.get('/', (req, res) => {
   const { wp_id, fase, stato, search } = req.query;
@@ -113,6 +116,81 @@ router.delete('/:id', (req, res) => {
   db.prepare('DELETE FROM requisiti WHERE id = ?').run(req.params.id);
   logAudit({ commessa_id: existing.commessa_id, entity_type: 'requisiti', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: `${existing.codice_wbs} — ${existing.titolo}` });
   res.status(204).end();
+});
+
+// Import in blocco da CSV: intestazioni Codice WBS, Titolo, WP, Fase,
+// Descrizione, Fonte capitolato, Stato, Note. Ogni riga crea anche la
+// propria v1 in requisiti_versioni, come una creazione manuale.
+const ALIAS_COLONNE_REQUISITI = {
+  codice_wbs: ['codice wbs', 'wbs', 'codice'],
+  titolo: ['titolo'],
+  wp: ['wp', 'work package', 'workpackage', 'codice wp'],
+  fase: ['fase'],
+  descrizione: ['descrizione'],
+  fonte_capitolato: ['fonte capitolato', 'capitolato', 'riferimento capitolato'],
+  stato: ['stato'],
+  note: ['note'],
+};
+const STATO_ALIAS_REQUISITI = {
+  bozza: 'bozza', '': 'bozza', approvato: 'approvato', 'in revisione': 'in-revisione', 'in-revisione': 'in-revisione', superato: 'superato',
+};
+
+router.post('/import', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'nessun file caricato' });
+  const commessaId = req.body.commessa_id;
+  if (!commessaId) return res.status(400).json({ error: 'commessa_id obbligatorio' });
+
+  let righe;
+  try { righe = parseCsv(req.file.buffer.toString('utf8')); }
+  catch (err) { return res.status(400).json({ error: 'file CSV non leggibile' }); }
+  if (!righe.length) return res.status(400).json({ error: 'il file è vuoto' });
+
+  const colIndex = mappaColonne(righe[0], ALIAS_COLONNE_REQUISITI);
+  if (colIndex.codice_wbs === undefined || colIndex.titolo === undefined) {
+    return res.status(400).json({ error: 'non trovo le colonne "Codice WBS" e/o "Titolo" nel file: le intestazioni attese sono Codice WBS, Titolo, WP, Fase, Descrizione, Fonte capitolato, Stato, Note' });
+  }
+  const cella = (riga, campo) => (colIndex[campo] !== undefined ? String(riga[colIndex[campo]] || '').trim() : '');
+
+  const wpRows = db.prepare('SELECT id, codice FROM work_packages WHERE commessa_id = ?').all(commessaId);
+  const wpByCodice = new Map(wpRows.map((w) => [w.codice.toLowerCase(), w.id]));
+
+  const insertRequisito = db.prepare(`
+    INSERT INTO requisiti (commessa_id, wp_id, codice_wbs, fase, titolo, descrizione, fonte_capitolato, stato, versione_corrente, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+  `);
+  const insertVersione = db.prepare(`
+    INSERT INTO requisiti_versioni (requisito_id, numero_versione, titolo, descrizione, motivo_modifica, data, autore)
+    VALUES (?, 1, ?, ?, 'Creazione (import CSV)', ?, ?)
+  `);
+
+  let imported = 0;
+  const skippedMotivi = [];
+  const avvisi = [];
+  db.transaction(() => {
+    for (let r = 1; r < righe.length; r++) {
+      const riga = righe[r];
+      const numeroRiga = r + 1;
+      const codiceWbs = cella(riga, 'codice_wbs');
+      const titolo = cella(riga, 'titolo');
+      if (!codiceWbs || !titolo) { skippedMotivi.push(`riga ${numeroRiga}: manca il codice WBS o il titolo`); continue; }
+
+      const wpTxt = cella(riga, 'wp');
+      const wpId = wpTxt ? (wpByCodice.get(wpTxt.toLowerCase()) || null) : null;
+      if (wpTxt && !wpId) avvisi.push(`riga ${numeroRiga} ("${codiceWbs}"): WP "${wpTxt}" non trovato in questa commessa — importata senza WP`);
+
+      const descrizione = cella(riga, 'descrizione') || null;
+      const result = insertRequisito.run(
+        commessaId, wpId, codiceWbs, cella(riga, 'fase') || 'progettazione', titolo, descrizione,
+        cella(riga, 'fonte_capitolato') || null,
+        STATO_ALIAS_REQUISITI[normalizzaTestoCsv(cella(riga, 'stato'))] || 'bozza', cella(riga, 'note') || null
+      );
+      insertVersione.run(result.lastInsertRowid, titolo, descrizione, todayStr(), req.user?.nome || null);
+      logAudit({ commessa_id: commessaId, entity_type: 'requisiti', entity_id: result.lastInsertRowid, azione: 'creata', utente: req.user?.nome, dettaglio: `${codiceWbs} — ${titolo} (import)` });
+      imported++;
+    }
+  })();
+
+  res.status(201).json({ imported, skipped: skippedMotivi.length, dettaglioScarti: skippedMotivi.slice(0, 30), avvisi: avvisi.slice(0, 30) });
 });
 
 module.exports = router;

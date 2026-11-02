@@ -11,6 +11,7 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { creaImportCsv } from '../components/importCsv.js';
 import { getCategoria, toMap, toOptions, mergeLabels } from '../components/categorie.js';
 
 const CLASSIFICAZIONE_FIXED = { informativo: ['Informativo', 'outline'], attenzione: ['Attenzione', 'ambra'], critico: ['Critico', 'rosso'] };
@@ -99,6 +100,13 @@ export async function renderAllert(container) {
   let selectedId = null;
   let filtroWp = '';
   const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+  const importCsv = creaImportCsv({
+    endpoint: '/allert/import',
+    colonne: ['Descrizione', 'WP', 'Data', 'Perimetro', 'Classificazione', 'Azione di tutela', 'Riferimento documento', 'Stato', 'Note'],
+    esempioRiga: ['Interferenza impianti non previsti a capitolato', 'WP2', '2026-03-10', 'interno', 'attenzione', 'Verifica con DL prima del montaggio', '', 'aperto', ''],
+    nomeFile: 'modello-allert.csv',
+    onImported: refresh,
+  });
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', {}, [wpPillHost]),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -111,11 +119,14 @@ export async function renderAllert(container) {
         }]);
       } }, 'Stampa'),
       soloLettura ? null : el('a', { class: 'btn btn--sm', href: `/api/export/allert/${state.commessaId}` }, 'Esporta Excel'),
+      soloLettura ? null : importCsv.bottoneModello,
+      soloLettura ? null : importCsv.bottoneImporta,
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo allert'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(importCsv.fileInput);
 
   const tableHost = el('div');
   container.appendChild(tableHost);

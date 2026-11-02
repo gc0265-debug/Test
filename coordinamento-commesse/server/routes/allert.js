@@ -4,13 +4,16 @@
 // agganciabile ad essi tramite rif_criticita_id / rif_decisione_id.
 
 const express = require('express');
+const multer = require('multer');
 const db = require('../db/database');
 const { todayStr } = require('../utils/dates');
 const { logAudit, diffFields } = require('../utils/audit');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { verificaVersione } = require('../utils/concorrenza');
+const { parseCsv, normalizzaTestoCsv, mappaColonne, parseDataCsv } = require('../utils/csv');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const TRACKED = [
   { key: 'classificazione', label: 'Classificazione' },
@@ -99,6 +102,82 @@ router.delete('/:id', (req, res) => {
   db.prepare('DELETE FROM allert WHERE id = ?').run(req.params.id);
   logAudit({ commessa_id: existing.commessa_id, entity_type: 'allert', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: existing.descrizione });
   res.status(204).end();
+});
+
+// Import in blocco da CSV: intestazioni Descrizione, WP, Data,
+// Perimetro, Classificazione, Azione di tutela, Riferimento documento,
+// Stato, Note. Non gestisce i collegamenti a Criticità/Decisione/
+// Requisito (rif_*_id): quelli, essendo relazioni verso altre righe già
+// esistenti, restano da impostare a mano dopo l'import.
+const ALIAS_COLONNE_ALLERT = {
+  descrizione: ['descrizione', 'allert', 'tema', 'testo'],
+  wp: ['wp', 'work package', 'workpackage', 'codice wp'],
+  data: ['data'],
+  perimetro: ['perimetro'],
+  classificazione: ['classificazione'],
+  azione_tutela: ['azione di tutela', 'azione tutela', 'azione'],
+  rif_documento: ['riferimento documento', 'rif documento', 'documento'],
+  stato: ['stato'],
+  note: ['note'],
+};
+const CLASSIFICAZIONE_ALIAS = {
+  informativo: 'informativo', '': 'attenzione', attenzione: 'attenzione', critico: 'critico', critica: 'critico',
+};
+const STATO_ALIAS_ALLERT = {
+  aperto: 'aperto', '': 'aperto', monitorato: 'monitorato', chiuso: 'chiuso', chiusa: 'chiuso',
+};
+
+router.post('/import', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'nessun file caricato' });
+  const commessaId = req.body.commessa_id;
+  if (!commessaId) return res.status(400).json({ error: 'commessa_id obbligatorio' });
+
+  let righe;
+  try { righe = parseCsv(req.file.buffer.toString('utf8')); }
+  catch (err) { return res.status(400).json({ error: 'file CSV non leggibile' }); }
+  if (!righe.length) return res.status(400).json({ error: 'il file è vuoto' });
+
+  const colIndex = mappaColonne(righe[0], ALIAS_COLONNE_ALLERT);
+  if (colIndex.descrizione === undefined) {
+    return res.status(400).json({ error: 'non trovo una colonna "Descrizione" nel file: le intestazioni attese sono Descrizione, WP, Data, Perimetro, Classificazione, Azione di tutela, Riferimento documento, Stato, Note' });
+  }
+  const cella = (riga, campo) => (colIndex[campo] !== undefined ? String(riga[colIndex[campo]] || '').trim() : '');
+
+  const wpRows = db.prepare('SELECT id, codice FROM work_packages WHERE commessa_id = ?').all(commessaId);
+  const wpByCodice = new Map(wpRows.map((w) => [w.codice.toLowerCase(), w.id]));
+
+  const insert = db.prepare(`
+    INSERT INTO allert (commessa_id, wp_id, data, perimetro, classificazione, descrizione, azione_tutela, rif_documento, stato, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  let imported = 0;
+  const skippedMotivi = [];
+  const avvisi = [];
+  db.transaction(() => {
+    for (let r = 1; r < righe.length; r++) {
+      const riga = righe[r];
+      const numeroRiga = r + 1;
+      const descrizione = cella(riga, 'descrizione');
+      if (!descrizione) { skippedMotivi.push(`riga ${numeroRiga}: manca la descrizione`); continue; }
+
+      const wpTxt = cella(riga, 'wp');
+      const wpId = wpTxt ? (wpByCodice.get(wpTxt.toLowerCase()) || null) : null;
+      if (wpTxt && !wpId) avvisi.push(`riga ${numeroRiga}: WP "${wpTxt}" non trovato in questa commessa — importata senza WP`);
+
+      const data = parseDataCsv(cella(riga, 'data')) || todayStr();
+      const result = insert.run(
+        commessaId, wpId, data, cella(riga, 'perimetro') || 'interno',
+        CLASSIFICAZIONE_ALIAS[normalizzaTestoCsv(cella(riga, 'classificazione'))] || 'attenzione',
+        descrizione, cella(riga, 'azione_tutela') || null, cella(riga, 'rif_documento') || null,
+        STATO_ALIAS_ALLERT[normalizzaTestoCsv(cella(riga, 'stato'))] || 'aperto', cella(riga, 'note') || null
+      );
+      logAudit({ commessa_id: commessaId, entity_type: 'allert', entity_id: result.lastInsertRowid, azione: 'creata', utente: req.user?.nome, dettaglio: `${descrizione} (import)` });
+      imported++;
+    }
+  })();
+
+  res.status(201).json({ imported, skipped: skippedMotivi.length, dettaglioScarti: skippedMotivi.slice(0, 30), avvisi: avvisi.slice(0, 30) });
 });
 
 module.exports = router;

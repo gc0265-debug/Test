@@ -162,6 +162,22 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Import CSV esteso a tutti i registri principali, storico e date su Documenti (2 novembre 2026)
+
+- L'import in blocco da CSV, introdotto in v1.54 per il cronoprogramma di
+  Lavorazioni, è ora disponibile anche per **Registro Allert, Registro
+  Stakeholder, Requisiti e Maestranze**: stesso meccanismo "Modello CSV" +
+  "Importa da CSV" in ciascuna scheda, con le intestazioni specifiche di
+  quel registro. Il Registro Criticità, il Registro Decisioni e
+  Approvazioni Drawings avevano già un proprio import da Excel e restano
+  invariati.
+- Documenti mostra ora, aprendo un documento esistente, la **Data di
+  creazione** e la **Data di ultima modifica** (sola lettura), più un
+  pulsante **"Storico"** — come già presente in altri registri — che
+  elenca ogni creazione/modifica con data e responsabile.
+
+---
+
 ## Lavorazioni: import cronoprogramma da CSV, baseline con date indipendenti (2 novembre 2026)
 
 - Nella scheda Lavorazioni è ora possibile **importare in blocco un

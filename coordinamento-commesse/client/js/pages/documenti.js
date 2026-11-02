@@ -3,11 +3,12 @@
 
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
-import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
+import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, formatDateTime } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 import { apriMarkup, documentoSupportaMarkup } from './documentiMarkup.js';
 import { openWordEditor } from '../components/wordEditor.js';
+import { openStorico } from '../components/storico.js';
 
 function formatSize(bytes) {
   if (!bytes) return '';
@@ -95,6 +96,12 @@ async function openForm(existing, cartelle, cartellaIdDefault, onSaved) {
 
   const form = el('form', {});
   if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
+  if (existing) {
+    form.appendChild(el('div', { class: 'field--row', style: 'margin-bottom:14px' }, [
+      field('Data creazione', el('div', { class: 'field__readonly' }, formatDateTime(existing.created_at))),
+      field('Ultima modifica', el('div', { class: 'field__readonly' }, formatDateTime(existing.updated_at))),
+    ]));
+  }
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? '', { required: true }),
     'Il nome con cui il documento compare nell\'elenco.'));
   form.appendChild(field('Tipo', select('tipo', tipoOptions, existing?.tipo ?? 'altro'),
@@ -249,6 +256,7 @@ export async function renderDocumenti(container) {
         render: (row) => el('div', {}, [
           documentoSupportaMarkup(row) ? el('button', { class: 'btn btn--sm btn--ghost', onclick: () => apriMarkup(row) }, 'Markup') : null,
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => apriModifica(row) }, row.contenuto_editor ? 'Modifica testo' : 'Modifica'),
+          el('button', { class: 'btn btn--sm btn--ghost', onclick: () => openStorico('documenti', row.id, row.titolo) }, 'Storico'),
           el('button', {
             class: 'btn btn--sm btn--ghost btn--danger',
             onclick: async () => {

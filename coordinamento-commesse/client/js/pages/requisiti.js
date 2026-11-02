@@ -12,6 +12,7 @@ import {
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { creaImportCsv } from '../components/importCsv.js';
 import { getCategoria, toMap, toOptions, mergeLabels } from '../components/categorie.js';
 
 const STATO_FIXED = { bozza: ['Bozza', 'outline'], approvato: ['Approvato', 'verde'], 'in-revisione': ['In revisione', 'ambra'], superato: ['Superato', 'rosso'] };
@@ -122,6 +123,13 @@ export async function renderRequisiti(container) {
   let lastRows = [];
   let faseMap = {};
   let selectedId = null;
+  const importCsv = creaImportCsv({
+    endpoint: '/requisiti/import',
+    colonne: ['Codice WBS', 'Titolo', 'WP', 'Fase', 'Descrizione', 'Fonte capitolato', 'Stato', 'Note'],
+    esempioRiga: ['2514RW.WP1.03', 'Boiserie corridoio lato camere', 'WP1', 'progettazione', 'Pannelli in essenza di rovere secondo shop drawing', 'Capitolato §4.2', 'bozza', ''],
+    nomeFile: 'modello-requisiti.csv',
+    onImported: refresh,
+  });
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center' }),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -133,11 +141,14 @@ export async function renderRequisiti(container) {
           rows: rows.map((r) => [r.codice_wbs, r.titolo, faseMap[r.fase] || r.fase, `v${r.versione_corrente}`, STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
+      soloLettura ? null : importCsv.bottoneModello,
+      soloLettura ? null : importCsv.bottoneImporta,
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo requisito'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(importCsv.fileInput);
 
   function drawFilters() {
     const host = toolbar.firstChild;

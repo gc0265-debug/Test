@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.54';
+const VERSIONE_ATTUALE = '1.55';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.54', title: 'Lavorazioni: import cronoprogramma da CSV, baseline con date indipendenti', date: '2 novembre 2026', attuale: true,
+    v: '1.55', title: 'Import CSV esteso a tutti i registri principali, storico e date su Documenti', date: '2 novembre 2026', attuale: true,
+    points: [
+      'L\'import in blocco da CSV, introdotto in v1.54 per il cronoprogramma di Lavorazioni, è ora disponibile anche per Registro Allert, Registro Stakeholder, Requisiti e Maestranze: stesso meccanismo "Modello CSV" + "Importa da CSV" in ciascuna scheda, con le intestazioni specifiche di quel registro. Il Registro Criticità, il Registro Decisioni e Approvazioni Drawings avevano già un proprio import da Excel e restano invariati.',
+      'Documenti mostra ora, aprendo un documento esistente, la Data di creazione e la Data di ultima modifica (sola lettura), più un pulsante "Storico" — come già presente in altri registri — che elenca ogni creazione/modifica con data e responsabile.',
+    ],
+  },
+  {
+    v: '1.54', title: 'Lavorazioni: import cronoprogramma da CSV, baseline con date indipendenti', date: '2 novembre 2026',
     points: [
       'Nella scheda Lavorazioni è ora possibile importare in blocco un cronoprogramma da un file CSV, invece di inserire ogni riga a mano: pulsante "Modello CSV" per scaricare un esempio con le intestazioni attese (Titolo, WP, Piano, Zona, Data inizio, Data fine, Stato, Priorità, Impresa, Descrizione), pulsante "Importa cronoprogramma (CSV)" per caricare il file compilato. Le righe importate sono lavorazioni a tutti gli effetti e compaiono subito anche nella Timeline. Le righe non valide (titolo o date mancanti) vengono scartate con il motivo indicato, senza bloccare l\'import delle altre.',
       'Il campo "Baseline (data di riferimento)" aggiunto in v1.53 è stato diviso in due campi indipendenti, "Baseline inizio" e "Baseline fine": a differenza della scadenza vera e propria di una milestone (sempre puntuale), il piano di riferimento può avere un proprio intervallo, utile per confrontarlo correttamente con l\'intervallo osservato nella colonna Base. inizio/Base. fine della Timeline.',

@@ -10,6 +10,7 @@ import {
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, mergeLabels } from '../components/categorie.js';
+import { creaImportCsv } from '../components/importCsv.js';
 
 const STATO_FIXED = { attivo: ['Attivo', 'verde'], 'non-attivo': ['Non attivo', 'outline'] };
 let STATO = STATO_FIXED;
@@ -100,6 +101,13 @@ export async function renderMaestranze(container) {
   let selectedId = null;
   let filtroWp = '';
   const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+  const importCsv = creaImportCsv({
+    endpoint: '/maestranze/import',
+    colonne: ['Nome', 'Ruolo', 'Azienda', 'Telefono', 'WP', 'Stato', 'Qualifiche'],
+    esempioRiga: ['Luca Bianchi', 'Capo squadra montaggio', 'Bianchi Montaggi Srl', '333 7654321', 'WP2', 'attivo', 'Patentino DPI III cat.'],
+    nomeFile: 'modello-maestranze.csv',
+    onImported: refresh,
+  });
   const toolbar = el('div', { class: 'section__head' }, [
     el('div', {}, [wpPillHost]),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -111,11 +119,14 @@ export async function renderMaestranze(container) {
           rows: rows.map((r) => [r.nome, r.ruolo || '—', r.fornitori_nomi || r.azienda || '—', r.wp_codice || '—', r.telefono || '—', STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
+      soloLettura ? null : importCsv.bottoneModello,
+      soloLettura ? null : importCsv.bottoneImporta,
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(importCsv.fileInput);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

@@ -12,8 +12,16 @@ const db = require('../db/database');
 const { applicaFiltroCommessa } = require('../utils/scopeCommessa');
 const { deltaToDocxBuffer } = require('../utils/deltaToDocx');
 const { verificaVersione } = require('../utils/concorrenza');
+const { logAudit, diffFields } = require('../utils/audit');
 
 const router = express.Router();
+
+const TRACKED = [
+  { key: 'titolo', label: 'Titolo' },
+  { key: 'tipo', label: 'Tipo' },
+  { key: 'url', label: 'Link' },
+  { key: 'note', label: 'Note' },
+];
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -59,7 +67,9 @@ router.post('/', upload.single('file'), (req, res) => {
     commessa_id, cartella_id || null, titolo, tipo || 'altro', url || null, note || null,
     file ? file.originalname : null, file ? file.filename : null, file ? file.mimetype : null, file ? file.size : null
   );
-  res.status(201).json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(result.lastInsertRowid));
+  const row = db.prepare('SELECT * FROM documenti WHERE id = ?').get(result.lastInsertRowid);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'documenti', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: titolo });
+  res.status(201).json(row);
 });
 
 router.put('/:id', upload.single('file'), (req, res) => {
@@ -91,7 +101,10 @@ router.put('/:id', upload.single('file'), (req, res) => {
     WHERE id=?
   `).run(next.titolo, next.tipo, next.url, next.note, next.cartella_id, next.file_nome, next.file_path, next.file_mime, next.file_size, req.params.id);
 
-  res.json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id));
+  const row = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
+  const dettaglio = diffFields(existing, next, TRACKED);
+  logAudit({ commessa_id: row.commessa_id, entity_type: 'documenti', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornato' });
+  res.json(row);
 });
 
 // Documenti Word scritti direttamente nell'editor in app (contenuto in
@@ -121,7 +134,9 @@ router.post('/autore', async (req, res) => {
       `${titolo}.docx`, fileName, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.length,
       JSON.stringify(delta)
     );
-    res.status(201).json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(result.lastInsertRowid));
+    const row = db.prepare('SELECT * FROM documenti WHERE id = ?').get(result.lastInsertRowid);
+    logAudit({ commessa_id: row.commessa_id, entity_type: 'documenti', entity_id: row.id, azione: 'creata', utente: req.user?.nome, dettaglio: titolo });
+    res.status(201).json(row);
   } catch (err) {
     res.status(500).json({ error: `generazione del documento Word fallita: ${err.message}` });
   }
@@ -150,7 +165,10 @@ router.put('/:id/autore', async (req, res) => {
       `${titoloFinale}.docx`, fileName, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.length,
       JSON.stringify(delta), req.params.id
     );
-    res.json(db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id));
+    const row = db.prepare('SELECT * FROM documenti WHERE id = ?').get(req.params.id);
+    const dettaglio = diffFields(existing, { titolo: titoloFinale, tipo: row.tipo, url: existing.url, note: row.note }, TRACKED);
+    logAudit({ commessa_id: row.commessa_id, entity_type: 'documenti', entity_id: row.id, azione: 'modificata', utente: req.user?.nome, dettaglio: dettaglio || 'aggiornato' });
+    res.json(row);
   } catch (err) {
     res.status(500).json({ error: `aggiornamento del documento Word fallito: ${err.message}` });
   }
@@ -169,6 +187,7 @@ router.delete('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'documento non trovato' });
   if (existing.file_path) fs.unlink(path.join(uploadDir, existing.file_path), () => {});
   db.prepare('DELETE FROM documenti WHERE id = ?').run(req.params.id);
+  logAudit({ commessa_id: existing.commessa_id, entity_type: 'documenti', entity_id: existing.id, azione: 'eliminata', utente: req.user?.nome, dettaglio: existing.titolo });
   res.status(204).end();
 });
 

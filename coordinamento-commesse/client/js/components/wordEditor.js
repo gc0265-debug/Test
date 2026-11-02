@@ -8,7 +8,7 @@
 // passare dall'archivio.
 import { api } from '../api.js';
 import { state } from '../state.js';
-import { el, field, textInput, textarea, select, openModal, closeModal, toast } from './ui.js';
+import { el, field, textInput, textarea, select, openModal, closeModal, toast, formatDateTime } from './ui.js';
 import { getCategoria, toOptions } from './categorie.js';
 
 function figliPerGenitore(cartelle) {
@@ -41,6 +41,12 @@ export function openWordEditor({ existing, cartelle = [], cartellaIdDefault = nu
 
   const form = el('form', {});
   if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
+  if (existing) {
+    form.appendChild(el('div', { class: 'field--row', style: 'margin-bottom:14px' }, [
+      field('Data creazione', el('div', { class: 'field__readonly' }, formatDateTime(existing.created_at))),
+      field('Ultima modifica', el('div', { class: 'field__readonly' }, formatDateTime(existing.updated_at))),
+    ]));
+  }
   form.appendChild(field('Titolo', textInput('titolo', existing?.titolo ?? titoloDefault, { required: true }),
     'Diventa anche il nome del file .docx generato.'));
   const tipoSelect = select('tipo', [['altro', 'Altro']], existing?.tipo ?? 'altro');

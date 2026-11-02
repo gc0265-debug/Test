@@ -7,6 +7,7 @@ import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../s
 import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, settingsGear } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
+import { creaImportCsv } from '../components/importCsv.js';
 import { getCategoria, toMap, toOptions, mergeLabels } from '../components/categorie.js';
 
 const INTERESSE = ['basso', 'medio', 'alto'];
@@ -105,6 +106,13 @@ export async function renderStakeholder(container) {
   let lastRows = [];
   let categoriaMap = {};
   let selectedId = null;
+  const importCsv = creaImportCsv({
+    endpoint: '/stakeholder/import',
+    colonne: ['Nome', 'Organizzazione', 'Ruolo', 'Categoria', 'Interesse', 'Influenza', 'Email', 'Telefono', 'Stato', 'Note'],
+    esempioRiga: ['Mario Rossi', 'Rossi Allestimenti Srl', 'Referente commerciale', 'interno', 'alto', 'media', 'mario.rossi@esempio.it', '333 1234567', 'attivo', ''],
+    nomeFile: 'modello-stakeholder.csv',
+    onImported: refresh,
+  });
   const toolbar = el('div', { class: 'section__head' }, [
     el('div'),
     el('div', { style: 'display:flex;gap:8px' }, [
@@ -116,11 +124,14 @@ export async function renderStakeholder(container) {
           rows: rows.map((r) => [r.nome, [r.ruolo, r.organizzazione].filter(Boolean).join(' · ') || '—', categoriaMap[r.categoria] || r.categoria, r.interesse, r.influenza, STATO[r.stato][0]]),
         }]);
       } }, 'Stampa'),
+      soloLettura ? null : importCsv.bottoneModello,
+      soloLettura ? null : importCsv.bottoneImporta,
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuovo stakeholder'),
       settingsGear(),
     ]),
   ]);
   container.appendChild(toolbar);
+  container.appendChild(importCsv.fileInput);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

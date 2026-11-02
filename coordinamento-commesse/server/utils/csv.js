@@ -40,4 +40,36 @@ function parseCsv(testo) {
   return righe.filter((r) => r.some((c) => c.trim() !== ''));
 }
 
-module.exports = { parseCsv };
+// Helper condivisi dai vari import CSV (Lavorazioni, Allert, Stakeholder,
+// Requisiti, Maestranze...): normalizzazione testo/intestazioni, mappatura
+// colonna→indice tramite alias, e data in formato italiano o ISO.
+function normalizzaTestoCsv(v) {
+  return String(v || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // toglie gli accenti
+    .replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+// aliasColonne: { campo: [alias, alias, ...] }, già normalizzati o testo
+// semplice — vengono normalizzati anche loro per il confronto.
+function mappaColonne(rigaIntestazione, aliasColonne) {
+  const intestazione = rigaIntestazione.map(normalizzaTestoCsv);
+  const colIndex = {};
+  for (const [campo, alias] of Object.entries(aliasColonne)) {
+    const aliasNorm = alias.map(normalizzaTestoCsv);
+    const idx = intestazione.findIndex((h) => aliasNorm.includes(h));
+    if (idx !== -1) colIndex[campo] = idx;
+  }
+  return colIndex;
+}
+
+function parseDataCsv(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  const eu = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if (eu) return `${eu[3]}-${eu[2].padStart(2, '0')}-${eu[1].padStart(2, '0')}`;
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+  return null;
+}
+
+module.exports = { parseCsv, normalizzaTestoCsv, mappaColonne, parseDataCsv };
