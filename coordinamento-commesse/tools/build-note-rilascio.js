@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.57';
+const VERSIONE_ATTUALE = '1.58';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,13 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.57', title: 'Aggiornamento in tempo reale fra dispositivi diversi, legenda del Gantt sempre visibile', date: '2 novembre 2026', attuale: true,
+    v: '1.58', title: 'Guida e Supporto spostata in alto, accanto al campo di ricerca', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Il pulsante "Guida e Supporto" non è più in fondo al menu laterale: ora è sempre visibile in alto, accanto al campo "Cerca in tutti i registri", su ogni pagina dell\'app.',
+    ],
+  },
+  {
+    v: '1.57', title: 'Aggiornamento in tempo reale fra dispositivi diversi, legenda del Gantt sempre visibile', date: '2 novembre 2026',
     points: [
       'Ogni modifica salvata da un utente viene ora notificata in tempo reale a chiunque abbia l\'app aperta: non serve più premere F5 per vedere una modifica fatta da un collega da un altro PC o tablet — la pagina aperta si aggiorna da sola (un modulo di modifica eventualmente aperto non viene toccato, resta possibile continuare a scrivere).',
       'Nella Timeline, la legenda dei colori in fondo alla pagina resta ora sempre visibile in basso durante lo scorrimento, invece di sparire sotto al bordo della finestra.',

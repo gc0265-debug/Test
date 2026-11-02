@@ -162,6 +162,14 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Guida e Supporto spostata in alto, accanto al campo di ricerca (2 novembre 2026)
+
+- Il pulsante "Guida e Supporto" non è più in fondo al menu laterale:
+  ora è **sempre visibile in alto**, accanto al campo "Cerca in tutti
+  i registri", su ogni pagina dell'app.
+
+---
+
 ## Aggiornamento in tempo reale fra dispositivi diversi, legenda del Gantt sempre visibile (2 novembre 2026)
 
 - Ogni modifica salvata da un utente viene ora **notificata in tempo
