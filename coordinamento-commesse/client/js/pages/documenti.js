@@ -3,7 +3,7 @@
 
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
-import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, formatDateTime } from '../components/ui.js';
+import { el, field, textInput, textarea, select, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, formatDateTime, fasciaFissa } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 import { apriMarkup, documentoSupportaMarkup } from './documentiMarkup.js';
@@ -160,8 +160,9 @@ export async function renderDocumenti(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
+  const sticky = fasciaFissa(container, []);
   if (soloLettura) {
-    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+    sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
       'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo documento, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
@@ -187,10 +188,10 @@ export async function renderDocumenti(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
   const breadcrumbHost = el('div', { class: 'docs-breadcrumb' });
   const cartelleHost = el('div', { class: 'docs-cartelle' });
-  if (!soloLettura) { container.appendChild(breadcrumbHost); container.appendChild(cartelleHost); }
+  if (!soloLettura) { sticky.appendChild(breadcrumbHost); sticky.appendChild(cartelleHost); }
   const tableHost = el('div');
   container.appendChild(tableHost);
 

@@ -19,6 +19,23 @@ export function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+// Fascia fissa in cima a una pagina (sticky sotto la topbar, come già
+// l'intestazione delle tabelle): per i box/grafici/filtri che stanno
+// sopra una tabella lunga, così restano visibili scorrendo la pagina
+// invece di sparire. Misura la propria altezza e la espone come
+// variabile CSS sul container, cosicché l'intestazione della tabella
+// sottostante (vedi "thead th" in styles.css) possa impilarsi sotto di
+// essa invece di restare nascosta dietro — vedi router.js, che azzera
+// la variabile a ogni cambio pagina per le pagine che non la usano.
+export function fasciaFissa(container, children) {
+  const wrap = el('div', { class: 'sticky-head' }, children);
+  container.appendChild(wrap);
+  const misura = () => container.style.setProperty('--sticky-head-h', `${wrap.offsetHeight}px`);
+  requestAnimationFrame(misura);
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(misura).observe(wrap);
+  return wrap;
+}
+
 export function formatDate(iso) {
   if (!iso) return '—';
   const [y, m, d] = iso.split('-');
@@ -140,7 +157,10 @@ export function renderTable(container, columns, rows, { rowClass, emptyLabel = '
     tbody.appendChild(el('tr', { class: 'empty-row' }, el('td', { colspan: columns.length + (selection ? 1 : 0) }, emptyLabel)));
   } else {
     rows.forEach((row) => {
-      const tr = el('tr', { class: rowClass ? rowClass(row) || '' : '' });
+      // data-focus-id permette al router di ritrovare e aprire questa riga
+      // quando si arriva da un link con ?focus=ID (es. dall'Attività recente
+      // del Cruscotto), senza bisogno che ogni pagina lo gestisca a parte.
+      const tr = el('tr', { class: rowClass ? rowClass(row) || '' : '', ...(row.id != null ? { 'data-focus-id': String(row.id) } : {}) });
       if (selection) {
         const checked = String(row.id) === String(selection.selectedId);
         tr.appendChild(el('td', { class: 'select' }, el('input', {

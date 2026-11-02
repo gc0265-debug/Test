@@ -7,7 +7,7 @@ import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -89,8 +89,9 @@ export async function renderAllert(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
+  const sticky = fasciaFissa(container, []);
 
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
       ? 'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo allert, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Classificazione di perimetro e azioni di tutela — funzione di presidio GC, distinta dal coordinamento operativo dei registri precedenti.'));
@@ -125,8 +126,8 @@ export async function renderAllert(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
-  container.appendChild(importCsv.fileInput);
+  sticky.appendChild(toolbar);
+  sticky.appendChild(importCsv.fileInput);
 
   const tableHost = el('div');
   container.appendChild(tableHost);

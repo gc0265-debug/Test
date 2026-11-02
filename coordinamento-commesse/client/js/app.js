@@ -3,10 +3,11 @@ import { route, startRouter, navigate } from './router.js';
 import { getCurrentUser, logout } from './auth.js';
 import { openSicurezzaAccount } from './pages/account.js';
 import { renderLogin } from './pages/login.js';
-import { el } from './components/ui.js';
+import { el, toast } from './components/ui.js';
 import { initRicercaGlobale } from './components/ricercaGlobale.js';
 import { initGuidaSupporto } from './components/guidaSupporto.js';
 import { avviaLiveSync } from './components/liveSync.js';
+import { annullaUltima, haUndo, haRedo, onCambiamentoUndo } from './components/undo.js';
 import { renderCruscotto } from './pages/cruscotto.js';
 import { renderCriticita } from './pages/criticita.js';
 import { renderDecisioni } from './pages/decisioni.js';
@@ -231,6 +232,39 @@ function applyClientNavRestrictions(user) {
   });
 }
 
+// Freccette annulla/ripeti in cima: un solo livello, valido su tutta
+// l'app (vedi components/undo.js per il meccanismo). I pulsanti vengono
+// solo abilitati/disabilitati qui; chi registra le modifiche è api.js.
+function setupUndoRedo() {
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  if (!undoBtn || !redoBtn) return;
+
+  function aggiorna() {
+    undoBtn.disabled = !haUndo();
+    redoBtn.disabled = !haRedo();
+  }
+
+  async function esegui(label) {
+    undoBtn.disabled = true;
+    redoBtn.disabled = true;
+    try {
+      await annullaUltima();
+      toast(`${label} ultima modifica.`);
+    } catch (err) {
+      toast(err.message, { error: true });
+    } finally {
+      aggiorna();
+      navigate();
+    }
+  }
+
+  undoBtn.onclick = () => esegui('Annullata');
+  redoBtn.onclick = () => esegui('Ripetuta');
+  onCambiamentoUndo(aggiorna);
+  aggiorna();
+}
+
 async function main() {
   const user = await getCurrentUser();
   if (!user) { renderLogin(); return; }
@@ -247,6 +281,7 @@ async function main() {
   initRicercaGlobale();
   initGuidaSupporto();
   avviaLiveSync();
+  setupUndoRedo();
   startRouter();
 }
 

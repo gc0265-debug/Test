@@ -4,7 +4,7 @@
 
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
-import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
+import { el, field, textInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, fasciaFissa } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, toMap, toOptions } from '../components/categorie.js';
 
@@ -95,7 +95,8 @@ export async function renderComunicazione(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
       ? 'Vista aggregata di gruppo: clicca una riga per modificarla. La matrice RACI e la creazione di nuovi processi richiedono una singola commessa.'
       : 'Un processo di gestione per riga, con la matrice RACI (Responsible/Accountable/Consulted/Informed) verso gli stakeholder registrati.'));
@@ -118,7 +119,7 @@ export async function renderComunicazione(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

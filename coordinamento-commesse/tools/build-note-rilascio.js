@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.59';
+const VERSIONE_ATTUALE = '1.60';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,19 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.59', title: 'Guida e Supporto: ogni argomento apre ora una pagina di dettaglio con tutte le funzioni', date: '2 novembre 2026', attuale: true,
+    v: '1.60', title: 'Titolo di pagina cliccabile, annulla/ripeti ultima modifica, fasce comandi fisse durante lo scroll', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Il titolo in alto a ogni pagina è ora cliccabile: riporta alla pagina visitata precedentemente, come un pulsante "indietro".',
+      'Due nuove freccette ↶/↷ accanto al titolo permettono di annullare l\'ultimo salvataggio fatto su un registro, e di ripeterlo se l\'annullamento non era quello voluto — un livello, valido su tutta l\'app.',
+      'Le righe di "Attività recente" nel Cruscotto sono ora cliccabili: aprono direttamente, nella sua pagina, la voce appena creata o modificata.',
+      'Timeline: la fascia "Cantieri e sotto cantieri attivi" e la barra comandi (Settimane/Mesi/.../Stampa) restano fisse in alto durante lo scroll della pagina; si può ora fare zoom anche con Ctrl/Cmd+rotella direttamente sul Gantt, oltre al cursore già presente.',
+      'La stessa fascia comandi fissa durante lo scroll è stata estesa a tutte le altre pagine di registro con grafici/filtri sopra una tabella lunga (Criticità, Decisioni, Lavorazioni, Requisiti, Stakeholder, Allert, Lezioni Apprese, Piano Comunicazioni, Approvazioni Drawings, Documenti, Contratti, Capitolato Requisiti, Report, Maestranze, Note di Coordinamento, Diario di Cantiere).',
+      'Cruscotto: quando le scadenze della settimana sono molte, la fascia in cima mostra solo le più urgenti con un riquadro "+N altre" che apre l\'elenco completo in una finestra, invece di affollare la riga.',
+      'Nuovo export in Excel per Lavorazioni e per la Timeline — quest\'ultimo con un foglio "Gantt" a celle colorate per settimana generato nativamente nel file (non uno screenshot incollato), oltre al consueto foglio dati.',
+    ],
+  },
+  {
+    v: '1.59', title: 'Guida e Supporto: ogni argomento apre ora una pagina di dettaglio con tutte le funzioni', date: '2 novembre 2026',
     points: [
       'Cliccando un titolo nell\'indice della Guida e Supporto non si scorre più a un breve paragrafo dentro un\'unica pagina lunghissima: si apre una pagina di dettaglio dedicata a quella scheda, con l\'elenco completo di tutte le funzioni attive e una spiegazione di come si usano, una per una.',
       'La ricerca ora filtra l\'indice a sinistra invece del testo di una pagina unica: digitando, restano visibili solo gli argomenti pertinenti, raggruppati come prima.',

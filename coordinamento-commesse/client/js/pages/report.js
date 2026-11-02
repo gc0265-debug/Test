@@ -8,7 +8,7 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import {
   el, field, textInput, dateInput, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, formatDate, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, formatDate, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 
 let SEZIONI_DISPONIBILI = [];
@@ -112,7 +112,8 @@ export async function renderReport(container) {
         : 'Seleziona prima una commessa dal menu a sinistra.'));
     return;
   }
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     'Report salvati che aggregano una o più sezioni, filtrabili per Work Package e periodo: si scaricano in PDF, Word o Excel, o si inviano via email in allegato.'));
 
   const toolbar = el('div', { class: 'section__head' }, [
@@ -122,7 +123,7 @@ export async function renderReport(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

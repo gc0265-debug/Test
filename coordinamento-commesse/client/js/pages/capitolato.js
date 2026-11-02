@@ -10,7 +10,7 @@
 
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
-import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear } from '../components/ui.js';
+import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear, fasciaFissa } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, mergeLabels } from '../components/categorie.js';
@@ -211,7 +211,8 @@ export async function renderCapitolato(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
       ? 'Vista aggregata di gruppo: clicca una voce per aprirla e modificarla. Per creare una nuova voce, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Il capitolato requisiti raccoglie tutti i requisiti definiti dalla Direzione Lavori, raggruppati per contratto: ogni voce è un documento che si apre per vedere e modificare i Requisiti collegati, restando agganciata ai registri di Coordinamento e Contratti.'));
@@ -233,7 +234,7 @@ export async function renderCapitolato(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
   const groupsHost = el('div');
   container.appendChild(groupsHost);
 

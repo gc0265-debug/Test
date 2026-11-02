@@ -63,6 +63,10 @@
       <header class="topbar">
         <div class="topbar__left">
           <h1 id="pageTitle">Cruscotto</h1>
+          <div class="topbar__undo" id="topbarUndo">
+            <button type="button" id="undoBtn" class="btn btn--sm btn--ghost topbar__undo-btn" title="Annulla ultima modifica" disabled>↶</button>
+            <button type="button" id="redoBtn" class="btn btn--sm btn--ghost topbar__undo-btn" title="Ripeti modifica annullata" disabled>↷</button>
+          </div>
           <div class="page-help" id="pageHelp" hidden>
             <button type="button" class="page-help__btn" id="pageHelpBtn" aria-label="Guida di questa scheda">?</button>
             <div class="page-help__bubble" id="pageHelpBubble" hidden></div>

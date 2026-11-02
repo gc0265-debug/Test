@@ -6,7 +6,7 @@
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
-  el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate, settingsGear,
+  el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, formatDate, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, mergeLabels } from '../components/categorie.js';
@@ -260,7 +260,8 @@ export async function renderContratto(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
       ? 'Vista aggregata di gruppo: usa "Modifica" su un contratto per aprirlo. Per crearne uno nuovo, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Il contratto stipulato con la sua baseline di capitolato: ogni modifica ai requisiti successiva alla baseline è segnalata qui come variazione da gestire secondo la procedura concordata.'));
@@ -278,7 +279,7 @@ export async function renderContratto(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
   const listHost = el('div');
   container.appendChild(listHost);
 

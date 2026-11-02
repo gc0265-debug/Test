@@ -6,7 +6,7 @@ import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { getCategoria, mergeLabels } from '../components/categorie.js';
@@ -151,8 +151,9 @@ export async function renderNote(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
+  const sticky = fasciaFissa(container, []);
   if (soloLettura) {
-    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+    sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
       'Vista aggregata di gruppo: clicca una riga per l\'anteprima, o su "Modifica" per modificarla. Per creare una nuova nota, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
@@ -180,7 +181,7 @@ export async function renderNote(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
 
   const tableHost = el('div');
   container.appendChild(tableHost);

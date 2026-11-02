@@ -13,8 +13,51 @@ export function route(name, { title, render, help }) {
 }
 
 function parseHash() {
-  const raw = (location.hash || '#/cruscotto').slice(2); // rimuove "#/"
+  const raw = (location.hash || '#/cruscotto').slice(2).split('?')[0]; // rimuove "#/" e l'eventuale query string
   return raw || 'cruscotto';
+}
+
+function parseFocusId() {
+  const match = location.hash.match(/[?&]focus=([^&]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// Apre automaticamente la riga indicata da ?focus=ID nell'hash (usato
+// dai link dell'Attività recente del Cruscotto e dalla ricerca globale):
+// cerca una riga di tabella con quell'id (vedi data-focus-id in
+// renderTable), la mette in vista e simula il click che la apre — sulla
+// cella cliccabile se la tabella usa onRowClick, sul pulsante "Modifica"
+// altrimenti. Se la riga non c'è più (es. elemento eliminato) non fa nulla.
+function apriRigaDaFocus() {
+  const id = parseFocusId();
+  if (!id) return;
+  const tr = document.querySelector(`#content tr[data-focus-id="${CSS.escape(id)}"]`);
+  if (tr) {
+    tr.scrollIntoView({ block: 'center' });
+    const clickable = tr.querySelector('.tw-clickable')
+      || Array.from(tr.querySelectorAll('button')).find((b) => /modifica/i.test(b.textContent));
+    clickable?.click();
+  }
+  history.replaceState(null, '', location.hash.replace(/[?&]focus=[^&]+/, ''));
+}
+
+// Rende cliccabile il titolo di pagina per tornare indietro: sfrutta la
+// cronologia del browser, già alimentata correttamente dai normali link
+// di navigazione (ogni cambio di hash vi aggiunge una voce) — nessuno
+// stack separato da mantenere.
+function setupPageTitleBack() {
+  const h1 = document.getElementById('pageTitle');
+  if (!h1 || h1.dataset.backWired) return;
+  h1.dataset.backWired = '1';
+  h1.classList.add('topbar__title--clickable');
+  h1.setAttribute('role', 'button');
+  h1.setAttribute('tabindex', '0');
+  h1.title = 'Torna alla pagina precedente';
+  const back = () => history.back();
+  h1.addEventListener('click', back);
+  h1.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); back(); }
+  });
 }
 
 // Guida in linea: un pulsante "?" a fianco del titolo di pagina, pilotato
@@ -61,6 +104,7 @@ export async function navigate() {
 
   const content = document.getElementById('content');
   content.innerHTML = '';
+  content.style.removeProperty('--sticky-head-h');
 
   if (state.currentUser?.ruolo === 'cliente') {
     const consentite = new Set(state.currentUser.sezioni_consentite || []);
@@ -72,6 +116,7 @@ export async function navigate() {
 
   try {
     await r.render(content);
+    apriRigaDaFocus();
   } catch (err) {
     content.innerHTML = '';
     content.appendChild(renderError(err));
@@ -94,6 +139,7 @@ function renderError(err) {
 
 export function startRouter() {
   setupPageHelpToggle();
+  setupPageTitleBack();
   window.addEventListener('hashchange', navigate);
   navigate();
 }

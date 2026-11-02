@@ -4,7 +4,7 @@
 // server/routes/finanziaria.js), coerente con la sensibilità dei dati.
 
 import { api } from '../api.js';
-import { el, renderTable } from '../components/ui.js';
+import { el, renderTable, fasciaFissa } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { setCommessa } from '../state.js';
 
@@ -20,7 +20,8 @@ function tile(label, value, cls) {
 }
 
 export async function renderFinanziaria(container) {
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     'Riepilogo del valore contrattuale e degli atti aggiuntivi su tutte le commesse — non filtrato dalla commessa selezionata nel menu.'));
 
   const { commesse, totali, contratti } = await api.get('/finanziaria');
@@ -41,7 +42,7 @@ export async function renderFinanziaria(container) {
       }]) }, 'Stampa'),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
 
   container.appendChild(el('div', { class: 'section' }, [
     el('div', { class: 'section-title' }, 'Totale complessivo'),

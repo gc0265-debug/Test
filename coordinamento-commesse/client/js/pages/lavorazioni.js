@@ -5,7 +5,7 @@ import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 import { barChart, pieChart, barChartHtml, pieChartHtml } from '../components/charts.js';
@@ -316,8 +316,13 @@ export async function renderLavorazioni(container) {
     return;
   }
 
+  // Fascia fissa in cima (sticky sotto la topbar) durante lo scroll
+  // della pagina: grafici, filtri e la barra comandi, visibili finché
+  // non si scorre più in basso dell'intestazione della tabella.
+  const sticky = fasciaFissa(container, []);
+
   const chartsHost = el('div');
-  container.appendChild(chartsHost);
+  sticky.appendChild(chartsHost);
 
   let lastRows = [];
   let selectedId = null;
@@ -326,10 +331,10 @@ export async function renderLavorazioni(container) {
   const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
   const soloLettura = clienteSoloLettura || inVistaGruppo();
   if (inVistaGruppo() && !clienteSoloLettura) {
-    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+    sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
       'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare una nuova lavorazione o importare un cronoprogramma, seleziona prima una singola commessa dal menu a sinistra.'));
   } else if (!soloLettura) {
-    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+    sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
       'Compilabile a mano o importando in blocco un cronoprogramma da CSV ("Modello CSV" per scaricare l\'esempio con le intestazioni attese) — le righe importate compaiono subito anche in Timeline.'));
   }
   const statoPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
@@ -378,12 +383,13 @@ export async function renderLavorazioni(container) {
           chartsHtml: chartsPrintHtml(lastRows),
         });
       } }, 'Stampa'),
+      inVistaGruppo() ? null : el('a', { class: 'btn btn--sm', href: `/api/export/lavorazioni/${state.commessaId}` }, 'Esporta Excel'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova lavorazione'),
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
-  container.appendChild(importCsv.fileInput);
+  sticky.appendChild(toolbar);
+  sticky.appendChild(importCsv.fileInput);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

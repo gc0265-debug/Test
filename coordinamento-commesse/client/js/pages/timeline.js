@@ -547,11 +547,21 @@ export async function renderTimeline(container) {
       'Vista aggregata di gruppo: clicca una barra o una riga per modificarla. Per creare una nuova riga, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
+  // Fascia fissa in cima alla pagina (sticky sotto la topbar, come
+  // l'intestazione delle tabelle): cantieri attivi + la barra di
+  // comandi (Settimane/Mesi/.../Stampa) restano visibili scorrendo la
+  // pagina, invece di sparire sopra al Gantt. Il Gantt sotto ha un suo
+  // scroll verticale indipendente (vedi .gantt in styles.css) con una
+  // propria intestazione sticky: le due cose non si sovrappongono
+  // perché il Gantt la aggancia al proprio contenitore, non alla pagina.
+  const stickyHead = el('div', { class: 'timeline-sticky-head' });
+  container.appendChild(stickyHead);
+
   // Barra orizzontale in cima, sempre visibile: le lavorazioni
   // attualmente in corso (oggi compreso nel loro intervallo, o marcate
   // "In corso" a mano) senza dover scorrere il Gantt per trovarle.
   const settimanaHost = el('div');
-  container.appendChild(settimanaHost);
+  stickyHead.appendChild(settimanaHost);
 
   function drawSettimanaBar() {
     const oggi = todayISO();
@@ -632,11 +642,12 @@ export async function renderTimeline(container) {
       zoomSlider,
       el('button', { class: 'btn btn--sm', onclick: apriColoriModal }, 'Colori'),
       el('button', { class: 'btn btn--sm', onclick: () => openStampaModal(items, inVistaGruppo() ? { codice: state.gruppoAttivo, nome: 'tutte le commesse' } : state.commesse.find((c) => c.id === state.commessaId)) }, 'Stampa'),
+      inVistaGruppo() ? null : el('a', { class: 'btn btn--sm', href: `/api/export/timeline/${state.commessaId}`, title: 'Esporta in Excel, con un foglio Gantt a celle colorate per settimana' }, 'Esporta Excel'),
       soloLettura ? null : el('button', { class: 'btn btn--primary', onclick: () => openForm(null, refresh) }, '+ Nuova riga'),
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  stickyHead.appendChild(toolbar);
 
   function drawGranularityButtons() {
     const host = toolbar.firstChild;
@@ -652,6 +663,17 @@ export async function renderTimeline(container) {
 
   const ganttHost = el('div', { class: 'gantt-print-area' });
   container.appendChild(ganttHost);
+
+  // Zoom anche con Ctrl/Cmd + rotella direttamente sul Gantt, oltre allo
+  // slider — comodo mentre si sta già guardando il grafico, senza dover
+  // spostare il mouse sulla barra comandi in alto.
+  ganttHost.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    zoom = Math.min(3, Math.max(0.4, Number((zoom + (e.deltaY < 0 ? 0.1 : -0.1)).toFixed(2))));
+    zoomSlider.value = zoom;
+    draw();
+  }, { passive: false });
 
   async function refresh() {
     const [milestoneRes, lavorazioniRes, milestoneStatoList, lavorazioniStatoList, lavorazioniPrioritaList, dipendenzeRes] = await Promise.all([

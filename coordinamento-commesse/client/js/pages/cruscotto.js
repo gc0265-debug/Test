@@ -23,6 +23,15 @@ const ENTITY_LABEL = {
   requisiti: 'Requisito', contratti: 'Contratto', stakeholder: 'Stakeholder', processi_comunicazione: 'Processo comunicazione',
   capitolato_voci: 'Voce di capitolato', sal: 'SAL',
 };
+// Rotta di destinazione per ogni tipo di entità: usata per rendere
+// cliccabile ogni riga dell'Attività recente. Il ?focus=ID viene letto
+// dal router (vedi apriRigaDaFocus in router.js) per aprire subito la
+// riga modificata, se la pagina di destinazione la mostra in tabella.
+const ENTITY_ROUTE = {
+  criticita: 'criticita', decisioni: 'decisioni', allert: 'allert', milestone: 'timeline', lezioni_apprese: 'lezioni',
+  requisiti: 'requisiti', contratti: 'contratto', stakeholder: 'stakeholder', processi_comunicazione: 'comunicazione',
+  capitolato_voci: 'capitolato', sal: 'sal',
+};
 
 function tile(label, value, cls, sub) {
   return el('div', { class: 'tile' }, [
@@ -60,21 +69,46 @@ const TIPO_SCADENZA = {
   todo: { icona: '✓', href: '#/cruscotto', label: 'To-do' },
 };
 
+// Oltre questo numero, le schede extra si riassumono in un'unica "+N
+// altre" che apre l'elenco completo in una finestra — la fascia in cima
+// al Cruscotto resta su una riga anche con molte scadenze/scadute insieme.
+const LIMITE_SCADENZE_VISIBILI = 6;
+
+function scadenzaChip(s, info) {
+  return el('a', {
+    href: info.href,
+    class: 'scadenza-chip' + (s.giorni < 0 ? ' alert' : (s.giorni <= 3 ? ' warn' : '')),
+  }, [
+    el('div', { class: 'scadenza-chip__titolo' }, `${info.icona} ${s.titolo}`),
+    el('div', { class: 'scadenza-chip__meta' }, [
+      el('span', {}, formatDate(s.data)),
+      el('span', { class: 'scadenza-chip__gg' }, s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `tra ${s.giorni} gg`),
+    ]),
+  ]);
+}
+
 function scadenzeBar(dash, commessa) {
-  const scadute = dash.scadenze_settimana.filter((s) => s.giorni < 0).length;
-  const chips = dash.scadenze_settimana.map((s) => {
-    const info = TIPO_SCADENZA[s.tipo] || TIPO_SCADENZA.criticita;
-    return el('a', {
-      href: info.href,
-      class: 'scadenza-chip' + (s.giorni < 0 ? ' alert' : (s.giorni <= 3 ? ' warn' : '')),
+  const tutte = [...dash.scadenze_settimana].sort((a, b) => a.giorni - b.giorni);
+  const scadute = tutte.filter((s) => s.giorni < 0).length;
+  const visibili = tutte.slice(0, LIMITE_SCADENZE_VISIBILI);
+  const altre = tutte.length - visibili.length;
+
+  const chips = visibili.map((s) => scadenzaChip(s, TIPO_SCADENZA[s.tipo] || TIPO_SCADENZA.criticita));
+  if (altre > 0) {
+    chips.push(el('button', {
+      type: 'button', class: 'scadenza-chip scadenza-chip--altre',
+      onclick: () => openModal('Scadenze della settimana', reminderList(tutte.map((s) => {
+        const info = TIPO_SCADENZA[s.tipo] || TIPO_SCADENZA.criticita;
+        return el('a', { href: info.href, class: 'reminder-item' + (s.giorni < 0 ? ' alert' : '') }, [
+          el('span', {}, `${info.icona} ${s.titolo}`),
+          el('span', { class: 'reminder-item__gg' }, s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `tra ${s.giorni} gg`),
+        ]);
+      }), 'Nessuna scadenza nei prossimi 7 giorni.')),
     }, [
-      el('div', { class: 'scadenza-chip__titolo' }, `${info.icona} ${s.titolo}`),
-      el('div', { class: 'scadenza-chip__meta' }, [
-        el('span', {}, formatDate(s.data)),
-        el('span', { class: 'scadenza-chip__gg' }, s.giorni < 0 ? `scaduta da ${Math.abs(s.giorni)} gg` : `tra ${s.giorni} gg`),
-      ]),
-    ]);
-  });
+      el('div', { class: 'scadenza-chip__titolo' }, `+${altre} altre`),
+      el('div', { class: 'scadenza-chip__meta' }, 'mostra tutte'),
+    ]));
+  }
 
   return el('div', { class: 'cruscotto-scadenze' }, [
     el('div', { class: 'cruscotto-scadenze__head' }, [
@@ -111,11 +145,17 @@ function attivitaBar(attivita) {
 
   const chevron = el('span', { class: 'gantt__chevron' + (collassata ? ' gantt__chevron--collapsed' : '') }, '▾');
   const scrollHost = el('div', { class: 'cruscotto-attivita__scroll' }, [
-    el('div', { class: 'activity-list' }, attivita.map((a) => el('div', { class: 'activity-item' }, [
-      el('span', { class: 'activity-item__tipo' }, ENTITY_LABEL[a.entity_type] || a.entity_type),
-      el('span', {}, `${AZIONE_LABEL[a.azione] || a.azione}${a.dettaglio ? ' — ' + a.dettaglio : ''}`),
-      el('span', { class: 'activity-item__meta' }, `${a.utente || '—'} · ${formatDateTime(a.created_at)}`),
-    ]))),
+    el('div', { class: 'activity-list' }, attivita.map((a) => {
+      const rotta = ENTITY_ROUTE[a.entity_type];
+      const tag = rotta && a.entity_id != null ? 'a' : 'div';
+      const attrs = { class: 'activity-item' };
+      if (tag === 'a') attrs.href = `#/${rotta}?focus=${a.entity_id}`;
+      return el(tag, attrs, [
+        el('span', { class: 'activity-item__tipo' }, ENTITY_LABEL[a.entity_type] || a.entity_type),
+        el('span', {}, `${AZIONE_LABEL[a.azione] || a.azione}${a.dettaglio ? ' — ' + a.dettaglio : ''}`),
+        el('span', { class: 'activity-item__meta' }, `${a.utente || '—'} · ${formatDateTime(a.created_at)}`),
+      ]);
+    })),
   ]);
   scrollHost.hidden = collassata;
 

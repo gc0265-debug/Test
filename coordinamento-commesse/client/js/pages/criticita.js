@@ -7,7 +7,7 @@ import { api } from '../api.js';
 import { state, scopeParams, inVistaGruppo, consumaFocusRiga } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, todayISO, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -90,13 +90,14 @@ export async function renderCriticita(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
+  const sticky = fasciaFissa(container, []);
   if (soloLettura) {
-    container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+    sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
       'Vista aggregata di gruppo: clicca una riga per modificarla. L\'importazione da Excel resta disponibile e assegna da sola ogni riga alla commessa giusta. Per creare una nuova criticità, seleziona prima una singola commessa dal menu a sinistra.'));
   }
 
   const dashHost = el('div', { class: 'tiles' });
-  container.appendChild(dashHost);
+  sticky.appendChild(dashHost);
 
   let filtroStato = 'aperta';
   let filtroWp = '';
@@ -147,8 +148,8 @@ export async function renderCriticita(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
-  container.appendChild(fileInput);
+  sticky.appendChild(toolbar);
+  sticky.appendChild(fileInput);
 
   const tableHost = el('div');
   container.appendChild(tableHost);

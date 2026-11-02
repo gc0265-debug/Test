@@ -116,6 +116,16 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);}
 .topbar__left{display:flex;align-items:center;gap:8px;min-width:0;}
 .topbar__right{display:flex;gap:8px;align-items:center;}
 
+.topbar__title--clickable{cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px;transition:background .15s;}
+.topbar__title--clickable:hover{background:var(--paper-3);}
+.topbar__title--clickable:hover::before{content:"←";margin-right:6px;color:var(--ink-3);font-weight:400;}
+.topbar__title--clickable:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+
+.topbar__undo{display:flex;gap:2px;flex:none;}
+.topbar__undo-btn{padding:4px 8px;font-size:15px;line-height:1;}
+.topbar__undo-btn:disabled{opacity:.3;cursor:default;}
+@media (max-width: 860px){ .topbar__undo{display:none;} }
+
 .ricerca-globale{position:relative;flex:1;max-width:360px;min-width:0;}
 .ricerca-globale input{
   width:100%;box-sizing:border-box;padding:7px 12px;border-radius:7px;
@@ -212,6 +222,11 @@ h2{font-size:14px;font-weight:700;letter-spacing:.02em;margin:0 0 4px;}
 .scadenza-chip__meta{display:flex;justify-content:space-between;gap:8px;color:var(--ink-3);font-size:10.5px;}
 .scadenza-chip__gg{font-weight:700;color:var(--ambra);white-space:nowrap;}
 .scadenza-chip.alert .scadenza-chip__gg{color:var(--red);}
+.scadenza-chip--altre{
+  min-width:120px;max-width:120px;align-items:center;justify-content:center;text-align:center;
+  border-style:dashed;border-left-style:dashed;cursor:pointer;color:var(--ink-2);font-family:inherit;
+}
+.scadenza-chip--altre .scadenza-chip__meta{justify-content:center;}
 
 /* ---------- barra attività recente (orizzontale, in fondo) ---------- */
 .cruscotto-attivita{background:var(--paper);border:1px solid var(--rule);padding:14px 16px;}
@@ -289,8 +304,11 @@ table{border-collapse:collapse;width:100%;min-width:560px;font-size:12.5px;}
 thead th{
   text-align:left;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
   font-weight:600;padding:9px 12px;border-bottom:1px solid var(--rule);background:var(--paper-2);
-  white-space:nowrap;position:sticky;top:var(--topbar-h);z-index:1;
+  white-space:nowrap;position:sticky;top:calc(var(--topbar-h) + var(--sticky-head-h, 0px));z-index:1;
 }
+
+/* vedi fasciaFissa() in components/ui.js */
+.sticky-head{position:sticky;top:var(--topbar-h);z-index:4;background:var(--paper);padding-top:2px;margin-bottom:2px;}
 tbody td{padding:10px 12px;border-bottom:1px solid var(--rule-2);vertical-align:top;}
 tbody tr:last-child td{border-bottom:0;}
 tbody tr:hover{background:var(--paper-2);}
@@ -465,6 +483,8 @@ td.select input{cursor:pointer;}
 /* ---------- attività recente (cruscotto) ---------- */
 .activity-list{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);}
 .activity-item{display:grid;grid-template-columns:130px 1fr auto;gap:12px;padding:9px 14px;background:var(--paper);font-size:12px;align-items:baseline;}
+a.activity-item{color:inherit;text-decoration:none;cursor:pointer;}
+a.activity-item:hover{background:var(--paper-3);}
 .activity-item__tipo{
   font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;
   min-width:0;overflow-wrap:break-word;
@@ -501,6 +521,11 @@ div.timeline-settimana__chip{cursor:default;}
    invece di inseguire lo scroll di pagina (che altrimenti la sposta più
    in basso del previsto, nascondendo la riga sottostante: visto con i
    gruppi Piano espansi). */
+.timeline-sticky-head{
+  position:sticky;top:var(--topbar-h);z-index:4;background:var(--paper);
+  padding-top:2px;margin-bottom:2px;
+}
+
 .gantt{
   --gantt-label-w:350px;border:1px solid var(--rule);overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 300px);
   --gantt-color-pianificata:var(--ink-3);--gantt-color-in-corso:var(--blue);

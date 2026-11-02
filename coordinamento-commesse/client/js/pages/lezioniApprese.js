@@ -6,7 +6,7 @@ import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, formatDate, todayISO, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, formatDate, todayISO, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 
@@ -367,7 +367,8 @@ export async function renderLezioniApprese(container) {
     return;
   }
   const soloLettura = inVistaGruppo();
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     soloLettura
       ? 'Vista aggregata di gruppo: clicca una riga per aprirla e modificarla. Per creare una nuova lezione, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Raccoglie quanto imparato da criticità, decisioni e allert già registrati — per non ripetere gli stessi errori sulla prossima commessa.'));
@@ -381,7 +382,7 @@ export async function renderLezioniApprese(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
+  sticky.appendChild(toolbar);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

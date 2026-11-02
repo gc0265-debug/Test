@@ -162,6 +162,37 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Titolo di pagina cliccabile, annulla/ripeti ultima modifica, fasce comandi fisse durante lo scroll (2 novembre 2026)
+
+- Il titolo in alto a ogni pagina è ora **cliccabile**: riporta alla
+  pagina visitata precedentemente, come un pulsante "indietro".
+- Due nuove freccette **↶/↷** accanto al titolo permettono di annullare
+  l'ultimo salvataggio fatto su un registro, e di ripeterlo se
+  l'annullamento non era quello voluto — un livello, valido su tutta
+  l'app.
+- Le righe di "Attività recente" nel Cruscotto sono ora cliccabili:
+  aprono direttamente, nella sua pagina, la voce appena creata o
+  modificata.
+- Timeline: la fascia "Cantieri e sotto cantieri attivi" e la barra
+  comandi (Settimane/Mesi/.../Stampa) restano **fisse in alto** durante
+  lo scroll della pagina; si può ora fare zoom anche con **Ctrl/Cmd +
+  rotella** direttamente sul Gantt, oltre al cursore già presente.
+- La stessa fascia comandi fissa durante lo scroll è stata estesa a
+  tutte le altre pagine di registro con grafici/filtri sopra una tabella
+  lunga (Criticità, Decisioni, Lavorazioni, Requisiti, Stakeholder,
+  Allert, Lezioni Apprese, Piano Comunicazioni, Approvazioni Drawings,
+  Documenti, Contratti, Capitolato Requisiti, Report, Maestranze, Note
+  di Coordinamento, Diario di Cantiere).
+- Cruscotto: quando le scadenze della settimana sono molte, la fascia in
+  cima mostra solo le più urgenti con un riquadro "+N altre" che apre
+  l'elenco completo in una finestra, invece di affollare la riga.
+- Nuovo **export in Excel** per Lavorazioni e per la Timeline —
+  quest'ultimo con un foglio "Gantt" a celle colorate per settimana
+  generato nativamente nel file (non uno screenshot incollato), oltre al
+  consueto foglio dati.
+
+---
+
 ## Guida e Supporto: ogni argomento apre ora una pagina di dettaglio con tutte le funzioni (2 novembre 2026)
 
 - Cliccando un titolo nell'indice della Guida e Supporto non si scorre

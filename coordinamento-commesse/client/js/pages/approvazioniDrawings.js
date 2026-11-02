@@ -8,7 +8,7 @@ import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo } from '../state.js';
 import {
   el, field, textInput, dateInput, textarea, select, formData,
-  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear,
+  openModal, closeModal, toast, confirmDialog, renderTable, pill, formatDate, settingsGear, fasciaFissa,
 } from '../components/ui.js';
 import { openStorico } from '../components/storico.js';
 import { printReport } from '../components/report.js';
@@ -207,7 +207,8 @@ export async function renderApprovazioniDrawings(container) {
   }
   const clienteSoloLettura = state.currentUser?.ruolo === 'cliente';
   const soloLettura = clienteSoloLettura || inVistaGruppo();
-  container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+  const sticky = fasciaFissa(container, []);
+  sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
     inVistaGruppo() && !clienteSoloLettura
       ? 'Vista aggregata di gruppo: clicca una riga per modificarla. Per creare un nuovo elaborato o importare da Excel, seleziona prima una singola commessa dal menu a sinistra.'
       : 'Elenco degli elaborati (drawing) sottoposti ad approvazione, compilabile a mano o importando un elenco deliverable in Excel.'));
@@ -271,8 +272,8 @@ export async function renderApprovazioniDrawings(container) {
       settingsGear(),
     ]),
   ]);
-  container.appendChild(toolbar);
-  container.appendChild(fileInput);
+  sticky.appendChild(toolbar);
+  sticky.appendChild(fileInput);
   const tableHost = el('div');
   container.appendChild(tableHost);
 

@@ -5,7 +5,7 @@
 
 import { api } from '../api.js';
 import { state, queryScopeCommessa, inVistaGruppo, consumaFocusRiga } from '../state.js';
-import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear } from '../components/ui.js';
+import { el, field, textInput, dateInput, textarea, select, formData, openModal, closeModal, toast, confirmDialog, renderTable, settingsGear, fasciaFissa } from '../components/ui.js';
 import { printReport } from '../components/report.js';
 
 function buildFieldNode(f, value) {
@@ -61,8 +61,9 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
       return;
     }
     const soloLettura = scopedByCommessa && inVistaGruppo();
+    const sticky = fasciaFissa(container, []);
     if (soloLettura) {
-      container.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
+      sticky.appendChild(el('p', { class: 'muted', style: 'margin:-6px 0 14px' },
         `Vista aggregata di gruppo: clicca una riga per modificarla. Per crearne una nuova, seleziona prima una singola commessa dal menu a sinistra.`));
     }
 
@@ -89,7 +90,7 @@ export function createCrudPage({ apiPath, titleSingular, fields, columns, emptyL
         settingsGear(),
       ]),
     ]);
-    container.appendChild(toolbar);
+    sticky.appendChild(toolbar);
 
     const tableHost = el('div');
     container.appendChild(tableHost);
