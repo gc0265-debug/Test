@@ -151,7 +151,7 @@ async function openForm(existing, onSaved) {
     api.get(`/commesse/${commessaIdForm}/wp`),
   ]);
   const requisitoOptions = [['', '— nessuno'], ...requisitiRes.data.map((r) => [r.id, `${r.codice_wbs} — ${r.titolo}`])];
-  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', 'Tutti i WP'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const form = el('form', {});
   if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));

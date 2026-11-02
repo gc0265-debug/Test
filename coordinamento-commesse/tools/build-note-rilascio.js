@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.47';
+const VERSIONE_ATTUALE = '1.48';
 const DATA_ATTUALE = '1 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,13 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.47', title: 'Note di Coordinamento: documento Word diretto e bozza filtrabile per data', date: '2 novembre 2026', attuale: true,
+    v: '1.48', title: 'Etichetta "Tutti i WP" al posto di "—" nei moduli di modifica', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Nel campo "Work package" dei moduli di modifica (Lavorazioni, Registro Criticità, Registro Decisioni, Registro Allert, Maestranze, Requisiti, Approvazioni Drawings, e il modulo "Segnala criticità" dal markup sui disegni), l\'opzione per non assegnare un Work Package specifico si chiama ora "Tutti i WP" invece di "—" — stesso comportamento, solo più chiara e coerente con i filtri a bottoni già presenti nelle stesse schede.',
+    ],
+  },
+  {
+    v: '1.47', title: 'Note di Coordinamento: documento Word diretto e bozza filtrabile per data', date: '2 novembre 2026',
     points: [
       'Note di Coordinamento ha ora, come Documenti, un pulsante "+ Scrivi documento Word": lo stesso editor di testo con titoli, grassetto/corsivo/sottolineato ed elenchi, salvato come vero file .docx — il documento creato compare nell\'archivio Documenti della commessa, pronto da scaricare o riaprire per modificarlo.',
       '"Genera da criticità aperte" accetta ora anche un intervallo di date ("Aperte dal" / "Aperte fino al"): la bozza include solo le criticità aperte in quel periodo, invece di includerle sempre tutte. Il filtro per Work Package resta disponibile come prima e si combina con quello per data.',

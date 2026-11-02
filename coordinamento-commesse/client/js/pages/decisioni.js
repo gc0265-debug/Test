@@ -32,7 +32,7 @@ async function openForm(existing, onSaved) {
 
   const form = el('form', {});
   if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
-  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', 'Tutti i WP'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true }),
     'Titolo breve della decisione da prendere.'));

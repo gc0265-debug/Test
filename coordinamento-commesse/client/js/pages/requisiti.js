@@ -31,7 +31,7 @@ async function openForm(existing, onSaved) {
 
   const form = el('form', {});
   if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
-  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', 'Tutti i WP'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
   form.appendChild(el('div', { class: 'field--row' }, [
     field('Codice WBS', textInput('codice_wbs', existing?.codice_wbs ?? '', { required: true, placeholder: `es. ${state.commesse.find(c => c.id === commessaIdForm)?.codice || '2514RW'}.WP1.03` }),
       'Codice univoco del requisito.'),

@@ -162,6 +162,18 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Etichetta "Tutti i WP" al posto di "—" nei moduli di modifica (2 novembre 2026)
+
+- Nel campo **"Work package"** dei moduli di modifica (Lavorazioni,
+  Registro Criticità, Registro Decisioni, Registro Allert, Maestranze,
+  Requisiti, Approvazioni Drawings, e il modulo "Segnala criticità" dal
+  markup sui disegni), l'opzione per non assegnare un Work Package
+  specifico si chiama ora **"Tutti i WP"** invece di "—" — stesso
+  comportamento, solo più chiara e coerente con i filtri a bottoni già
+  presenti nelle stesse schede.
+
+---
+
 ## Note di Coordinamento: documento Word diretto e bozza filtrabile per data (2 novembre 2026)
 
 - Note di Coordinamento ha ora, come Documenti, un pulsante **"+ Scrivi

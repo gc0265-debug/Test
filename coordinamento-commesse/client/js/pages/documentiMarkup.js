@@ -515,7 +515,7 @@ export async function apriMarkup(documento) {
     if (!indici.length) return;
 
     const wpRes = await api.get(`/commesse/${documento.commessa_id}/wp`);
-    const wpSelect = select('wp_id', [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])], '');
+    const wpSelect = select('wp_id', [['', 'Tutti i WP'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])], '');
     const urgenzaSelect = select('urgenza', [['normale', 'Normale'], ['viola', 'Urgente (3gg)'], ['verde', 'Dovuta da controparte']], 'normale');
     const destinatarioInput = textInput('destinatario', '', { placeholder: 'es. SAC, DL, interno' });
     const scadenzaField = field('Entro quando (se urgente)', dateInput('entro_quando', ''), 'Obbligatoria se l\'urgenza è "Urgente (3gg)".');

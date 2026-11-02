@@ -37,7 +37,7 @@ async function openForm(existing, onSaved) {
   const wpRes = await api.get(`/commesse/${commessaIdForm}/wp`);
   const form = el('form', {});
   if (existing) form.appendChild(el('input', { type: 'hidden', name: '_versione', value: existing.updated_at }));
-  const wpOptions = [['', '—'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
+  const wpOptions = [['', 'Tutti i WP'], ...wpRes.data.map((w) => [w.id, `${w.codice} ${w.nome}`])];
 
   const urgenzaSelect = select('urgenza', Object.entries(URGENZA).map(([k, v]) => [k, v[0]]), existing?.urgenza ?? 'normale');
   const scadenzaField = field('Entro quando (se urgente)', dateInput('entro_quando', existing?.entro_quando || ''), 'Obbligatoria se l\'urgenza è "Urgente (3gg)".');
