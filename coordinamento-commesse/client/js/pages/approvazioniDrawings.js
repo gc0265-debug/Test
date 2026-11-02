@@ -214,6 +214,7 @@ export async function renderApprovazioniDrawings(container) {
 
   let lastRows = [];
   let selectedId = null;
+  let filtroWp = '';
 
   const fileInput = el('input', { type: 'file', accept: '.xlsx,.xls', style: 'display:none' });
   fileInput.addEventListener('change', async () => {
@@ -233,8 +234,9 @@ export async function renderApprovazioniDrawings(container) {
     }
   });
 
+  const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div'),
+    el('div', {}, [wpPillHost]),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: async () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
@@ -275,12 +277,24 @@ export async function renderApprovazioniDrawings(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
+    let query = queryScopeCommessa();
+    if (filtroWp) query += `&wp_id=${encodeURIComponent(filtroWp)}`;
     const [res, statoList] = await Promise.all([
-      api.get(`/approvazioni-drawings?${queryScopeCommessa()}`),
+      api.get(`/approvazioni-drawings?${query}`),
       getCategoria('approvazioni_stato'),
     ]);
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
+
+    wpPillHost.innerHTML = '';
+    if (!soloLettura) wpPillHost.appendChild(el('button', {
+      class: 'btn btn--sm' + (filtroWp === '' ? ' btn--primary' : ''),
+      onclick: () => { filtroWp = ''; refresh(); },
+    }, 'Tutti i WP'));
+    if (!soloLettura) state.workPackages.forEach((w) => wpPillHost.appendChild(el('button', {
+      class: 'btn btn--sm' + (String(filtroWp) === String(w.id) ? ' btn--primary' : ''),
+      onclick: () => { filtroWp = w.id; refresh(); },
+    }, w.codice)));
     renderTable(tableHost, [
       inVistaGruppo() ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'codice', label: 'Codice' },

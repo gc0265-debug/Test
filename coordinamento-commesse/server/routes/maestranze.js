@@ -6,7 +6,7 @@ const { verificaVersione } = require('../utils/concorrenza');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { stato, search } = req.query;
+  const { wp_id, stato, search } = req.query;
   let sql = `
     SELECT m.*, w.codice AS wp_codice, w.nome AS wp_nome, cm.codice AS commessa_codice,
            (SELECT GROUP_CONCAT(s.nome, ', ') FROM maestranze_fornitori mf
@@ -18,6 +18,7 @@ router.get('/', (req, res) => {
   `;
   const params = [];
   sql = applicaFiltroCommessa(sql, params, req.query, 'm.commessa_id');
+  if (wp_id) { sql += ' AND m.wp_id = ?'; params.push(wp_id); }
   if (stato) { sql += ' AND m.stato = ?'; params.push(stato); }
   if (search) { sql += ' AND (m.nome LIKE ? OR m.azienda LIKE ? OR m.ruolo LIKE ?)'; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
   sql += ' ORDER BY m.nome ASC';

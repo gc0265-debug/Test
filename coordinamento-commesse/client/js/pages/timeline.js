@@ -40,6 +40,8 @@ const GANTT_COLORI_STATO = [
   { key: 'in-corso', label: 'In corso', default: '#2E6FA8' },
   { key: 'completata', label: 'Completata', default: '#2E7D5B' },
   { key: 'ritardo', label: 'In ritardo / Bloccata', default: '#C0332B' },
+  { key: 'baseline', label: 'Baseline (scostamento)', default: '#A8761E' },
+  { key: 'riepilogo', label: 'Lavorazione madre (riepilogo)', default: '#1A1A1A' },
 ];
 function leggiColoriGantt() {
   try {
@@ -469,8 +471,11 @@ export async function renderTimeline(container) {
 
   function drawSettimanaBar() {
     const oggi = todayISO();
+    // Una lavorazione madre (riepilogo) entra qui quando l'intervallo
+    // complessivo delle sue sotto-attività copre oggi, anche se nessuna
+    // singola sotto-attività risulta attiva in questo preciso momento:
+    // l'attività nel suo insieme è comunque in corso.
     const inCorso = items.filter((it) => it.type === 'lavorazione'
-      && !it.isSummary
       && (it.statoReale === 'in-corso' || (it.data_inizio <= oggi && it.data_fine >= oggi)));
 
     settimanaHost.innerHTML = '';
@@ -1006,6 +1011,25 @@ export async function renderTimeline(container) {
     return node;
   }
 
+  // Percorso "a gomito" (solo segmenti orizzontali/verticali, come in MS
+  // Project) invece di una curva morbida: dalla fine del predecessore si
+  // esce di un breve tratto fisso, si scende/sale in verticale fino alla
+  // riga del successore, poi si entra in orizzontale. Se il successore
+  // inizia prima (o troppo vicino) della fine del predecessore — niente
+  // spazio per il gomito semplice — si aggira con due gomiti passando per
+  // un punto a metà strada fra le due righe.
+  function pathOrtogonale(x1, y1, x2, y2) {
+    const offset = 14;
+    if (x2 - x1 >= offset * 2) {
+      const midX = x1 + offset;
+      return `M${x1},${y1} L${midX},${y1} L${midX},${y2} L${x2},${y2}`;
+    }
+    const midX1 = x1 + offset;
+    const midX2 = x2 - offset;
+    const midY = (y1 + y2) / 2;
+    return `M${x1},${y1} L${midX1},${y1} L${midX1},${midY} L${midX2},${midY} L${midX2},${y2} L${x2},${y2}`;
+  }
+
   // Frecce di dipendenza fra le barre, disegnate sopra il Gantt dopo che
   // è nel DOM (servono le posizioni reali, con zoom/raggruppamenti già
   // applicati — più affidabile che ricalcolarle a mano). Una dipendenza
@@ -1035,9 +1059,8 @@ export async function renderTimeline(container) {
       const x2 = succRect.left - chartRect.left;
       const y2 = succRect.top + succRect.height / 2 - chartRect.top;
       const variante = d.violazione ? 'violazione' : (d.critica ? 'critica' : 'normale');
-      const curva = Math.max(24, Math.abs(x2 - x1) / 3);
       svg.appendChild(svgEl('path', {
-        d: `M${x1},${y1} C${x1 + curva},${y1} ${x2 - curva},${y2} ${x2},${y2}`,
+        d: pathOrtogonale(x1, y1, x2, y2),
         class: `gantt__dep-line gantt__dep-line--${variante}`,
         'marker-end': `url(#gantt-arrow-${variante})`,
       }));

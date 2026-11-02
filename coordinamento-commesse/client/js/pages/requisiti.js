@@ -118,11 +118,12 @@ export async function renderRequisiti(container) {
       : 'Estratti dal capitolato, con codice WBS e fase di esecuzione. Le approvazioni si richiedono da qui ma confluiscono nel Registro Decisioni.'));
 
   let filtroFase = '';
+  let filtroWp = '';
   let lastRows = [];
   let faseMap = {};
   let selectedId = null;
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }),
+    el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center' }),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
@@ -141,12 +142,24 @@ export async function renderRequisiti(container) {
   function drawFilters() {
     const host = toolbar.firstChild;
     host.innerHTML = '';
+    const faseHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
     [['', 'Tutte le fasi'], ...Object.entries(faseMap)].forEach(([value, label]) => {
-      host.appendChild(el('button', {
+      faseHost.appendChild(el('button', {
         class: 'btn btn--sm' + (filtroFase === value ? ' btn--primary' : ''),
         onclick: () => { filtroFase = value; refresh(); },
       }, label));
     });
+    host.appendChild(faseHost);
+    if (!soloLettura) {
+      const wpHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+      [['', 'Tutti i WP'], ...state.workPackages.map((w) => [w.id, w.codice])].forEach(([value, label]) => {
+        wpHost.appendChild(el('button', {
+          class: 'btn btn--sm' + (String(filtroWp) === String(value) ? ' btn--primary' : ''),
+          onclick: () => { filtroWp = value; refresh(); },
+        }, label));
+      });
+      host.appendChild(wpHost);
+    }
   }
 
   const tableHost = el('div');
@@ -155,6 +168,7 @@ export async function renderRequisiti(container) {
   async function refresh() {
     const query = new URLSearchParams(scopeParams());
     if (filtroFase) query.set('fase', filtroFase);
+    if (filtroWp) query.set('wp_id', filtroWp);
     const [res, faseList, statoList] = await Promise.all([
       api.get(`/requisiti?${query.toString()}`),
       getCategoria('requisiti_fase'),

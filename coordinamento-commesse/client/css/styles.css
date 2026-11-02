@@ -499,6 +499,7 @@ div.timeline-settimana__chip{cursor:default;}
   --gantt-label-w:350px;border:1px solid var(--rule);overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 300px);
   --gantt-color-pianificata:var(--ink-3);--gantt-color-in-corso:var(--blue);
   --gantt-color-completata:var(--verde);--gantt-color-ritardo:var(--red);
+  --gantt-color-baseline:var(--ambra);--gantt-color-riepilogo:var(--ink);
 }
 .gantt__chart{position:relative;min-width:1000px;}
 .gantt__row{display:flex;border-bottom:1px solid var(--rule-2);}
@@ -567,9 +568,11 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__row--child .gantt__label-col--nome{padding-left:22px;}
 .gantt__label--indent-1 .gantt__label-col--nome{padding-left:22px;}
 .gantt__chevron{
-  display:inline-block;width:14px;flex:none;color:var(--ink-3);font-size:10px;
-  transition:transform .12s ease;cursor:pointer;margin-right:2px;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;flex:none;color:var(--ink);font-size:13px;font-weight:700;
+  transition:transform .12s ease,background .12s ease;cursor:pointer;margin-right:2px;border-radius:4px;
 }
+.gantt__chevron:hover{background:var(--paper-3);color:var(--red);}
 .gantt__chevron--collapsed{transform:rotate(-90deg);}
 .gantt__add-child{
   border:none;background:none;color:var(--red);font-size:10px;font-weight:600;
@@ -580,11 +583,12 @@ div.timeline-settimana__chip{cursor:default;}
   position:absolute;top:50%;transform:translateY(-50%);height:7px;border-radius:3px;
   background:var(--viola);opacity:.85;cursor:default;
 }
-.gantt__bar--summary{background:var(--ink) !important;opacity:.85;}
+.gantt__bar--summary{background:var(--gantt-color-riepilogo, var(--ink));opacity:.85;}
 
 /* barra baseline: posizione/durata originali, in trasparenza, non cliccabile.
-   Colore ambra per legarla visivamente al pallino "scostamento" (stesso
-   accento), distinguendola dalle barre di stato e dal gruppo Piano.
+   Colore ambra di default per legarla visivamente al pallino "scostamento"
+   (stesso accento), distinguendola dalle barre di stato e dal gruppo Piano
+   — personalizzabile dal pulsante "Colori" come le altre (--gantt-color-baseline).
    Parte esattamente dal centro della riga (dove la barra attività — alta
    11px, centrata con translateY(-50%) — ha il suo bordo inferiore) e
    scende per la stessa altezza: così resta sempre esattamente al 50%
@@ -592,7 +596,8 @@ div.timeline-settimana__chip{cursor:default;}
    nel DOM e quindi sopra. */
 .gantt__bar-baseline{
   position:absolute;top:50%;height:11px;border-radius:2px;pointer-events:none;
-  background:var(--ambra-wash);opacity:.8;border:1px dashed var(--ambra);
+  background:color-mix(in srgb, var(--gantt-color-baseline, var(--ambra)) 25%, var(--paper));
+  opacity:.85;border:1px dashed var(--gantt-color-baseline, var(--ambra));
 }
 
 .gantt__today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);opacity:.55;z-index:1;pointer-events:none;}
@@ -603,10 +608,10 @@ div.timeline-settimana__chip{cursor:default;}
 .gantt__legend-dot--in-corso{background:var(--gantt-color-in-corso);}
 .gantt__legend-dot--completata{background:var(--gantt-color-completata);}
 .gantt__legend-dot--ritardo{background:var(--gantt-color-ritardo);}
-.gantt__legend-dot--baseline{background:var(--ambra-wash);opacity:.9;border:1px dashed var(--ambra);border-radius:2px;}
+.gantt__legend-dot--baseline{background:color-mix(in srgb, var(--gantt-color-baseline, var(--ambra)) 25%, var(--paper));opacity:.9;border:1px dashed var(--gantt-color-baseline, var(--ambra));border-radius:2px;}
 .gantt__legend-bar{width:16px;height:6px;border-radius:3px;display:inline-block;}
 .gantt__legend-bar--group{background:var(--viola);opacity:.85;}
-.gantt__legend-bar--summary{background:var(--ink);opacity:.85;}
+.gantt__legend-bar--summary{background:var(--gantt-color-riepilogo, var(--ink));opacity:.85;}
 .gantt__zoom{width:110px;vertical-align:middle;}
 
 /* Frecce di dipendenza fra attività (Fine-Inizio), disegnate come overlay

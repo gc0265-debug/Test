@@ -97,8 +97,10 @@ export async function renderAllert(container) {
   let lastRows = [];
   let perimetroMap = {};
   let selectedId = null;
+  let filtroWp = '';
+  const wpPillHost = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
   const toolbar = el('div', { class: 'section__head' }, [
-    el('div'),
+    el('div', {}, [wpPillHost]),
     el('div', { style: 'display:flex;gap:8px' }, [
       el('button', { class: 'btn btn--sm', onclick: () => {
         const rows = selectedId ? lastRows.filter((r) => String(r.id) === String(selectedId)) : lastRows;
@@ -119,8 +121,10 @@ export async function renderAllert(container) {
   container.appendChild(tableHost);
 
   async function refresh() {
+    let query = queryScopeCommessa();
+    if (filtroWp) query += `&wp_id=${encodeURIComponent(filtroWp)}`;
     const [res, perimetroList, classificazioneList, statoList] = await Promise.all([
-      api.get(`/allert?${queryScopeCommessa()}`),
+      api.get(`/allert?${query}`),
       getCategoria('allert_perimetro'),
       getCategoria('allert_classificazione'),
       getCategoria('allert_stato'),
@@ -130,6 +134,18 @@ export async function renderAllert(container) {
     CLASSIFICAZIONE = mergeLabels(CLASSIFICAZIONE_FIXED, classificazioneList);
     STATO = mergeLabels(STATO_FIXED, statoList);
     lastRows = res.data;
+
+    wpPillHost.innerHTML = '';
+    if (!soloLettura) {
+      wpPillHost.appendChild(el('button', {
+        class: 'btn btn--sm' + (filtroWp === '' ? ' btn--primary' : ''),
+        onclick: () => { filtroWp = ''; refresh(); },
+      }, 'Tutti i WP'));
+      state.workPackages.forEach((w) => wpPillHost.appendChild(el('button', {
+        class: 'btn btn--sm' + (String(filtroWp) === String(w.id) ? ' btn--primary' : ''),
+        onclick: () => { filtroWp = w.id; refresh(); },
+      }, w.codice)));
+    }
     renderTable(tableHost, [
       soloLettura ? { key: 'commessa_codice', label: 'Commessa', render: (r) => r.commessa_codice || '—' } : null,
       { key: 'data', label: 'Data', render: (r) => formatDate(r.data) },

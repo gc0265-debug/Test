@@ -162,6 +162,26 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Timeline più chiara (chevron, colori, barra in corso) e filtro Work Package su 4 schede in più (2 novembre 2026)
+
+- Timeline: la freccina per comprimere/espandere un gruppo o una lavorazione
+  madre è ora più grande e scura, invece di un segno grigio chiaro quasi
+  invisibile.
+- Timeline: nel pulsante **"Colori"** si può ora scegliere anche il colore
+  della barra Baseline e quello della barra di riepilogo di una lavorazione
+  madre, oltre ai 4 colori di stato già personalizzabili.
+- Timeline: la barra **"Lavorazioni in corso"** in cima alla pagina ora
+  include anche una lavorazione madre il cui intervallo complessivo copre
+  la data odierna, anche quando nessuna sua sotto-attività risulta attiva
+  proprio oggi.
+- Timeline: le frecce di dipendenza fra le barre sono ora linee rette ad
+  angolo retto, in stile MS Project, al posto della curva precedente.
+- Registro Allert, Requisiti, Approvazioni Drawings e Maestranze hanno ora,
+  come già Lavorazioni/Criticità/Decisioni, un filtro a bottoni **"Tutti i
+  WP"** per Work Package in alto alla pagina.
+
+---
+
 ## Guida e Supporto in linea, baseline a confronto in Timeline, trimestri/semestri, markup con un clic (1 novembre 2026)
 
 - Nuova voce **"Guida e Supporto"** in fondo al menu laterale, raggiungibile
