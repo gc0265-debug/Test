@@ -162,6 +162,23 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Guida e Supporto: ogni argomento apre ora una pagina di dettaglio con tutte le funzioni (2 novembre 2026)
+
+- Cliccando un titolo nell'indice della Guida e Supporto non si scorre
+  più a un breve paragrafo dentro un'unica pagina lunghissima: si apre
+  una **pagina di dettaglio dedicata** a quella scheda, con l'elenco
+  completo di tutte le funzioni attive e una spiegazione di come si
+  usano, una per una.
+- La ricerca ora filtra l'**indice a sinistra** invece del testo di una
+  pagina unica: digitando, restano visibili solo gli argomenti
+  pertinenti, raggruppati come prima.
+- Contenuto riscritto e ampliato per riflettere tutte le funzioni
+  introdotte in questi rilasci (import CSV, baseline della milestone,
+  sincronizzazione in tempo reale, colonne ridimensionabili del Gantt,
+  storico su Documenti e così via), non solo quelle originarie.
+
+---
+
 ## Guida e Supporto spostata in alto, accanto al campo di ricerca (2 novembre 2026)
 
 - Il pulsante "Guida e Supporto" non è più in fondo al menu laterale:

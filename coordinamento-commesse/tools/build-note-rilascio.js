@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.58';
+const VERSIONE_ATTUALE = '1.59';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,15 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.58', title: 'Guida e Supporto spostata in alto, accanto al campo di ricerca', date: '2 novembre 2026', attuale: true,
+    v: '1.59', title: 'Guida e Supporto: ogni argomento apre ora una pagina di dettaglio con tutte le funzioni', date: '2 novembre 2026', attuale: true,
+    points: [
+      'Cliccando un titolo nell\'indice della Guida e Supporto non si scorre più a un breve paragrafo dentro un\'unica pagina lunghissima: si apre una pagina di dettaglio dedicata a quella scheda, con l\'elenco completo di tutte le funzioni attive e una spiegazione di come si usano, una per una.',
+      'La ricerca ora filtra l\'indice a sinistra invece del testo di una pagina unica: digitando, restano visibili solo gli argomenti pertinenti, raggruppati come prima.',
+      'Contenuto riscritto e ampliato per riflettere tutte le funzioni introdotte in questi rilasci (import CSV, baseline della milestone, sincronizzazione in tempo reale, colonne ridimensionabili del Gantt, storico su Documenti e così via), non solo quelle originarie.',
+    ],
+  },
+  {
+    v: '1.58', title: 'Guida e Supporto spostata in alto, accanto al campo di ricerca', date: '2 novembre 2026',
     points: [
       'Il pulsante "Guida e Supporto" non è più in fondo al menu laterale: ora è sempre visibile in alto, accanto al campo "Cerca in tutti i registri", su ogni pagina dell\'app.',
     ],
