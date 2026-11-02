@@ -162,6 +162,26 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Timeline: baseline modificabile a mano, colonne ridimensionabili, fix colori legenda (2 novembre 2026)
+
+- Il modulo di modifica di una milestone mostra ora un campo **"Baseline
+  (data di riferimento)"**: la data di riferimento con cui viene
+  confrontata la scadenza attuale non è più modificabile solo "in blocco"
+  con la casella "Reimposta la baseline su queste date" (rimossa), ma si
+  può impostare a qualunque data, ad esempio per allinearla a un nuovo
+  piano concordato senza perdere la scadenza originale.
+- Nella vista Gantt della Timeline, la linea che separa le colonne delle
+  attività (Attività, Durata, Baseline, Inizio, Fine, Predecessori) dal
+  grafico a barre è ora **trascinabile con il mouse**, esattamente come
+  la barra laterale della sidebar: la larghezza scelta resta memorizzata
+  nel browser.
+- Corretto un difetto per cui i quattro colori di stato (Pianificata, In
+  corso, Completata, In ritardo) nella legenda in fondo alla pagina non
+  venivano mostrati, restando invisibili anche quando personalizzati dal
+  pulsante "Colori".
+
+---
+
 ## Timeline: una milestone ha ora una sola data di scadenza (2 novembre 2026)
 
 - Il modulo di una milestone mostra ora un solo campo **"Data di

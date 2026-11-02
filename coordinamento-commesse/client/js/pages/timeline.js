@@ -57,6 +57,20 @@ function applicaColoriGantt(host, colori) {
     else host.style.removeProperty(`--gantt-color-${key}`);
   });
 }
+// Larghezza manuale della colonna Attività (vedi nomeWidthOverride):
+// persistita come preferenza del browser, non un dato di commessa.
+const CHIAVE_NOME_WIDTH_GANTT = 'cc.ganttNomeW';
+const GANTT_NOME_W_MIN = 120;
+const GANTT_NOME_W_MAX = 640;
+function leggiNomeWidthGantt() {
+  try {
+    const n = parseInt(localStorage.getItem(CHIAVE_NOME_WIDTH_GANTT), 10);
+    return Number.isFinite(n) && n >= GANTT_NOME_W_MIN && n <= GANTT_NOME_W_MAX ? n : null;
+  } catch (_) { return null; }
+}
+function salvaNomeWidthGantt(px) {
+  try { localStorage.setItem(CHIAVE_NOME_WIDTH_GANTT, String(px)); } catch (_) { /* privacy mode: non salvata */ }
+}
 function addDays(dateStr, n) {
   const d = new Date(dateStr + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + n);
@@ -311,15 +325,10 @@ async function openForm(existing, onSaved, presets = {}) {
     } else {
       extraHost.appendChild(field('Stato', select('stato', Object.entries(STATO).map(([k, v]) => [k, v[0]]), existing?.stato ?? 'pianificata'),
         'Determina il colore della barra nel Gantt.'));
-      if (existing?.ha_scostamento) {
-        extraHost.appendChild(el('label', { style: 'display:flex;gap:6px;align-items:flex-start;font-size:11.5px;color:var(--ink-2);margin:-6px 0 14px' }, [
-          el('input', { type: 'checkbox', name: 'reimposta_baseline', style: 'margin-top:2px' }),
-          el('span', {}, [
-            'Reimposta la baseline su queste date',
-            el('div', { class: 'field__hint', style: 'margin-top:2px' },
-              `Baseline attuale: ${formatDate(existing.baseline_data_inizio)} → ${formatDate(existing.baseline_data_fine)}. Spunta per far coincidere la barra di riferimento con le nuove date.`),
-          ]),
-        ]));
+      if (existing) {
+        extraHost.appendChild(field('Baseline (data di riferimento)',
+          dateInput('baseline_data_fine', existing.baseline_data_fine || existing.data_fine || todayISO()),
+          `Determina dove viene disegnata nel Gantt la barra tratteggiata di riferimento, per confronto con la data di scadenza attuale (${formatDate(existing.data_fine)}). Modificala per far coincidere il riferimento con un nuovo piano, oppure con le date correnti per azzerare lo scostamento.`));
       }
       extraHost.appendChild(field('Note', textarea('note', existing?.note ?? ''),
         'Annotazioni libere, visibili solo qui.'));
@@ -399,7 +408,6 @@ async function openForm(existing, onSaved, presets = {}) {
         else await api.post('/lavorazioni', data);
       } else {
         data.data_inizio = data.data_fine;
-        data.reimposta_baseline = data.reimposta_baseline === '1';
         if (existing) await api.put(`/milestone/${existing.id}`, data);
         else await api.post('/milestone', data);
       }
@@ -467,6 +475,11 @@ export async function renderTimeline(container) {
   let granularity = 'week';
   let zoom = 1;
   let items = [];
+  // Larghezza della colonna Attività: di norma auto-calcolata su misura del
+  // testo più lungo (vedi computeNomeWidth), ma l'utente può trascinare la
+  // maniglia fra colonne e grafico (vedi attachGanttResize) per imporre una
+  // misura propria, che allora prevale e resta salvata nel browser.
+  let nomeWidthOverride = leggiNomeWidthGantt();
   // Dipendenze fra attività (sempre Fine-Inizio): ricaricate solo in
   // refresh(), non ad ogni draw() — disegnarle di nuovo con lo zoom
   // cambiato non richiede di rileggerle dal server.
@@ -691,7 +704,9 @@ export async function renderTimeline(container) {
     const axis = buildAxis(rangeStart, rangeEnd, granularity, zoom);
     // +40px: spazio per il rientro dei due livelli (sotto-attività dentro
     // una lavorazione madre, dentro un gruppo Piano) più lo chevron.
-    const nomeWidth = computeNomeWidth(items) + 40;
+    // nomeWidthOverride (trascinando la maniglia fra colonne e grafico)
+    // prevale sulla misura automatica.
+    const nomeWidth = nomeWidthOverride || (computeNomeWidth(items) + 40);
 
     // Righe sottili verticali ad ogni confine di colonna dell'asse (una
     // per settimana in vista "Settimane", una per mese in vista "Mesi"):
@@ -1048,15 +1063,18 @@ export async function renderTimeline(container) {
       g.items.forEach((it) => rows.push(...buildItemRow(it, 0)));
     });
 
+    const resizeHandle = el('div', { class: 'gantt__resize-handle', title: 'Trascina per ridimensionare le colonne' });
     const chart = el('div', { class: 'gantt__chart' }, [
       headerRow,
       ...gridlines,
       ...rows,
       el('div', { class: 'gantt__today-line', style: `left: calc(var(--gantt-label-w) + ${todayOffsetPx}px)` }),
+      resizeHandle,
     ]);
 
     // WBS(32) + Nome + Durata(62) + Base.Inizio(85) + Base.Fine(85) + Inizio(85) + Fine(85) + Predecessori(85)
-    const labelWidthPx = nomeWidth + 32 + 62 + 85 + 85 + 85 + 85 + 85;
+    const ALTRE_COLONNE_PX = 32 + 62 + 85 + 85 + 85 + 85 + 85;
+    const labelWidthPx = nomeWidth + ALTRE_COLONNE_PX;
     ganttHost.innerHTML = '';
     const ganttEl = el('div', {
       class: 'gantt',
@@ -1067,6 +1085,7 @@ export async function renderTimeline(container) {
     if (scrollLeftPrecedente !== null) ganttEl.scrollLeft = scrollLeftPrecedente;
     if (scrollTopPrecedente !== null) ganttEl.scrollTop = scrollTopPrecedente;
     disegnaDipendenze(chart);
+    attachGanttResize(resizeHandle, ganttEl, chart, labelWidthPx, ALTRE_COLONNE_PX);
     ganttHost.appendChild(el('div', { class: 'gantt__legend' }, [
       legendItem('pianificata', 'Pianificata'), legendItem('in-corso', 'In corso'),
       legendItem('completata', 'Completata'), legendItem('ritardo', 'In ritardo'),
@@ -1079,6 +1098,44 @@ export async function renderTimeline(container) {
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dep gantt__legend-dep--critica' }), 'Dipendenza sul percorso critico']),
       el('div', { class: 'gantt__legend-item' }, [el('span', { class: 'gantt__legend-dep gantt__legend-dep--violazione' }), 'Dipendenza in conflitto con le date attuali']),
     ]));
+  }
+
+  // Maniglia trascinabile fra le colonne Attività e il grafico a barre,
+  // sul modello di setupSidebarResize() in app.js. La maniglia è assoluta
+  // (come .gantt__gridline/.gantt__today-line, per la stessa ragione: la
+  // sua altezza deve coprire tutto il grafico, non solo l'altezza propria
+  // in flusso) e non sticky: durante lo scroll orizzontale la sua posizione
+  // viene invece riallineata a mano, in syncLeft(), per restare sempre
+  // esattamente al confine con le colonne (che sono sticky).
+  function attachGanttResize(handle, ganttEl, chart, labelWidthPxIniziale, altreColonnePx) {
+    handle.style.height = `${chart.scrollHeight}px`;
+    const syncLeft = () => { handle.style.left = `${ganttEl.scrollLeft + labelWidthPxIniziale}px`; };
+    syncLeft();
+    ganttEl.addEventListener('scroll', syncLeft);
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = nomeWidthOverride || (computeNomeWidth(items) + 40);
+      let nuovaLarghezza = startWidth;
+      handle.classList.add('gantt__resize-handle--active');
+      function onMove(ev) {
+        nuovaLarghezza = Math.min(GANTT_NOME_W_MAX, Math.max(GANTT_NOME_W_MIN, startWidth + (ev.clientX - startX)));
+        const nuovoLabelWidthPx = nuovaLarghezza + altreColonnePx;
+        ganttEl.style.setProperty('--gantt-nome-w', `${nuovaLarghezza}px`);
+        ganttEl.style.setProperty('--gantt-label-w', `${nuovoLabelWidthPx}px`);
+        handle.style.left = `${ganttEl.scrollLeft + nuovoLabelWidthPx}px`;
+      }
+      function onUp() {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        handle.classList.remove('gantt__resize-handle--active');
+        nomeWidthOverride = nuovaLarghezza;
+        salvaNomeWidthGantt(nuovaLarghezza);
+      }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    });
   }
 
   function legendItem(cls, label) {
