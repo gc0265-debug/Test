@@ -28,7 +28,7 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.55';
+const VERSIONE_ATTUALE = '1.56';
 const DATA_ATTUALE = '2 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
@@ -105,7 +105,14 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.55', title: 'Import CSV esteso a tutti i registri principali, storico e date su Documenti', date: '2 novembre 2026', attuale: true,
+    v: '1.56', title: 'Stampa del Gantt: titolo e intestazione di cantiere, leggenda su una riga sola', date: '2 novembre 2026', attuale: true,
+    points: [
+      'La stampa della vista Gantt della Timeline mostra ora un\'intestazione sopra al grafico: "Crono di cantiere - Rev N - [data di stampa]" seguita da commessa ed "Emesso da: Giovanni Cazzola - Direttore di cantiere". Il numero di revisione viene proposto in automatico (l\'ultimo usato + 1) nel modulo "Stampa Timeline", ma resta modificabile a mano prima di stampare.',
+      'Corretto un difetto per cui la leggenda in fondo alla pagina, nelle stampe, andava a capo su più righe: ora resta sempre su una sola riga orizzontale, come nella vista a schermo.',
+    ],
+  },
+  {
+    v: '1.55', title: 'Import CSV esteso a tutti i registri principali, storico e date su Documenti', date: '2 novembre 2026',
     points: [
       'L\'import in blocco da CSV, introdotto in v1.54 per il cronoprogramma di Lavorazioni, è ora disponibile anche per Registro Allert, Registro Stakeholder, Requisiti e Maestranze: stesso meccanismo "Modello CSV" + "Importa da CSV" in ciascuna scheda, con le intestazioni specifiche di quel registro. Il Registro Criticità, il Registro Decisioni e Approvazioni Drawings avevano già un proprio import da Excel e restano invariati.',
       'Documenti mostra ora, aprendo un documento esistente, la Data di creazione e la Data di ultima modifica (sola lettura), più un pulsante "Storico" — come già presente in altri registri — che elenca ogni creazione/modifica con data e responsabile.',

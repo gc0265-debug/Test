@@ -706,11 +706,20 @@ div.timeline-settimana__chip{cursor:default;}
 /* Stampa vista Gantt: attivata da un pulsante dedicato in Timeline, che
    aggiunge questa classe al body solo per la durata della stampa, per
    nascondere il resto della pagina e lasciare solo il grafico. */
+.gantt-print-header{display:none;}
 @media print{
   body.printing-gantt .content > *:not(.gantt-print-area){display:none !important;}
-  body.printing-gantt .gantt-print-area > *:not(.gantt):not(.gantt__legend){display:none !important;}
+  body.printing-gantt .gantt-print-area > *:not(.gantt):not(.gantt__legend):not(.gantt-print-header){display:none !important;}
   body.printing-gantt .gantt{overflow:visible;border:none;max-height:none;}
   body.printing-gantt .gantt__chart{box-shadow:none;}
+  body.printing-gantt .gantt-print-header{display:block;margin-bottom:8px;width:max-content;min-width:100%;}
+  body.printing-gantt .gantt-print-header__titolo{font-size:15px;font-weight:700;margin:0 0 2px;color:#1A1A1A;white-space:nowrap;}
+  body.printing-gantt .gantt-print-header__sub{font-size:10.5px;color:#4D4D4D;white-space:nowrap;}
+  /* La leggenda deve restare su una sola riga anche in stampa, con 10
+     voci da far stare nella larghezza utile di una pagina landscape:
+     niente a-capo, testo e distanze ridotti quel tanto che basta. */
+  body.printing-gantt .gantt__legend{flex-wrap:nowrap;white-space:nowrap;gap:9px;font-size:7.3px;margin-top:6px;}
+  body.printing-gantt .gantt__legend-item{gap:3px;}
   @page{size:landscape;margin:10mm;}
 }
 

@@ -71,6 +71,21 @@ function leggiNomeWidthGantt() {
 function salvaNomeWidthGantt(px) {
   try { localStorage.setItem(CHIAVE_NOME_WIDTH_GANTT, String(px)); } catch (_) { /* privacy mode: non salvata */ }
 }
+
+// Numero di revisione del "Crono di cantiere" stampato (titolo sopra alla
+// vista Gantt): ad ogni stampa si propone l'ultima usata + 1, ma resta
+// modificabile a mano — ad es. per ristampare la stessa revisione senza
+// farla avanzare. Persistito come preferenza del browser.
+const CHIAVE_STAMPA_REV_GANTT = 'cc.ganttStampaRev';
+function prossimaRevisioneStampaGantt() {
+  try {
+    const n = parseInt(localStorage.getItem(CHIAVE_STAMPA_REV_GANTT), 10);
+    return Number.isFinite(n) && n > 0 ? n + 1 : 1;
+  } catch (_) { return 1; }
+}
+function salvaRevisioneStampaGantt(n) {
+  try { localStorage.setItem(CHIAVE_STAMPA_REV_GANTT, String(n)); } catch (_) { /* privacy mode: non salvata */ }
+}
 function addDays(dateStr, n) {
   const d = new Date(dateStr + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + n);
@@ -426,9 +441,26 @@ async function openForm(existing, onSaved, presets = {}) {
   openModal(existing ? (isLavorazione ? 'Modifica lavorazione' : 'Modifica milestone') : 'Nuova riga', form);
 }
 
-function stampaVistaGantt() {
+// Intestazione stampata sopra alla sola vista Gantt (titolo + descrizione,
+// come già previsto per i report tabellari da printReport, qui replicato
+// a mano perché la stampa del Gantt non apre una finestra a parte ma
+// stampa la pagina stessa con body.printing-gantt). Inserita/rimossa ad
+// ogni stampa invece di tenerla sempre nel DOM: il numero di revisione e
+// la data devono riflettere il momento esatto della stampa, non quello
+// dell'ultimo draw() del grafico.
+function stampaVistaGantt(commessa, revisione) {
+  const area = document.querySelector('.gantt-print-area');
+  const header = el('div', { class: 'gantt-print-header' }, [
+    el('div', { class: 'gantt-print-header__titolo' }, `Crono di cantiere - Rev ${revisione} - ${new Date().toLocaleDateString('it-IT')}`),
+    el('div', { class: 'gantt-print-header__sub' },
+      `${commessa ? `${commessa.codice} — ${commessa.nome} · ` : ''}Emesso da: Giovanni Cazzola - Direttore di cantiere`),
+  ]);
+  if (area) area.insertBefore(header, area.firstChild);
   document.body.classList.add('printing-gantt');
-  window.addEventListener('afterprint', () => document.body.classList.remove('printing-gantt'), { once: true });
+  window.addEventListener('afterprint', () => {
+    document.body.classList.remove('printing-gantt');
+    header.remove();
+  }, { once: true });
   window.print();
 }
 
@@ -440,9 +472,19 @@ function openStampaModal(items, commessa) {
     field('A', dateInput('a', ''), 'Include le righe già iniziate entro questa data.'),
   ]));
   const ganttCheckbox = el('input', { type: 'checkbox' });
-  form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin:-6px 0 16px;cursor:pointer' }, [
+  form.appendChild(el('label', { style: 'display:flex;gap:8px;align-items:center;font-size:12.5px;margin:-6px 0 10px;cursor:pointer' }, [
     ganttCheckbox, 'Includi anche la vista Gantt (grafico)',
   ]));
+  const revisioneHost = el('div');
+  form.appendChild(revisioneHost);
+  function drawRevisione() {
+    revisioneHost.innerHTML = '';
+    if (!ganttCheckbox.checked) return;
+    revisioneHost.appendChild(field('Revisione', textInput('revisione', String(prossimaRevisioneStampaGantt()), { required: true, style: 'max-width:100px' }),
+      'Numero di revisione mostrato nel titolo sopra al Gantt stampato ("Crono di cantiere - Rev N - data"). Proposto in automatico, modificabile a mano.'));
+  }
+  drawRevisione();
+  ganttCheckbox.addEventListener('change', drawRevisione);
   form.appendChild(el('div', { class: 'modal__actions' }, [
     el('button', { type: 'button', class: 'btn', onclick: () => closeModal() }, 'Annulla'),
     el('button', { type: 'submit', class: 'btn btn--primary' }, 'Stampa'),
@@ -466,7 +508,11 @@ function openStampaModal(items, commessa) {
         it.ha_scostamento ? `era ${formatDate(it.baseline_data_inizio)} → ${formatDate(it.baseline_data_fine)}` : '—',
       ]),
     }]);
-    if (includeGantt) stampaVistaGantt();
+    if (includeGantt) {
+      const revisione = parseInt(data.revisione, 10) || 1;
+      salvaRevisioneStampaGantt(revisione);
+      stampaVistaGantt(commessa, revisione);
+    }
   });
   openModal('Stampa Timeline', form);
 }

@@ -162,6 +162,20 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Stampa del Gantt: titolo e intestazione di cantiere, leggenda su una riga sola (2 novembre 2026)
+
+- La stampa della vista Gantt della Timeline mostra ora un'**intestazione
+  sopra al grafico**: "Crono di cantiere - Rev N - [data di stampa]"
+  seguita da commessa ed "Emesso da: Giovanni Cazzola - Direttore di
+  cantiere". Il numero di revisione viene proposto in automatico (l'ultimo
+  usato + 1) nel modulo "Stampa Timeline", ma resta modificabile a mano
+  prima di stampare.
+- Corretto un difetto per cui la leggenda in fondo alla pagina, nelle
+  stampe, andava a capo su più righe: ora resta sempre **su una sola
+  riga orizzontale**, come nella vista a schermo.
+
+---
+
 ## Import CSV esteso a tutti i registri principali, storico e date su Documenti (2 novembre 2026)
 
 - L'import in blocco da CSV, introdotto in v1.54 per il cronoprogramma di
