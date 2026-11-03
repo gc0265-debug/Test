@@ -162,6 +162,26 @@ di più quanto più l'app viene usata da un team reale nel tempo.*
 
 ---
 
+## Note al Diario di Cantiere via WhatsApp (3 novembre 2026)
+
+- Scrivendo un messaggio di testo al numero WhatsApp Business dell'app
+  (es. "2514RW: oggi completato il montaggio del corridoio P+4"), il
+  testo viene registrato subito come riga del **Diario di Cantiere** di
+  oggi per quella commessa, con una risposta di conferma automatica.
+- Più messaggi nello stesso giorno si accodano alla stessa voce di
+  diario (con l'orario di ciascuno), invece di crearne una nuova ogni
+  volta.
+- Solo messaggi da numeri esplicitamente autorizzati vengono accettati,
+  e la richiesta in arrivo viene verificata con la firma di Meta — vedi
+  `GUIDA_WHATSAPP.md` per la procedura di attivazione completa (serve
+  un numero WhatsApp Business e rendere il Mac raggiungibile da
+  internet, non è attivo di default).
+- Prima versione: solo messaggi di testo (foto/audio non ancora letti),
+  un numero o un piccolo elenco fisso di numeri autorizzati — non una
+  gestione utenti dal pannello Impostazioni.
+
+---
+
 ## Fix: sfondo scuro della sidebar non sempre visibile (2 novembre 2026)
 
 - Lo sfondo scuro del menu laterale introdotto in v1.61 in alcuni casi

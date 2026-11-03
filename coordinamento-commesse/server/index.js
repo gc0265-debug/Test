@@ -49,6 +49,7 @@ const reportConfigRouter = require('./routes/reportConfig');
 const timelineDipendenzeRouter = require('./routes/timelineDipendenze');
 const ricercaRouter = require('./routes/ricerca');
 const eventiRouter = require('./routes/eventi');
+const whatsappRouter = require('./routes/whatsapp');
 
 // Il secret firma i cookie di sessione: deve restare lo stesso tra un
 // riavvio e l'altro, altrimenti ogni riavvio invaliderebbe tutte le
@@ -82,7 +83,13 @@ app.use(cors());
 // per un elaborato tecnico multipagina possono pesare diversi MB — stesso
 // ordine di grandezza già accettato per i file caricati (25 MB, vedi
 // routes/documenti.js).
-app.use(express.json({ limit: '30mb' }));
+app.use(express.json({
+  limit: '30mb',
+  // Il corpo grezzo serve solo al webhook WhatsApp (routes/whatsapp.js),
+  // per verificare la firma HMAC di Meta prima di fidarsi del contenuto:
+  // va catturato qui, perché dopo il parsing lo stream non è più leggibile.
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}));
 app.use(session({
   store: new SqliteSessionStore(),
   secret: getOrCreateSessionSecret(),
@@ -108,6 +115,13 @@ app.use('/api', (req, res, next) => {
   next();
 });
 app.use('/api/eventi', requireAuth, eventiRouter);
+
+// Pubblico, nessuna sessione: è Meta (i server di WhatsApp) a chiamarlo
+// direttamente da internet, non un browser già loggato nell'app. La
+// sicurezza è affidata alla firma HMAC della richiesta e all'elenco dei
+// numeri autorizzati, verificati dentro la rotta stessa — vedi
+// routes/whatsapp.js e GUIDA_WHATSAPP.md.
+app.use('/api/whatsapp', whatsappRouter);
 
 // tutto il resto delle API richiede una sessione autenticata. Un utente
 // "cliente" è in sola lettura ovunque (blockWriteForCliente) e, per

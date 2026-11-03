@@ -28,8 +28,8 @@ const BODY = '262626';
 const GRAY = '666666';
 const RULE = 'CCCCCC';
 
-const VERSIONE_ATTUALE = '1.62';
-const DATA_ATTUALE = '2 novembre 2026';
+const VERSIONE_ATTUALE = '1.63';
+const DATA_ATTUALE = '3 novembre 2026';
 
 // Verifiche critiche indipendenti sull'applicazione (il "verdetto del
 // giudice" chiesto a più riprese): un log che cresce ad ogni round,
@@ -105,7 +105,16 @@ const VALUTAZIONI_CRITICHE = [
 // Più recente prima, come nel documento di riferimento.
 const SECTIONS = [
   {
-    v: '1.62', title: 'Fix: sfondo scuro della sidebar non sempre visibile', date: '2 novembre 2026', attuale: true,
+    v: '1.63', title: 'Note al Diario di Cantiere via WhatsApp', date: '3 novembre 2026', attuale: true,
+    points: [
+      'Scrivendo un messaggio di testo al numero WhatsApp Business dell\'app (es. "2514RW: oggi completato il montaggio del corridoio P+4"), il testo viene registrato subito come riga del Diario di Cantiere di oggi per quella commessa, con una risposta di conferma automatica.',
+      'Più messaggi nello stesso giorno si accodano alla stessa voce di diario (con l\'orario di ciascuno), invece di crearne una nuova ogni volta.',
+      'Solo messaggi da numeri esplicitamente autorizzati vengono accettati, e la richiesta in arrivo viene verificata con la firma di Meta — vedi GUIDA_WHATSAPP.md per la procedura di attivazione completa (serve un numero WhatsApp Business e rendere il Mac raggiungibile da internet, non è attivo di default).',
+      'Prima versione: solo messaggi di testo (foto/audio non ancora letti), un numero o un piccolo elenco fisso di numeri autorizzati — non una gestione utenti dal pannello Impostazioni.',
+    ],
+  },
+  {
+    v: '1.62', title: 'Fix: sfondo scuro della sidebar non sempre visibile', date: '2 novembre 2026',
     points: [
       'Lo sfondo scuro del menu laterale introdotto in v1.61 in alcuni casi non compariva (restava chiaro pur con le icone colorate già attive): i colori ora sono scritti direttamente nella regola, senza passare da variabili che in quel punto potevano non risolversi correttamente.',
       'Aggiunto anche un numero di versione al file di stile caricato dal browser, così un aggiornamento dell\'aspetto grafico si vede subito dopo un ricaricamento della pagina, senza dover forzare lo svuotamento della cache.',

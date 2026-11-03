@@ -12,6 +12,11 @@ non tecnico), vedi `NOTE_RILASCIO.md` nella stessa cartella principale:
 viene aggiornato con una nuova voce ogni volta che carico una novità, ed
 è pensato per essere condiviso con chi usa l'app.
 
+Per attivare l'invio di note al Diario di Cantiere via WhatsApp, vedi
+`GUIDA_WHATSAPP.md` nella stessa cartella — una guida a parte, più lunga
+delle altre perché tocca anche sistemi esterni (Meta, un tunnel verso
+internet).
+
 ---
 
 ## 1. Installazione iniziale (una tantum)
