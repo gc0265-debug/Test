@@ -37,6 +37,53 @@ pena salvarlo nei preferiti).
 
 ---
 
+## 1bis. Usarla anche da un altro Mac (es. il MacBook Air), con gli stessi dati
+
+Non serve una seconda installazione: il codice gira allo stesso modo su
+Mac Intel e su Mac Apple Silicon (M1/M2/M3...) già così com'è — gli
+script di questa cartella cercano da soli `node` sia in
+`/opt/homebrew/bin` (Apple Silicon) sia in `/usr/local/bin` (Intel). Il
+modo più semplice per avere **gli stessi dati** su entrambi i Mac è
+tenere il server acceso solo su uno dei due (quello già installato con
+il passo 1) e aprire quello stesso indirizzo anche dall'altro Mac, dalla
+stessa rete Wi-Fi/cavo di casa o studio — un solo database, sempre
+allineato, senza bisogno di sincronizzare nulla a mano.
+
+1. **Sul Mac dove gira già il server**, apri Preferenze di Sistema
+   (Impostazioni) → **Generali → Condivisione** e annota il "Nome
+   computer" indicato in fondo alla pagina (es. "iMac di Giovanni" →
+   l'indirizzo sarà `iMac-di-Giovanni.local`).
+2. **Sullo stesso Mac**, verifica il firewall: Impostazioni → **Rete →
+   Firewall** (su versioni più vecchie di macOS: Sicurezza e Privacy →
+   Firewall). Se è attivo, apri le opzioni e assicurati che non sia
+   selezionato "Blocca tutte le connessioni in entrata"; se il Mac
+   continua a non rispondere dall'altro dispositivo, la soluzione più
+   semplice è disattivare il firewall per questa porta, oppure dirmelo
+   e ti preparo un'istruzione precisa per il tuo caso.
+3. **Dal MacBook Air**, apri il browser e vai su:
+   `http://NOME-COMPUTER.local:3002` (sostituendo "NOME-COMPUTER" con
+   il nome annotato al passo 1, trattini al posto degli spazi). Salvalo
+   nei preferiti come fatto per `localhost:3002` sull'altro Mac.
+4. Accedi con le tue credenziali come di consueto: ogni dispositivo ha
+   la propria sessione, ma lavorando sugli stessi dati — una modifica
+   fatta dall'Air compare subito anche sull'altro Mac aperto (vedi la
+   sincronizzazione in tempo reale introdotta in v1.57).
+
+**Perché funziona già**: il server Node non è legato a `localhost`,
+risponde su tutta la rete locale del Mac che lo ospita; non è stato
+necessario cambiare una riga di codice per questo.
+
+**Limite da tenere a mente**: il Mac che ospita il server deve restare
+acceso e connesso alla rete perché l'altro dispositivo possa
+raggiungerlo — se è lui stesso un portatile, valuta di disattivare lo
+stand-by automatico quando è collegato alla corrente (Impostazioni →
+Batteria/Energia). Se preferissi invece un'installazione indipendente
+sull'Air, con un suo database separato (utile per usarla anche senza
+l'altro Mac acceso, ma senza allineamento automatico dei dati), basta
+ripetere il passo 1 di questa guida anche lì.
+
+---
+
 ## 2. Caricare un aggiornamento (ogni volta che c'è una novità)
 
 Quando ti avviso che ho pushato delle modifiche nuove (o quando vuoi
