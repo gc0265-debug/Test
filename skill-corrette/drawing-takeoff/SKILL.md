@@ -63,8 +63,10 @@ description: >
 
 1. Chiedi la **disciplina o categoria** da computare (es. arredi fissi di un WP,
    opere in c.a., tramezzature, elettrico, HVAC). Non estrarre nient'altro.
-2. Dall'indice di drawing-pack-qa seleziona le **sole tavole pertinenti** e,
-   per ciascuna, riporta revisione e scala validata.
+2. Dal `qa_registro.csv` di drawing-pack-qa (quello della cartella bonificata)
+   seleziona le **sole tavole pertinenti** e, per ciascuna, riporta revisione,
+   esito QA e scala validata. Pagine `Fail`: niente conteggi automatici; pagine
+   con ALLERTA SCALA: conteggi da testo sì, misure a scala no.
 3. Raccogli la **legenda dei codici** (es. `F6`, `C1`, `P1`): la dà l'utente o
    la si legge dalla legenda/abaco in tavola, citando pagina. Un codice senza
    significato noto si conta lo stesso ma va nel registro incertezze.
