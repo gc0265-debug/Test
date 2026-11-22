@@ -30,7 +30,7 @@ Fonte: shop drawing approvati dalla DLL (vedi `disegni/registro-shop-drawing.md`
 
 Ogni requisito si chiude con una prova (foto, verbale o ID Insite). I
 requisiti vanno confermati con GILI e con le specifiche dei fornitori: quelli
-sotto sono una base di partenza, non un elenco contrattuale.
+sotto sono una base di partenza da allineare al contratto. [DA ALLINEARE AL CONTRATTO]
 
 | Requisito | Esito (OK / NO / N.A.) | Data | Prova | Note |
 |---|---|---|---|---|

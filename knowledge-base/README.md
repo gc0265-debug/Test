@@ -98,4 +98,4 @@ Sono template: si copiano e si rinominano, non si compilano direttamente.
 | `sicurezza/` | `verifica-pos-cse` |
 | `disegni/` | `drawing-pack-qa`, `drawing-takeoff` (PR #3, non ancora unita) |
 
-Gli agenti verranno definiti in un secondo momento sopra questa struttura.
+Le schede degli agenti che lavorano sopra questa struttura sono in `agenti/`.

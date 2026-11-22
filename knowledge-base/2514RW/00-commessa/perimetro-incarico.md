@@ -25,7 +25,7 @@ comunicazioni di tutela è nella skill `pm-rappresentativo-gili-2514rw`
 - Coadiuvare GILI e il preposto nella verifica di completezza dei documenti
   di sicurezza dei subappaltatori, prima dell'inoltro a Progesim / SAC.
 - Fornire a GILI il riscontro di quanto verificato in campo come montato,
-  quando GILI lo richiede per la propria contabilità. [DA CONFERMARE]
+  quando GILI lo richiede per la propria contabilità (confermato il 2026-11-22).
 
 ## Fuori perimetro
 

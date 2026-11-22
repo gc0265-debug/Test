@@ -12,7 +12,7 @@ stato_documento: bozza
 
 L'elenco dei documenti richiesti va preso dal contratto a monte e dalle
 richieste dell'ufficio sicurezza del GC: le righe sotto sono una base da
-confermare, non un elenco normativo. [DA CONFERMARE]
+allineare, non un elenco normativo. [DA ALLINEARE AL CONTRATTO]
 
 | Documento richiesto | Presente | Pagina / file | Esito | Nota per GILI |
 |---|---|---|---|---|

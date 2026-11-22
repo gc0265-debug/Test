@@ -11,7 +11,7 @@ stato_documento: bozza
 
 Verifica di **presenza** dei documenti che fornitori e GILI devono
 consegnare. Il Direttore di Cantiere non redige né firma il fascicolo; l'elenco
-definitivo dei documenti va preso dal contratto. [DA CONFERMARE]
+definitivo dei documenti va preso dal contratto. [DA ALLINEARE AL CONTRATTO]
 
 | Documento | WP | Fornitore | Ricevuto | Data | Riferimento | Note |
 |---|---|---|---|---|---|---|

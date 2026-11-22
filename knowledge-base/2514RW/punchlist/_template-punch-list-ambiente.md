@@ -23,4 +23,4 @@ Prerequisito: nessuna NC aperta sull'ambiente (vedi `registro-nc.md`).
 | 1 | | | Alta / Media / Bassa | | | | Verificato il AAAA-MM-GG | Aperto / Chiuso |
 
 Le priorità della punch list sono distinte dalla gravità delle NC; i criteri
-vanno concordati con GILI. [DA CONFERMARE]
+vanno allineati al contratto e concordati con GILI. [DA ALLINEARE AL CONTRATTO]
