@@ -14,7 +14,7 @@ description: >
   vulnerabilità del fascicolo, presidio GC, mi hanno chiesto qualcosa
   che non mi compete. NON per mappare processi (mappa-tesoro) o
   scrivere skill (skill-creator), invariate; non è il registro
-  decisioni DL (preparazione-riunione-dl) né il design change log
+  decisioni DLL (preparazione-riunione-dl) né il design change log
   (registro-instabilita-progettuale).
 ---
 
@@ -148,7 +148,7 @@ di qualunque altra cosa.
 | Indicatore | Definizione |
 |---|---|
 | % riunioni 2514RW coperte da AT | Riunioni di commessa presidiate, su riunioni tenute |
-| Completezza SAL consolidato | WP presenti nel consolidato, su 4 |
+| Completezza SAL consolidato | WP presenti nel consolidato, su 4 (WP1–WP4 della 2514RW; il WP5 20 room è sulla commessa 2666RW) |
 | NC su WP2-4 comunicate da AT | Non conformità segnalate dal PM rappresentativo invece che dal PM del WP di competenza |
 | Gap evitato | Metrica **qualitativa**: riunioni che sarebbero rimaste scoperte, SAL non consolidati, NC mal gestite |
 
@@ -168,7 +168,7 @@ sommano mai.
 
 - **Mappatura dei processi da automatizzare** → `mappa-tesoro`, invariata.
 - **Scrittura o modifica di una skill** → `skill-creator`, invariata.
-- **Decisioni e pendenze del tavolo DL** → `preparazione-riunione-dl`.
+- **Decisioni e pendenze del tavolo DLL** → `preparazione-riunione-dl`.
   Lì si tracciano le decisioni della committenza; qui le comunicazioni
   con cui il prestatore si tutela.
 - **Revisioni su progetto approvato** → `registro-instabilita-progettuale`.

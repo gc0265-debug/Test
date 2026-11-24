@@ -10,7 +10,6 @@ export function DocumentoForm({ initial, onSave, onCancel }) {
     cantiere_id: '',
     url: '',
     notes: '',
-    tags: [],
     ...initial,
     tags: initial?.tags ? (typeof initial.tags === 'string' ? JSON.parse(initial.tags) : initial.tags) : [],
   });

@@ -20,11 +20,11 @@ function seed() {
     committente_finale: 'Colliers',
     gc: 'SAC S.p.A.',
     dl: 'Jacobs',
-    advisor: 'Studio Michaelides',
+    advisor: 'Ing. Michaelides (Advisor GILI)',
     direttore_cantiere: 'Giovanni Cazzola — Field Project SAS',
     data_apertura: '2026-01-01',
     stato: 'attiva',
-    note: 'Commessa di esempio: arredo su misura hospitality di lusso, montaggio in ATI.',
+    note: 'Commessa di esempio: arredo su misura hospitality di lusso. GILI è subappaltatore di SAC S.p.A. (ATI SAC, EGi, MIT).',
   }).lastInsertRowid;
 
   const insertWp = db.prepare(`
@@ -71,7 +71,7 @@ function seed() {
     commessa_id: commessaId, wp_id: wp.WP3,
     tema: 'Sospensione amministrativa su una zona suite',
     domanda_chiusa: 'Confermate la revoca della sospensione entro la prossima finestra utile? (SÌ/NO)',
-    a_chi: 'DL', data_prima_richiesta: unMeseFa,
+    a_chi: 'DLL', data_prima_richiesta: unMeseFa,
     impatto_se_non_decisa: 'Area non rilevabile, rischio slittamento sulla sequenza di montaggio',
     stato: 'richiesta', conferma_scritta: 0, n_riproposte: 1,
     note: 'Esempio: pendenza oltre 21 giorni, candidata a scrittura formale.',
@@ -88,7 +88,23 @@ function seed() {
     stato: 'in-corso', priorita: 'alta', scadenza: null, impresa: 'Squadra montaggio A',
   });
 
-  console.log(`Seed completato: commessa ${commessaId} (2514RW) con ${Object.keys(wp).length} work package.`);
+  // WP5 20 room: commessa separata 2666RW, stesso cantiere.
+  const commessa2666 = insertCommessa.run({
+    codice: '2666RW',
+    nome: 'Hotel Rosewood Roma · WP5 20 room',
+    cliente: 'GILI Creations Srl',
+    committente_finale: 'Colliers',
+    gc: 'SAC S.p.A.',
+    dl: 'Jacobs',
+    advisor: 'Ing. Michaelides (Advisor GILI)',
+    direttore_cantiere: 'Giovanni Cazzola — Field Project SAS',
+    data_apertura: '2026-10-29',
+    stato: 'attiva',
+    note: 'Commessa di esempio per il WP5 20 room.',
+  }).lastInsertRowid;
+  insertWp.run({ commessa_id: commessa2666, codice: 'WP5', nome: '20 ROOM', pm_responsabile: 'PM WP5', ordine: 5 });
+
+  console.log(`Seed completato: commessa ${commessaId} (2514RW) con ${Object.keys(wp).length} work package e commessa ${commessa2666} (2666RW) con WP5 20 ROOM.`);
 }
 
 seed();

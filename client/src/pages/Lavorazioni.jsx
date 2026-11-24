@@ -13,7 +13,7 @@ export function Lavorazioni() {
   const [creating, setCreating] = useState(false);
 
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v))).toString();
-  const { data, loading, refetch } = useApi(`/lavorazioni?${query}`, [query]);
+  const { data, loading, refetch } = useApi(`/lavorazioni?${query}`);
 
   const items = data?.data || [];
 

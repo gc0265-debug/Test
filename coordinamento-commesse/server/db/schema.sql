@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS criticita (
     cosa_serve TEXT,
     entro_quando TEXT,                         -- data (YYYY-MM-DD), obbligatoria se urgenza='viola'
     impatto_programma TEXT,
-    destinatario TEXT,                         -- es. SAC, DL, Colliers, interno GILI
+    destinatario TEXT,                         -- es. SAC, DLL, Colliers, interno GILI
     urgenza TEXT NOT NULL DEFAULT 'normale'
             CHECK(urgenza IN ('viola','verde','normale')),
     stato TEXT NOT NULL DEFAULT 'aperta'
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS criticita (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
--- Registro Decisioni: domande chiuse (SI/NO) rivolte a DL/SAC/GC, con
+-- Registro Decisioni: domande chiuse (SI/NO) rivolte a DLL/SAC/GC, con
 -- anzianità e conferma scritta — stesso schema di Registro_Decisioni_DL_2514RW.
 CREATE TABLE IF NOT EXISTS decisioni (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

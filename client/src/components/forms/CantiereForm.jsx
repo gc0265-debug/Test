@@ -11,7 +11,6 @@ export function CantiereForm({ initial, onSave, onCancel }) {
     end_date: '',
     budget: '',
     notes: '',
-    tags: [],
     ...initial,
     tags: initial?.tags ? (typeof initial.tags === 'string' ? JSON.parse(initial.tags) : initial.tags) : [],
   });

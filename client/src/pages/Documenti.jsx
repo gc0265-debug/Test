@@ -21,7 +21,7 @@ export function Documenti() {
   const [creating, setCreating] = useState(false);
 
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v))).toString();
-  const { data, loading, refetch } = useApi(`/documenti?${query}`, [query]);
+  const { data, loading, refetch } = useApi(`/documenti?${query}`);
 
   const items = data?.data || [];
 

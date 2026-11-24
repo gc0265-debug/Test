@@ -15,7 +15,7 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   `Registro_Criticita_PM`) o *verde* (risposta dovuta dalla controparte,
   senza termine fisso). Il cruscotto segnala separatamente le urgenze
   aperte e quelle già scadute.
-- **Registro Decisioni** — domande chiuse (SÌ/NO) verso DL/SAC/GC, con
+- **Registro Decisioni** — domande chiuse (SÌ/NO) verso DLL/SAC/GC, con
   anzianità in giorni, soglia dei 21 giorni, tasso di resa e percentuale
   di conferme per iscritto — lo stesso cruscotto di
   `Registro_Decisioni_DL_2514RW.xlsx`.
@@ -27,7 +27,8 @@ emersi analizzando `00_Corrispondenza/Presidio RSW`:
   gestione commessa di base, sullo stesso modello di Board.
 
 L'app è multi-commessa: ogni commessa ha i propri Work Package (di
-default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B, la convenzione
+default WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B sulla 2514RW e
+WP5 20 room sulla 2666RW, la convenzione
 Field Project, ma modificabili) e tutti i registri sono agganciati alla
 commessa selezionata nella barra laterale.
 

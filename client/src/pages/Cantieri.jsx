@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { api } from '../api/client';
 import { FilterBar } from '../components/common/FilterBar';
-import { ItemCard } from '../components/common/ItemCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { Modal } from '../components/common/Modal';
 import { CantiereForm } from '../components/forms/CantiereForm';
@@ -13,7 +12,7 @@ export function Cantieri() {
   const [creating, setCreating] = useState(false);
 
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v))).toString();
-  const { data, loading, refetch } = useApi(`/cantieri?${query}`, [query]);
+  const { data, loading, refetch } = useApi(`/cantieri?${query}`);
 
   const items = data?.data || [];
 

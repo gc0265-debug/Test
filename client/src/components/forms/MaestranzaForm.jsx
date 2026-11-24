@@ -9,7 +9,6 @@ export function MaestranzaForm({ initial, onSave, onCancel }) {
     phone: '',
     status: 'attivo',
     qualifications: '',
-    tags: [],
     ...initial,
     tags: initial?.tags ? (typeof initial.tags === 'string' ? JSON.parse(initial.tags) : initial.tags) : [],
   });

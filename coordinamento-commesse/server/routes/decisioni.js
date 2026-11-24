@@ -6,7 +6,7 @@ const router = express.Router();
 
 // anzianita_giorni: giorni dalla prima richiesta, calcolata fino a oggi se
 // ancora aperta/parziale, fino alla data_decisione se decisa. oltre_21gg
-// segue la regola del Registro Decisioni DL: pendenze oltre 21 giorni sono
+// segue la regola del Registro Decisioni DLL: pendenze oltre 21 giorni sono
 // candidate a scrittura formale.
 function arricchisci(row) {
   const fine = row.stato === 'decisa' && row.data_decisione ? row.data_decisione : todayStr();

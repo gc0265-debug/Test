@@ -313,7 +313,7 @@
 
   <footer>
     <span>Field Project SAS — Vicenza · coordinamento installazioni arredo contract</span>
-    <span class="mono">D.Lgs. 81/2008 · WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B</span>
+    <span class="mono">D.Lgs. 81/2008 · WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B · WP5 20 room (2666RW)</span>
   </footer>
 </div>
 
@@ -338,8 +338,8 @@ const GROUPS = [
     items:[
       {
         name:"Apertura commessa & Kick-off", slug:"front-end-planning",
-        desc:"Analisi documentale gerarchica di capitolato, disegni e computo, con registro discordanze e RFI verso GC/DL.",
-        what:"Struttura la Fase 1 di una nuova commessa: legge capitolato, elaborati e computo in gerarchia, apre il registro delle discordanze e le RFI verso GC/DL, mappa stakeholder e brand standard, imposta il site survey logistico e costruisce la RTM (requisito → fonte → disegno → item). Chiude con un readiness gate che autorizza — o blocca — l'apertura della progettazione esecutiva.",
+        desc:"Analisi documentale gerarchica di capitolato, disegni e computo, con registro discordanze e RFI verso GC/DLL.",
+        what:"Struttura la Fase 1 di una nuova commessa: legge capitolato, elaborati e computo in gerarchia, apre il registro delle discordanze e le RFI verso GC/DLL, mappa stakeholder e brand standard, imposta il site survey logistico e costruisce la RTM (requisito → fonte → disegno → item). Chiude con un readiness gate che autorizza — o blocca — l'apertura della progettazione esecutiva.",
         when:["Nuova commessa assegnata, prima che si apra la progettazione esecutiva","Capitolato e disegni si contraddicono e serve tracciare la discordanza","Sopralluogo logistico iniziale (accessi, montacarichi, aree di stoccaggio)","Domanda: «siamo pronti ad aprire la progettazione?»"],
         out:["Registro_Discordanze_RFI_[COMMESSA].xlsx","RTM_[COMMESSA].xlsx","Readiness_Gate_[COMMESSA].docx"],
         never:["Commesse già avviate","Varianti in corso d'opera → project-controller","Instabilità progettuale dopo l'approvazione → registro-instabilita-progettuale"],
@@ -351,10 +351,10 @@ const GROUPS = [
         desc:"Inclusioni, esclusioni e assunzioni esplicite, più la WBS codificata area fisica → lavorazioni → voci capitolato.",
         what:"Formalizza dove finisce il nostro lavoro e dove inizia quello altrui — la causa prima delle varianti e delle NC «di confine». Genera la WBS a 3 livelli con codici WP riutilizzati da project-controller (avanzamento) e sal-controller (contabilità) per tutta la durata della commessa.",
         when:["Subito dopo il front-end planning","Quando il GC chiede «cosa è incluso nel contratto?»","Prima di assegnare le lavorazioni ai fornitori","Prima di attivare avanzamento fisico o SAL"],
-        out:["WBS in Word/PDF per GC/DL","Excel operativo con codici WP","Diagramma ad albero della commessa"],
+        out:["WBS in Word/PDF per GC/DLL","Excel operativo con codici WP","Diagramma ad albero della commessa"],
         never:["Avanzamento fisico su WBS già definita → project-controller","Contabilità SAL → sal-controller"],
         prev:["front-end-planning"], next:["project-controller","sal-controller"],
-        cmd:"Definiamo ambito e WBS della commessa [CODICE]: inclusioni, esclusioni, assunzioni e WBS a 3 livelli sui WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B."
+        cmd:"Definiamo ambito e WBS della commessa [CODICE]: inclusioni, esclusioni, assunzioni e WBS a 3 livelli sui WP1 FOH / WP2 CORRIDOI / WP3 SUITE / WP4 SCALA B / WP5 20 room (2666RW)."
       },
       {
         name:"Shop drawing, submittal & design freeze", slug:"progettazione-shop-drawing",
@@ -380,7 +380,7 @@ const GROUPS = [
         name:"Piano di Cantiere", slug:"piano-cantiere-ddc",
         desc:"Organigramma, sequenza WP e milestone, logistica macro, sicurezza, qualità/collaudo, rischi iniziali.",
         what:"Intervista il Direttore di Cantiere e costruisce il piano macro della commessa, dalla presa in carico al collaudo: organigramma, sequenza dei WP con milestone, fornitori assegnati, logistica macro, presidio sicurezza D.Lgs. 81/2008, piano qualità e collaudo, comunicazione e registro rischi iniziale.",
-        when:["Dopo l'handover, prima di aprire fisicamente il cantiere","Serve un master plan da condividere con GC e DL","Cambia in modo sostanziale la sequenza dei WP"],
+        when:["Dopo l'handover, prima di aprire fisicamente il cantiere","Serve un master plan da condividere con GC e DLL","Cambia in modo sostanziale la sequenza dei WP"],
         out:["Piano_di_Cantiere_[COMMESSA].docx","Piano_di_Cantiere_[COMMESSA]_Milestone.xlsx"],
         never:["Apertura pre-progettazione → front-end-planning","Ambito/WBS → scope-wbs","Avanzamento giornaliero o slot di scarico puntuali → skill operative"],
         prev:["handover-commessa-pm-ddc"], next:["cantiere-sicurezza-onboarding"],
@@ -391,27 +391,27 @@ const GROUPS = [
   {
     id:"sicurezza", n:"§ 81/08", seq:false, tone:"sicurezza",
     title:"Sicurezza — presidio continuo",
-    note:"Quattro presidi distinti, non intercambiabili: documenti aziendali all'apertura, verifica del singolo POS prima del CSE, scadenze nominali che vivono su più cantieri, controllo a evento in corso d'opera.",
+    note:"Quattro presidi distinti, non intercambiabili: documenti aziendali all'apertura, verifica di completezza del singolo POS prima dell'inoltro a Progesim/SAC, scadenze nominali che vivono su più cantieri, controllo a evento in corso d'opera.",
     items:[
       {
         name:"Apertura cantiere in sicurezza", slug:"cantiere-sicurezza-onboarding",
         desc:"POS, DUVRI, idoneità tecnico-professionale art. 90, tessere di riconoscimento e DURC, squadra per squadra.",
-        what:"Traccia per ogni squadra o subappaltatore lo stato della documentazione di sicurezza, segnala i documenti mancanti o scaduti, genera il report di apertura cantiere per DL/GC e le email di sollecito urgente verso i subappaltatori in stato giallo o rosso.",
+        what:"Traccia per ogni squadra o subappaltatore lo stato della documentazione di sicurezza, segnala i documenti mancanti o scaduti, genera il report di apertura cantiere per DLL/GC e le email di sollecito urgente verso i subappaltatori in stato giallo o rosso.",
         when:["Apertura di un nuovo cantiere","Ingresso di una nuova squadra prima del montaggio","Verifica: «il cantiere può partire in sicurezza?»"],
-        out:["Report apertura cantiere per DL/GC","Email di sollecito ai subappaltatori giallo/rosso","Stato documentale per squadra"],
+        out:["Report apertura cantiere per DLL/GC","Email di sollecito ai subappaltatori giallo/rosso","Stato documentale per squadra"],
         never:["Audit dei contratti → auditing-contratti-montaggio","Sicurezza in corso d'opera → sicurezza-continuativa-cantiere","Avanzamento fisico o varianti → project-controller"],
         next:["verifica-pos-cse","scadenzario-certificazioni-sicurezza"],
         cmd:"Verifica lo stato documentale di sicurezza per l'apertura del cantiere [COMMESSA]: POS, DUVRI, art. 90, tessere e DURC per ogni squadra."
       },
       {
-        name:"Verifica POS prima del CSE", slug:"verifica-pos-cse",
-        desc:"Sei aree critiche, esito GO / NO-GO e bozza email al fornitore con le integrazioni richieste.",
-        what:"Controlla il POS di un fornitore prima che arrivi al Coordinatore per la Sicurezza: attestati e validità, rischi generali, rischi specifici per mansione, firme obbligatorie (RSPP, datore di lavoro, medico competente), dati anagrafici degli operatori, dati formali aziendali e coerenza con il cantiere.",
-        when:["«Ho ricevuto il POS»","«Devo mandare il POS al CSE»","Il POS sembra incompleto o generico"],
-        out:["Report_Verifica_POS_[CodiceCommessa]_[RagioneSociale]_[DataVerifica].docx","Esito GO / NO-GO","Bozza email al fornitore con le integrazioni"],
+        name:"Verifica completezza POS", slug:"verifica-pos-cse",
+        desc:"Sei aree di completezza, esito COMPLETO / DA INTEGRARE e bozza email al fornitore che GILI invia a nome proprio.",
+        what:"A supporto di GILI e del preposto, controlla la completezza del POS di un fornitore prima che GILI lo inoltri all'ufficio sicurezza del GC (Progesim, SAC) per la validazione dei permessi di accesso: attestati e validità, rischi generali, rischi specifici per mansione, firme obbligatorie (RSPP, datore di lavoro, medico competente), dati anagrafici degli operatori, dati formali aziendali e coerenza con il cantiere. Non valida il POS: la validazione spetta a Progesim/SAC.",
+        when:["«Ho ricevuto il POS»","«GILI deve inoltrare il POS all'ufficio sicurezza»","Il POS sembra incompleto o generico"],
+        out:["Report_Verifica_POS_[CodiceCommessa]_[RagioneSociale]_[DataVerifica].docx","Esito COMPLETO / DA INTEGRARE (nessuna validazione)","Bozza email al fornitore, che GILI invia a nome proprio"],
         never:["Checklist documentale di apertura → cantiere-sicurezza-onboarding","Scadenze nominali per operatore → scadenzario-certificazioni-sicurezza"],
         prev:["cantiere-sicurezza-onboarding"],
-        cmd:"Verifica questo POS prima dell'invio al CSE: controlla attestati, rischi specifici per mansione, firme RSPP/DL/medico e coerenza cantiere. Dammi esito GO/NO-GO."
+        cmd:"Verifica la completezza di questo POS prima che GILI lo inoltri a Progesim/SAC: controlla attestati, rischi specifici per mansione, firme RSPP/DL/medico e coerenza cantiere. Dammi esito COMPLETO / DA INTEGRARE."
       },
       {
         name:"Scadenzario certificazioni", slug:"scadenzario-certificazioni-sicurezza",
@@ -425,9 +425,9 @@ const GROUPS = [
       {
         name:"Sicurezza in corso d'opera", slug:"sicurezza-continuativa-cantiere",
         desc:"Controllo a evento: nuova fase, nuovo subappalto, squadra cambiata. Escalation a 3 segnalazioni in 90 giorni.",
-        what:"Tra apertura cantiere e collaudo finale verifica insieme POS e DUVRI ancora validi, DPI idonei alla fase in corso e idoneità sanitaria, interrogando lo scadenzario. Tiene lo storico dei comportamenti a rischio per squadra, con soglia di escalation verso DL e GC.",
+        what:"Tra apertura cantiere e collaudo finale verifica insieme POS e DUVRI ancora validi, DPI idonei alla fase in corso e idoneità sanitaria, interrogando lo scadenzario. Tiene lo storico dei comportamenti a rischio per squadra, con soglia di escalation verso DLL e GC.",
         when:["Parte una nuova fase lavorativa","Entra un nuovo subappalto","Cambia la composizione di una squadra già onboardata","Rilevato un comportamento a rischio","Subentro di operai non onboardati"],
-        out:["Verifica a evento POS/DUVRI/DPI","Storico comportamenti a rischio per squadra","Escalation a DL/GC oltre soglia"],
+        out:["Verifica a evento POS/DUVRI/DPI","Storico comportamenti a rischio per squadra","Escalation a DLL/GC oltre soglia"],
         never:["Apertura cantiere → cantiere-sicurezza-onboarding","Scadenze individuali → scadenzario-certificazioni-sicurezza","Collaudo finale → logistica-e-collaudo"],
         prev:["cantiere-sicurezza-onboarding"],
         cmd:"Parte la fase [attività] sul cantiere [COMMESSA] con la squadra [fornitore]: verifica POS/DUVRI validi, DPI idonei e idoneità sanitaria."
@@ -452,18 +452,18 @@ const GROUPS = [
       {
         name:"Slot di scarico & snag list", slug:"logistica-e-collaudo",
         desc:"Prenotazione arrivi con rilevamento sovrapposizioni, e snag list standard per il collaudo finale.",
-        what:"Due processi complementari: la pianificazione logistica pre-cantiere, che prenota gli slot di scarico e segnala automaticamente le sovrapposizioni tra fornitori, mezzi, aree e montacarichi; e la snag list del collaudo finale con DL e GC, con posizione, priorità e scadenza per ogni punto.",
-        when:["Pianificazione arrivi merce","Due fornitori chiedono lo stesso montacarichi","Sopralluogo di collaudo con DL/GC","Punch list pre-consegna"],
+        what:"Due processi complementari: la pianificazione logistica pre-cantiere, che prenota gli slot di scarico e segnala automaticamente le sovrapposizioni tra fornitori, mezzi, aree e montacarichi; e la snag list del collaudo finale con DLL e GC, con posizione, priorità e scadenza per ogni punto.",
+        when:["Pianificazione arrivi merce","Due fornitori chiedono lo stesso montacarichi","Sopralluogo di collaudo con DLL/GC","Punch list pre-consegna"],
         out:["Calendario slot di scarico con conflitti evidenziati","Snag list standard Field Project SAS"],
         never:["NC rilevate durante l'esecuzione ordinaria → gestione-non-conformita (un punto irrisolto di snag list può però essere convertito in NC)"],
         cmd:"Prenota gli slot di scarico della prossima settimana per la commessa [CODICE] e verifica sovrapposizioni su mezzi, aree e montacarichi."
       },
       {
         name:"Non conformità con SLA", slug:"gestione-non-conformita",
-        desc:"Apertura, gravità, SLA, stato Aperta → In lavorazione → Verificata → Chiusa, escalation a DL/GC.",
+        desc:"Apertura, gravità, SLA, stato Aperta → In lavorazione → Verificata → Chiusa, escalation a DLL/GC.",
         what:"Difetti di montaggio, materiali danneggiati, scostamenti da progetto o capitolato: assegna lo SLA per gravità, traccia lo stato, segnala i ritardi rispetto allo SLA ed effettua l'escalation per le NC critiche o scadute.",
         when:["Rilevato un difetto di montaggio o un danno","Scostamento dal capitolato","Serve escalation verso un fornitore","Carichi foto o elenchi di problemi dal cantiere"],
-        out:["Scheda NC con gravità e SLA","Registro NC con stato e ritardi","Escalation a DL/GC per NC critiche"],
+        out:["Scheda NC con gravità e SLA","Registro NC con stato e ritardi","Escalation a DLL/GC per NC critiche"],
         never:["Snag list finale di collaudo → logistica-e-collaudo","Varianti contrattuali → project-controller","Audit contratti di fornitura → auditing-contratti-montaggio"],
         next:["storico-performance-fornitori"],
         cmd:"Apri una non conformità sulla commessa [CODICE]: [descrizione difetto], WP [n], fornitore [nome]. Assegna gravità e SLA."
@@ -471,11 +471,11 @@ const GROUPS = [
       {
         name:"Registro instabilità progettuale", slug:"registro-instabilita-progettuale",
         desc:"Data certa su ogni revisione di pacchetto già approvato, con impatto su programma e ore di riprogettazione.",
-        what:"Traccia con data certa le revisioni su pacchetti già approvati, i dettagli mai definiti e le modifiche di committente, DL o Interior Designer che riportano il lavoro in progettazione, collegando ogni episodio al pacchetto approvato precedente. Produce l'estratto settimanale per l'Advisor, a supporto delle scritture formali di rito e della difesa degli slittamenti.",
+        what:"Traccia con data certa le revisioni su pacchetti già approvati, i dettagli mai definiti e le modifiche di committente, DLL o Interior Designer che riportano il lavoro in progettazione, collegando ogni episodio al pacchetto approvato precedente. Produce l'estratto settimanale per l'Advisor, a supporto delle scritture formali di rito e della difesa degli slittamenti.",
         when:["Un pacchetto approvato torna in discussione","Un dettaglio non è mai stato definito","«Torniamo in progettazione»","Serve difendere uno slittamento di programma"],
         out:["Registro_IP_[COMMESSA].xlsx","Estratto settimanale per l'Advisor"],
         never:["Varianti economiche formalizzate → project-controller","NC di montaggio → gestione-non-conformita","Extra lavori fornitori"],
-        cmd:"Registra un episodio di instabilità progettuale sulla commessa [CODICE]: [pacchetto] già approvato il [data], modifica richiesta da [committente/DL/ID]. Stima impatto su programma e ore."
+        cmd:"Registra un episodio di instabilità progettuale sulla commessa [CODICE]: [pacchetto] già approvato il [data], modifica richiesta da [committente/DLL/ID]. Stima impatto su programma e ore."
       }
     ]
   },
@@ -518,26 +518,26 @@ const GROUPS = [
   {
     id:"governance", n:"04", seq:true, tone:"skill",
     title:"Reporting & Governance",
-    note:"Quello che esce dalla commessa verso l'esterno: DL, GC, cliente finale, Advisor. Ogni destinatario ha il suo formato e il suo livello di dettaglio. Il presidio è l'eccezione: non guarda l'opera, guarda la posizione di chi la coordina.",
+    note:"Quello che esce dalla commessa verso l'esterno: DLL, GC, cliente finale, Advisor. Ogni destinatario ha il suo formato e il suo livello di dettaglio. Il presidio è l'eccezione: non guarda l'opera, guarda la posizione di chi la coordina.",
     items:[
       {
         name:"Report settimanale & consolidato Advisor", slug:"reportistica-brandizzata",
-        desc:"Tre destinatari, tre formati: PDF/Word per DL e GC, email narrativa al cliente, consolidato per l'Advisor.",
+        desc:"Due destinatari, due formati: PDF/Word per DLL e GC, consolidato per l'Advisor.",
         what:"Genera la reportistica periodica in identità Field Project SAS. Il consolidato per l'Advisor riconcilia tre fonti — dati di campo del Direttore di Cantiere e del preposto, input strutturato del PM, dati dell'app di cantiere — in un quadro unico pre-riunione, con avanzamento per WP, criticità, verifica milestone e segnalazione esplicita delle discrepanze tra fonti.",
-        when:["Fine settimana, report a DL/GC","Aggiornamento narrativo al cliente finale","Prima della riunione di coordinamento con l'Advisor","I dati di campo e quelli del PM non tornano"],
-        out:["Report settimanale PDF/Word per DL/GC","Email narrativa per il cliente finale","Consolidato Advisor con discrepanze tra fonti","Input_PM_Settimanale.xlsx"],
+        when:["Fine settimana, report a DLL/GC","Prima della riunione di coordinamento con l'Advisor","I dati di campo e quelli del PM non tornano"],
+        out:["Report settimanale PDF/Word per DLL/GC","Consolidato Advisor con discrepanze tra fonti","Input_PM_Settimanale.xlsx"],
         never:["Notifica singola di una NC o di un problema di sicurezza — qui vengono aggregate nel periodico"],
         prev:["coordinamento-giornaliero-gc","project-controller"],
-        cmd:"Prepara il report settimanale della commessa [CODICE] per DL/GC e il consolidato per l'Advisor, riconciliando dati di campo, input PM e app di cantiere."
+        cmd:"Prepara il report settimanale della commessa [CODICE] per DLL/GC e il consolidato per l'Advisor, riconciliando dati di campo, input PM e app di cantiere."
       },
       {
-        name:"Contro-agenda riunione DL", slug:"preparazione-riunione-dl",
+        name:"Contro-agenda riunione DLL", slug:"preparazione-riunione-dl",
         desc:"Una pagina con i temi che portiamo noi al tavolo e le decisioni richieste come domande chiuse.",
-        what:"Quando la riunione con DL e committenza arriva senza agenda né materiali, costruisce la contro-agenda di una pagina: temi che l'esecutore porta al tavolo, decisioni richieste formulate come domande chiuse, nodi in attesa con la data di prima segnalazione. Dopo la riunione aggiorna il registro decisioni e pendenze con esiti, anzianità e solleciti.",
-        when:["Riunione DL o di coordinamento con il committente","La DL non ha mandato agenda","Una decisione è ferma da settimane","L'esito della riunione è rimasto confuso"],
+        what:"Quando la riunione con DLL e committenza arriva senza agenda né materiali, costruisce la contro-agenda di una pagina: temi che l'esecutore porta al tavolo, decisioni richieste formulate come domande chiuse, nodi in attesa con la data di prima segnalazione. Dopo la riunione aggiorna il registro decisioni e pendenze con esiti, anzianità e solleciti.",
+        when:["Riunione DLL o di coordinamento con il committente","La DLL non ha mandato agenda","Una decisione è ferma da settimane","L'esito della riunione è rimasto confuso"],
         out:["Contro-agenda di una pagina","Registro_Decisioni_DL_[COMMESSA].xlsx con anzianità e solleciti"],
         never:["Riunione interna ATI/Advisor → reportistica-brandizzata","Diario quotidiano → coordinamento-giornaliero-gc"],
-        cmd:"Prepara la contro-agenda per la riunione DL di [data] sulla commessa [CODICE]: temi nostri, decisioni richieste come domande chiuse, nodi in attesa con data di prima segnalazione."
+        cmd:"Prepara la contro-agenda per la riunione DLL di [data] sulla commessa [CODICE]: temi nostri, decisioni richieste come domande chiuse, nodi in attesa con data di prima segnalazione."
       },
       {
         name:"Cruscotto mensile", slug:"cruscotto-mensile",
@@ -555,7 +555,7 @@ const GROUPS = [
         what:"Tiene il Registro Allert delle comunicazioni di tutela verso la committenza e classifica ogni output in perimetro, grigio o fuori perimetro — con rimessione sempre nominale, mai «si valuterà». Applica gli otto pattern di tutela, la scala di sollecito 7/15/30 giorni e il registro delle vulnerabilità dell'infrastruttura (casella di posta, firma, copertura assicurativa). Legge il fascicolo Presidio_GC e il Registro Allert: senza quei due file non ha memoria. Stato: ricostruita, da caricare fra le skill attive.",
         when:["Stai per scrivere una comunicazione che tocca un tema fuori dal tuo incarico","«Questo rientra nel mio perimetro?»","Una segnalazione formale è ferma e il termine è scaduto","Revisione periodica del registro, per cercare comunicazioni mai tracciate","Prima di firmare o commentare un contratto di fornitura"],
         out:["Riga di Registro Allert con tipologia e stato","Testo della comunicazione con la formula di rimessione","Elenco solleciti dovuti a 7/15/30 giorni","Registro vulnerabilità con priorità","I quattro indicatori per il cruscotto mensile"],
-        never:["Mappare processi da automatizzare → mappa-tesoro","Scrivere o modificare una skill → skill-creator","Decisioni e pendenze del tavolo DL → preparazione-riunione-dl","Revisioni su progetto approvato → registro-instabilita-progettuale","Difetti di montaggio → gestione-non-conformita"],
+        never:["Mappare processi da automatizzare → mappa-tesoro","Scrivere o modificare una skill → skill-creator","Decisioni e pendenze del tavolo DLL → preparazione-riunione-dl","Revisioni su progetto approvato → registro-instabilita-progettuale","Difetti di montaggio → gestione-non-conformita"],
         next:["cruscotto-mensile"],
         cmd:"Registro Allert 2514RW: devo rispondere a [tema]. Classifica in perimetro/grigio/fuori perimetro, scrivi la comunicazione con la rimessione nominale e preparami la riga di registro."
       },
@@ -709,7 +709,7 @@ const GROUPS = [
         name:"Generazione PDF", slug:"pdf",
         desc:"Crea, legge e compila PDF, inclusi moduli.",
         what:"Lettura e produzione di PDF, utile per capitolati, elaborati e moduli da compilare.",
-        when:["Un capitolato o un elaborato arriva in PDF","Serve un PDF finale per DL/GC"],
+        when:["Un capitolato o un elaborato arriva in PDF","Serve un PDF finale per DLL/GC"],
         out:[".pdf"],
         cmd:"Estrai il contenuto di questo PDF / genera un PDF con [contenuto]."
       },
@@ -727,7 +727,7 @@ const GROUPS = [
         what:"Attenzione a non confonderla: questa skill applica il look-and-feel di Anthropic. L'identità visiva Field Project SAS — nero #1A1A1A, rosso #C0332B, Montserrat, filetti sottili e molto spazio bianco — non è una skill a sé: vive dentro reportistica-brandizzata, nel file references/brand-identity.md, e viene applicata automaticamente da quella skill a tutta la reportistica di cantiere.",
         when:["Serve esplicitamente il brand Anthropic","Per il brand Field Project non serve: lo applica già reportistica-brandizzata"],
         out:["Applicazione della palette e tipografia Anthropic"],
-        never:["Documenti di commessa destinati a DL, GC o cliente → reportistica-brandizzata, che porta l'identità Field Project"],
+        never:["Documenti di commessa destinati a DLL, GC o cliente → reportistica-brandizzata, che porta l'identità Field Project"],
         cmd:"Applica le linee guida del brand Anthropic a questo artifact."
       },
       {
