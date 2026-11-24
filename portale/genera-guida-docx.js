@@ -382,7 +382,7 @@ const corpo = [
   ...fase("02", "Ambito e WBS", "scope-wbs",
     "Qui si scrive dove finisce il nostro lavoro. Inclusioni, esclusioni e assunzioni esplicite, poi la WBS su tre livelli: area fisica → lavorazioni → voci di capitolato. I codici che nascono qui vengono riusati per tutta la commessa, quindi vale la pena spenderci tempo una volta sola.",
     [["Serve avere", "Readiness gate chiuso, capitolato riconciliato, elenco aree"],
-     ["Chiedi", "«Definiamo ambito e WBS della commessa [codice] sui quattro WP»"],
+     ["Chiedi", "«Definiamo ambito e WBS della commessa [codice] sui cinque WP (WP5 20 room sulla 2666RW)»"],
      ["Ottieni", "WBS in Word/PDF per GC e DLL · Excel operativo con i codici · albero visivo"],
      ["Alimenta", "Avanzamento fisico, SAL, snag list: useranno tutti questi codici"]],
     null),
