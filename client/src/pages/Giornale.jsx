@@ -19,7 +19,7 @@ export function Giornale() {
   const [creating, setCreating] = useState(false);
 
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v))).toString();
-  const { data, loading, refetch } = useApi(`/giornale?${query}`, [query]);
+  const { data, loading, refetch } = useApi(`/giornale?${query}`);
 
   const items = data?.data || [];
 

@@ -12,7 +12,7 @@ export function Archives() {
   const [filters, setFilters] = useState({ original_type: '', search: '', tag: '' });
 
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v))).toString();
-  const { data, loading, refetch } = useApi(`/archives?${query}`, [query]);
+  const { data, loading, refetch } = useApi(`/archives?${query}`);
 
   const items = data?.data || [];
 

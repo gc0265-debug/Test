@@ -12,7 +12,6 @@ export function LavorazioneForm({ initial, onSave, onCancel }) {
     priority: 'media',
     deadline: '',
     impresa: '',
-    tags: [],
     ...initial,
     tags: initial?.tags ? (typeof initial.tags === 'string' ? JSON.parse(initial.tags) : initial.tags) : [],
   });

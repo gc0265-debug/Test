@@ -299,7 +299,7 @@ const copertina = [
   ...[
     ["Destinatario", "Direzione di cantiere — Field Project SAS"],
     ["Ambito", "Coordinamento installazioni arredo contract · D.Lgs. 81/2008"],
-    ["Commessa di riferimento", "2514RW — WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B"],
+    ["Commessa di riferimento", "2514RW — WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B · WP5 20 room (2666RW)"],
     ["Revisione", "1 — " + new Date().toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" })],
   ].map(([k, v]) => new Paragraph({
     spacing: { after: 80 },
@@ -345,11 +345,11 @@ const corpo = [
   H2("Una skill = un processo, con confini netti"),
   P("Ogni skill copre un processo e si ferma dove ne inizia un altro. I confini non sono formali: servono a non mescolare cose che hanno destinatari e conseguenze diverse. L'avanzamento fisico non è la contabilità del SAL; una non conformità di montaggio non è un punto di snag list; una revisione dopo l'approvazione non è una variante economica. Tenerli separati è ciò che rende i dati difendibili quando qualcuno li contesta."),
   H2("I registri si accumulano, i report si generano"),
-  P("Le skill di registro — non conformità, instabilità progettuale, decisioni DL, scadenzario, performance fornitori — costruiscono uno storico che cresce nel tempo. Le skill di reporting non raccolgono nulla: **leggono** quei registri e li mettono in forma per un destinatario. Se il registro non è aggiornato, il report è vuoto. Il lavoro sta nell'alimentare i registri quando l'evento accade, non il venerdì sera."),
+  P("Le skill di registro — non conformità, instabilità progettuale, decisioni DLL, scadenzario, performance fornitori — costruiscono uno storico che cresce nel tempo. Le skill di reporting non raccolgono nulla: **leggono** quei registri e li mettono in forma per un destinatario. Se il registro non è aggiornato, il report è vuoto. Il lavoro sta nell'alimentare i registri quando l'evento accade, non il venerdì sera."),
   ...figura("fig3.png", "Figura 1 — Chi alimenta chi",
     "Le skill di reporting non raccolgono dati: leggono i registri che hai alimentato durante la settimana. Il report settimanale ne legge tre; il cruscotto li rilegge tutti, più i report già emessi. Le due fonti tratteggiate non sono tue — arrivano dal PM e dall'app di cantiere — e il consolidato serve proprio a riconciliarle con i dati di campo: con meno di due fonti non è un consolidato."),
   H2("Tutto ciò che esce ha una data certa"),
-  P("Registro instabilità progettuale, registro decisioni DL, non conformità, verbale di handover: sono costruiti per essere opponibili. La data di prima segnalazione di un nodo, l'anzianità di una decisione non presa, il collegamento fra una revisione e il pacchetto approvato prima: è la documentazione che sostiene le scritture formali di rito e difende gli slittamenti che non dipendono da noi."),
+  P("Registro instabilità progettuale, registro decisioni DLL, non conformità, verbale di handover: sono costruiti per essere opponibili. La data di prima segnalazione di un nodo, l'anzianità di una decisione non presa, il collegamento fra una revisione e il pacchetto approvato prima: è la documentazione che sostiene le scritture formali di rito e difende gli slittamenti che non dipendono da noi."),
 
   /* --- 02 --- */
   H1("Come si lancia una skill", "02"),
@@ -373,7 +373,7 @@ const corpo = [
     "Le otto fasi corrono in sequenza, ma il passaggio è sbarrato in cinque punti. Un gate non superato non è un ritardo da recuperare in corsa: è un documento firmato che dice cosa mancava e quando. Non tutti i passaggi sono sbarrati: fra 02 e 03, fra 05 e 06 e fra 07 e 08 si procede senza gate formale."),
 
   ...fase("01", "Apertura commessa", "front-end-planning",
-    "Prima di qualunque altra cosa: leggi capitolato, disegni e computo in gerarchia e fai emergere le contraddizioni finché costano poco. Ogni discordanza diventa una riga di registro e, se serve, una RFI verso GC o DL. Nel frattempo mappi gli interlocutori, i brand standard della struttura e il sopralluogo logistico.",
+    "Prima di qualunque altra cosa: leggi capitolato, disegni e computo in gerarchia e fai emergere le contraddizioni finché costano poco. Ogni discordanza diventa una riga di registro e, se serve, una RFI verso GC o DLL. Nel frattempo mappi gli interlocutori, i brand standard della struttura e il sopralluogo logistico.",
     [["Serve avere", "Contratto, capitolato, elaborati, computo, brand standard del marchio"],
      ["Chiedi", "«Apri la commessa [codice]: analisi documentale, registro discordanze, RFI, RTM e readiness gate»"],
      ["Ottieni", "Registro discordanze e RFI · RTM · Readiness Gate firmabile"]],
@@ -382,8 +382,8 @@ const corpo = [
   ...fase("02", "Ambito e WBS", "scope-wbs",
     "Qui si scrive dove finisce il nostro lavoro. Inclusioni, esclusioni e assunzioni esplicite, poi la WBS su tre livelli: area fisica → lavorazioni → voci di capitolato. I codici che nascono qui vengono riusati per tutta la commessa, quindi vale la pena spenderci tempo una volta sola.",
     [["Serve avere", "Readiness gate chiuso, capitolato riconciliato, elenco aree"],
-     ["Chiedi", "«Definiamo ambito e WBS della commessa [codice] sui quattro WP»"],
-     ["Ottieni", "WBS in Word/PDF per GC e DL · Excel operativo con i codici · albero visivo"],
+     ["Chiedi", "«Definiamo ambito e WBS della commessa [codice] sui cinque WP (WP5 20 room sulla 2666RW)»"],
+     ["Ottieni", "WBS in Word/PDF per GC e DLL · Excel operativo con i codici · albero visivo"],
      ["Alimenta", "Avanzamento fisico, SAL, snag list: useranno tutti questi codici"]],
     null),
 
@@ -409,11 +409,11 @@ const corpo = [
     null),
 
   ...fase("06", "Apertura del cantiere in sicurezza", "cantiere-sicurezza-onboarding · verifica-pos-cse",
-    "Squadra per squadra: POS firmato e coerente con le lavorazioni di questo cantiere, DUVRI dove ci sono interferenze, idoneità tecnico-professionale ex art. 90, tessere di riconoscimento nominative, DURC in validità. Il POS di ogni fornitore passa dalla verifica interna **prima** di arrivare al CSE: sei aree di controllo ed esito GO / NO-GO.",
+    "Squadra per squadra: POS firmato e coerente con le lavorazioni di questo cantiere, DUVRI dove ci sono interferenze, idoneità tecnico-professionale ex art. 90, tessere di riconoscimento nominative, DURC in validità. Il POS di ogni fornitore passa dalla verifica di completezza, a supporto di GILI e del preposto, **prima** che GILI lo inoltri all'ufficio sicurezza del GC (Progesim, SAC), che lo valida: sei aree di controllo ed esito COMPLETO / DA INTEGRARE.",
     [["Serve avere", "I documenti ricevuti dai fornitori, elenco nominativo degli operatori"],
-     ["Chiedi", "«Verifica lo stato documentale di sicurezza per l'apertura del cantiere [codice]» · «Verifica questo POS prima dell'invio al CSE»"],
-     ["Ottieni", "Report di apertura per DL/GC · email di sollecito ai giallo/rosso · report POS con GO/NO-GO e bozza di richiesta integrazioni"]],
-    ["Gate 4 — Ingresso in cantiere", "Nessuna squadra entra con documentazione in stato rosso. Il DURC vale 120 giorni dall'emissione: quello raccolto all'apertura scade durante il cantiere, e il rinnovo non arriva da solo."]),
+     ["Chiedi", "«Verifica lo stato documentale di sicurezza per l'apertura del cantiere [codice]» · «Verifica la completezza di questo POS prima dell'inoltro a Progesim/SAC»"],
+     ["Ottieni", "Report di apertura per DLL/GC · email di sollecito ai giallo/rosso · report di completezza POS (COMPLETO / DA INTEGRARE) e bozza di richiesta integrazioni per GILI"]],
+    ["Gate 4 — Ingresso in cantiere", "Nessuna squadra entra senza la validazione dell'ufficio sicurezza del GC (Progesim, SAC); la verifica di completezza serve a non inoltrare documentazione in stato rosso. Il DURC vale 120 giorni dall'emissione: quello raccolto all'apertura scade durante il cantiere, e il rinnovo non arriva da solo."]),
 
   ...fase("07", "Esecuzione", "coordinamento-giornaliero-gc · logistica-e-collaudo · gestione-non-conformita · registro-instabilita-progettuale · sicurezza-continuativa-cantiere",
     "È la fase più lunga e l'unica in cui il sistema chiede qualcosa tutti i giorni. Il ritmo è nel capitolo 04; qui conta il principio: ogni evento va nel suo registro nel momento in cui accade, perché il valore probatorio sta nella data.",
@@ -423,7 +423,7 @@ const corpo = [
     null),
 
   ...fase("08", "Collaudo e consegna", "logistica-e-collaudo",
-    "Il sopralluogo finale con DL e GC produce la snag list nello standard Field Project SAS: codice punto, area riferita alla stessa struttura WP, descrizione oggettiva, foto, responsabile, priorità e scadenza calcolata dalla priorità.",
+    "Il sopralluogo finale con DLL e GC produce la snag list nello standard Field Project SAS: codice punto, area riferita alla stessa struttura WP, descrizione oggettiva, foto, responsabile, priorità e scadenza calcolata dalla priorità.",
     [["Serve avere", "Struttura aree/WP, elenco fornitori competenti, sopralluogo fatto"],
      ["Chiedi", "«Prepara la snag list del collaudo della commessa [codice]»"],
      ["Ottieni", "Snag list con priorità e scadenze · stato per punto fino alla verifica"]],
@@ -441,8 +441,8 @@ const corpo = [
       ["Ogni sera", "Debrief: cosa è stato fatto, eventi, nodi nati oggi", "coordinamento-giornaliero-gc", "Ricostruire a memoria tre giorni dopo produce un diario che non regge un contraddittorio"],
       ["Appena accade", "Apri la NC con gravità dichiarata; registra l'episodio di instabilità progettuale", "gestione-non-conformita · registro-instabilita-progettuale", "Lo SLA decorre dall'apertura e la data certa è il valore stesso del registro"],
       ["Prima di ogni nuova fase", "Verifica POS/DUVRI validi, DPI idonei, idoneità sanitaria della squadra", "sicurezza-continuativa-cantiere", "Le squadre cambiano composizione in corsa: chi è entrato dopo l'onboarding non è coperto"],
-      ["Settimanale", "Report a DL/GC, email al cliente, consolidato per l'Advisor", "reportistica-brandizzata", "Il consolidato riconcilia tre fonti e segnala le discrepanze: è il quadro unico pre-riunione"],
-      ["Prima della riunione DL", "Contro-agenda: temi nostri, decisioni richieste come domande chiuse, nodi con data di prima segnalazione", "preparazione-riunione-dl", "Senza agenda della DL, chi porta i temi decide di cosa si parla"],
+      ["Settimanale", "Report a DLL/GC, consolidato per l'Advisor", "reportistica-brandizzata", "Il consolidato riconcilia tre fonti e segnala le discrepanze: è il quadro unico pre-riunione"],
+      ["Prima della riunione DLL", "Contro-agenda: temi nostri, decisioni richieste come domande chiuse, nodi con data di prima segnalazione", "preparazione-riunione-dl", "Senza agenda della DLL, chi porta i temi decide di cosa si parla"],
       ["Settimanale", "Avanzamento fisico per WP e stato varianti", "project-controller", "Alimenta il report e mantiene confrontabile la baseline"],
       ["Mensile", "Cruscotto: ore risparmiate, sicurezza, NC entro SLA, rating fornitori, certificazioni in scadenza", "cruscotto-mensile", "È l'unica vista che attraversa più cantieri e mostra i processi che stanno scivolando"],
       ["Mensile", "Scadenzario certificazioni degli operatori", "scadenzario-certificazioni-sicurezza", "Preavviso a 30 giorni: sotto quella soglia il rinnovo non fa in tempo"],
@@ -460,7 +460,7 @@ const corpo = [
 
   ...decisione("Ho trovato un difetto. Dove lo registro?", [
     ["Rilevato durante l'esecuzione, il montaggio è in corso", "Non conformità, con gravità e SLA", "gestione-non-conformita"],
-    ["Rilevato al sopralluogo di collaudo finale con DL/GC", "Punto di snag list, con priorità", "logistica-e-collaudo"],
+    ["Rilevato al sopralluogo di collaudo finale con DLL/GC", "Punto di snag list, con priorità", "logistica-e-collaudo"],
     ["Punto di snag scaduto e non risolto", "Si converte in NC: torna alla prima riga", "gestione-non-conformita"],
     ["Non è un difetto: è il progetto che chiede altro", "Variante, non NC", "project-controller"],
   ]),
@@ -469,24 +469,23 @@ const corpo = [
     "Il design freeze è l'unico spartiacque: prima è governo della progettazione, dopo è instabilità da documentare. I tre registri non sono alternative — lo stesso episodio può percorrere tutta la catena, ma parte sempre dal registro dell'instabilità. Un difetto di montaggio non entra in questo schema: è una non conformità."),
   ...decisione("Il progetto è cambiato. Quale registro?", [
     ["Siamo prima del design freeze", "Change order log della progettazione", "progettazione-shop-drawing"],
-    ["Pacchetto già approvato, rimesso in discussione da committente, DL o ID", "Instabilità progettuale, con data certa e ore di riprogettazione", "registro-instabilita-progettuale"],
+    ["Pacchetto già approvato, rimesso in discussione da committente, DLL o ID", "Instabilità progettuale, con data certa e ore di riprogettazione", "registro-instabilita-progettuale"],
     ["La modifica ha un impatto economico da formalizzare", "Variante: proposta → emessa → approvata, con baseline aggiornata", "project-controller"],
     ["Cambia l'importo da contabilizzare a SAL", "Contabilità, separata dall'avanzamento", "sal-controller"],
   ]),
 
   ...decisione("Documenti di sicurezza: quale delle quattro?", [
     ["Documenti aziendali per far entrare una squadra", "Checklist di apertura: POS, DUVRI, art. 90, tessere, DURC", "cantiere-sicurezza-onboarding"],
-    ["Un singolo POS da mandare al CSE", "Verifica in sei aree con esito GO/NO-GO", "verifica-pos-cse"],
+    ["Un singolo POS che GILI deve inoltrare a Progesim/SAC", "Verifica di completezza in sei aree, esito COMPLETO / DA INTEGRARE", "verifica-pos-cse"],
     ["Attestati e idoneità della singola persona, su più cantieri", "Registro nominale con preavviso a 30 giorni", "scadenzario-certificazioni-sicurezza"],
     ["Nuova fase, nuovo subappalto, squadra cambiata in corsa", "Controllo a evento e storico comportamenti", "sicurezza-continuativa-cantiere"],
   ]),
 
   ...decisione("Devo aggiornare qualcuno. Con cosa?", [
     ["Registrazione interna della giornata", "Diario di cantiere", "coordinamento-giornaliero-gc"],
-    ["DL e GC, periodico formale", "Report settimanale PDF/Word", "reportistica-brandizzata"],
-    ["Cliente finale", "Email narrativa, stessa fonte dati", "reportistica-brandizzata"],
+    ["DLL e GC, periodico formale", "Report settimanale PDF/Word", "reportistica-brandizzata"],
     ["Advisor, prima della riunione di coordinamento", "Consolidato a tre fonti con discrepanze evidenziate", "reportistica-brandizzata"],
-    ["Tavolo formale con DL e committenza", "Contro-agenda e registro decisioni", "preparazione-riunione-dl"],
+    ["Tavolo formale con DLL e committenza", "Contro-agenda e registro decisioni", "preparazione-riunione-dl"],
   ]),
 
   /* --- 06 --- */
@@ -496,8 +495,8 @@ const corpo = [
   tabella(
     ["Parametro", "Valore", "Effetto"],
     [
-      ["NC critica", "24 h", "Blocca lavorazioni, impatta la sicurezza o è a vista in area chiave. Escalation immediata a fornitore + DL/GC"],
-      ["NC normale", "72 h", "Scostamento da capitolato: impatta qualità o programma senza bloccare. DL/GC solo se scade"],
+      ["NC critica", "24 h", "Blocca lavorazioni, impatta la sicurezza o è a vista in area chiave. Escalation immediata a fornitore + DLL/GC"],
+      ["NC normale", "72 h", "Scostamento da capitolato: impatta qualità o programma senza bloccare. DLL/GC solo se scade"],
       ["NC lieve", "7 giorni", "Difetto estetico minore. Solo fornitore"],
       ["NC «in scadenza»", "< 20% SLA", "Meno di 5 ore su una critica, meno di 14 su una normale"],
       ["Snag priorità alta", "5 giorni", "Impedisce la consegna o riguarda sicurezza e funzionalità"],
@@ -505,7 +504,7 @@ const corpo = [
       ["Handover", "90 / 70 %", "Verde sopra 90, condizionale fra 70 e 89, non accettabile sotto 70"],
       ["Validità DURC", "120 giorni", "Dall'emissione: va rinnovato in corso di cantiere"],
       ["Preavviso certificazioni", "30 giorni", "Soglia singola prima della scadenza di attestati e idoneità"],
-      ["Escalation comportamenti", "3 in 90 giorni", "Tre segnalazioni sulla stessa squadra: si sale a DL/GC"],
+      ["Escalation comportamenti", "3 in 90 giorni", "Tre segnalazioni sulla stessa squadra: si sale a DLL/GC"],
       ["Consolidato Advisor", "3 fonti", "Campo, PM, app di cantiere. Con meno di due è un report di parte, non un consolidato"],
     ],
     [2500, 1600, CONTENUTO - 4100]
@@ -516,15 +515,15 @@ const corpo = [
   H3("Mescolare avanzamento fisico e contabilità"),
   P("«Siamo al 60%» e «possiamo fatturare il 60%» sono due frasi diverse e due skill diverse. L'avanzamento pesa le aree, il SAL valorizza le voci contrattuali e sottrae ritenuta di garanzia, recupero anticipo ed eventuali penali. Confonderli in un documento che esce verso il GC è difficile da recuperare."),
   H3("Aprire una NC senza dichiarare la gravità"),
-  P("La gravità determina lo SLA e chi riceve l'escalation. Una critica registrata come normale perde 48 ore e non arriva a DL/GC nel momento in cui serviva."),
+  P("La gravità determina lo SLA e chi riceve l'escalation. Una critica registrata come normale perde 48 ore e non arriva a DLL/GC nel momento in cui serviva."),
   H3("Alimentare i registri a fine settimana"),
   P("I registri con data certa valgono per la data. Un episodio di instabilità progettuale registrato venerdì per lunedì è comunque utile, ma ha perso la parte di valore che serviva davvero: dimostrare quando si è saputo."),
-  H3("Mandare un POS al CSE senza verificarlo"),
-  P("Il POS incompleto torna indietro dal Coordinatore, con il ritardo che ne consegue sull'ingresso della squadra. La verifica interna costa pochi minuti e produce già la bozza di richiesta di integrazioni al fornitore."),
+  H3("Inoltrare un POS senza verificarne la completezza"),
+  P("Il POS incompleto torna indietro dall'ufficio sicurezza del GC (Progesim, SAC), con il ritardo che ne consegue sull'ingresso della squadra. La verifica interna costa pochi minuti e produce già la bozza di richiesta di integrazioni al fornitore."),
   H3("Trattare una squadra cambiata come una squadra onboardata"),
   P("L'onboarding certifica le persone che c'erano quel giorno. Chi subentra a metà cantiere non è coperto da nulla finché non passa dal controllo a evento."),
-  H3("Arrivare alla riunione DL senza contro-agenda"),
-  P("Se la DL non manda l'agenda, l'ordine del giorno lo fa chi porta i temi. Le decisioni richieste vanno formulate come domande chiuse: una domanda aperta a verbale non produce una decisione, produce un altro rinvio."),
+  H3("Arrivare alla riunione DLL senza contro-agenda"),
+  P("Se la DLL non manda l'agenda, l'ordine del giorno lo fa chi porta i temi. Le decisioni richieste vanno formulate come domande chiuse: una domanda aperta a verbale non produce una decisione, produce un altro rinvio."),
   H3("Chiedere il cruscotto mensile senza aver alimentato nulla"),
   P("Il cruscotto non raccoglie dati: li aggrega. Se il mese è stato registrato a spot, il cruscotto è onesto e lo mostra — ma non è un errore del cruscotto."),
 

@@ -31,7 +31,7 @@ il flusso PM-campo sta convergendo; se resta alto, il problema è a
 monte del report.
 
 **Brand**: metrica qualitativa ma reale — ogni comunicazione verso
-DL/GC/cliente rinforza la percezione di Field Project SAS come
+DLL/GC/cliente rinforza la percezione di Field Project SAS come
 struttura organizzata e professionale, elemento che vale nella
 retention dei clienti anche se non si misura in ore.
 

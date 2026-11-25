@@ -14,7 +14,6 @@ export function GiornaleForm({ initial, onSave, onCancel }) {
     activities: '',
     issues: '',
     notes: '',
-    tags: [],
     ...initial,
     tags: initial?.tags ? (typeof initial.tags === 'string' ? JSON.parse(initial.tags) : initial.tags) : [],
   });

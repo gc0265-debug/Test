@@ -55,7 +55,7 @@ skill operative — da cui il nome "rappresentativo".
 Raccogliere per il processo candidato:
 
 - **Trigger**: cosa fa scattare il processo (evento, scadenza, documento ricevuto)
-- **Attori**: chi è coinvolto e con quale ruolo (DdC, PM, preposto, GC, DL, Advisor, fornitore)
+- **Attori**: chi è coinvolto e con quale ruolo (DdC, PM, preposto, GC, DLL, Advisor, fornitore)
 - **Stato attuale**: come viene gestito oggi (manuale, Excel, email, a memoria)
 - **Dove è tracciato**: se esiste già un registro, file o strumento che lo supporta parzialmente
 

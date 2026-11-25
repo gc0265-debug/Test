@@ -35,7 +35,7 @@ function openForm(existing, onSaved) {
   form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(field('Cosa serve', textarea('cosa_serve', existing?.cosa_serve ?? '')));
-  form.appendChild(field('Destinatario', textInput('destinatario', existing?.destinatario ?? '', { placeholder: 'es. SAC, DL, interno' })));
+  form.appendChild(field('Destinatario', textInput('destinatario', existing?.destinatario ?? '', { placeholder: 'es. SAC, DLL, interno' })));
   form.appendChild(field('Urgenza', urgenzaSelect));
   form.appendChild(scadenzaField);
   form.appendChild(field('Impatto sul programma', textarea('impatto_programma', existing?.impatto_programma ?? '')));

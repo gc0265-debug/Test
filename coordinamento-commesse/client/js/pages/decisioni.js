@@ -1,5 +1,5 @@
 // Registro Decisioni — modellato su Registro_Decisioni_DL_2514RW: domande
-// chiuse (SI/NO) rivolte a DL/SAC/GC, con anzianità in giorni e il
+// chiuse (SI/NO) rivolte a DLL/SAC/GC, con anzianità in giorni e il
 // cruscotto (richieste totali, decise, tasso di resa, oltre 21gg,
 // anzianità media, % confermate per iscritto) che quel file calcolava
 // a mano.
@@ -20,7 +20,7 @@ function openForm(existing, onSaved) {
   form.appendChild(field('Tema', textInput('tema', existing?.tema ?? '', { required: true })));
   form.appendChild(field('Work package', select('wp_id', wpOptions, existing?.wp_id ?? '')));
   form.appendChild(field('Domanda chiusa (SI/NO)', textarea('domanda_chiusa', existing?.domanda_chiusa ?? ''), 'Formulata come domanda a risposta SÌ/NO, mai aperta.'));
-  form.appendChild(field('A chi', textInput('a_chi', existing?.a_chi ?? '', { placeholder: 'es. DL, SAC, GC' })));
+  form.appendChild(field('A chi', textInput('a_chi', existing?.a_chi ?? '', { placeholder: 'es. DLL, SAC, GC' })));
   form.appendChild(field('Prima richiesta il', dateInput('data_prima_richiesta', existing?.data_prima_richiesta || todayISO(), { required: true })));
   form.appendChild(field('Impatto se non decisa', textarea('impatto_se_non_decisa', existing?.impatto_se_non_decisa ?? '')));
   form.appendChild(field('Esito ultima riunione', textarea('esito_ultima_riunione', existing?.esito_ultima_riunione ?? '')));

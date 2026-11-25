@@ -21,7 +21,7 @@ export async function renderCruscotto(container) {
   container.appendChild(el('div', { class: 'section' }, [
     el('div', { class: 'eyebrow' }, commessa.codice),
     el('h2', {}, commessa.nome),
-    el('p', { class: 'muted' }, [commessa.cliente, commessa.gc && `GC ${commessa.gc}`, commessa.dl && `DL ${commessa.dl}`].filter(Boolean).join(' · ')),
+    el('p', { class: 'muted' }, [commessa.cliente, commessa.gc && `GC ${commessa.gc}`, commessa.dl && `DLL ${commessa.dl}`].filter(Boolean).join(' · ')),
   ]));
 
   container.appendChild(el('div', { class: 'section' }, [

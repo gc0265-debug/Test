@@ -4,7 +4,7 @@ const { daysBetween, todayStr } = require('../utils/dates');
 
 const router = express.Router();
 
-// Cruscotto per commessa: rispecchia la struttura del Registro Decisioni DL
+// Cruscotto per commessa: rispecchia la struttura del Registro Decisioni DLL
 // (richieste totali, decise, tasso di resa, pendenze oltre 21gg, anzianità
 // media, % confermate per iscritto) più lo stato delle criticità e delle
 // lavorazioni. Non introduce metriche nuove: aggrega quanto già registrato.

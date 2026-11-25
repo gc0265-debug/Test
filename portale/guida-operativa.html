@@ -321,7 +321,7 @@
       <span>Direzione di cantiere</span>
       <span>D.Lgs. 81/2008</span>
       <span>Commessa 2514RW</span>
-      <span>WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B</span>
+      <span>WP1 FOH · WP2 CORRIDOI · WP3 SUITE · WP4 SCALA B · WP5 20 room (2666RW)</span>
     </div>
   </div>
 </header>
@@ -343,10 +343,10 @@
       <p>Ogni skill copre un processo e si ferma dove ne inizia un altro. I confini non sono formali: servono a non mescolare cose che hanno destinatari e conseguenze diverse. L'avanzamento fisico non è la contabilità del SAL; una non conformità di montaggio non è un punto di snag list; una revisione dopo l'approvazione non è una variante economica. Tenerli separati è ciò che rende i dati difendibili quando qualcuno li contesta.</p>
 
       <h3>I registri si accumulano, i report si generano</h3>
-      <p>Le skill di registro — non conformità, instabilità progettuale, decisioni DL, scadenzario, performance fornitori — costruiscono uno storico che cresce nel tempo. Le skill di reporting non raccolgono nulla: <strong>leggono</strong> quei registri e li mettono in forma per un destinatario. Se il registro non è aggiornato, il report è vuoto. Il lavoro sta nell'alimentare i registri quando l'evento accade, non il venerdì sera.</p>
+      <p>Le skill di registro — non conformità, instabilità progettuale, decisioni DLL, scadenzario, performance fornitori — costruiscono uno storico che cresce nel tempo. Le skill di reporting non raccolgono nulla: <strong>leggono</strong> quei registri e li mettono in forma per un destinatario. Se il registro non è aggiornato, il report è vuoto. Il lavoro sta nell'alimentare i registri quando l'evento accade, non il venerdì sera.</p>
 
       <figure><div class="fig">
-      <svg viewBox="0 0 900 470" role="img" aria-label="I registri di cantiere e le fonti esterne alimentano due sole skill di reporting, il report settimanale e il cruscotto mensile, che a loro volta generano i documenti per direzione lavori, cliente, advisor e direzione Field Project.">
+      <svg viewBox="0 0 900 470" role="img" aria-label="I registri di cantiere e le fonti esterne alimentano due sole skill di reporting, il report settimanale e il cruscotto mensile, che a loro volta generano i documenti per DLL e GC, advisor e direzione Field Project.">
       <defs><marker id="f3a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="currentColor" opacity=".55"/></marker></defs>
       <text class="grp" x="20" y="32">REGISTRI DA ALIMENTARE</text>
       <text class="grp" x="340" y="32">SKILL CHE LEGGONO</text>
@@ -382,11 +382,8 @@
       <polyline class="ln dash" points="210,412 324,412 324,172 337,172" marker-end="url(#f3a)"/>
       <text class="sub" x="318" y="205">riconcilia</text>
       <rect class="box" x="660" y="56" width="220" height="42" rx="1"/>
-      <text class="lab" x="770" y="74" text-anchor="middle">DL / GC</text>
+      <text class="lab" x="770" y="74" text-anchor="middle">DLL / GC</text>
       <text class="sub" x="770" y="89" text-anchor="middle">report PDF settimanale</text>
-      <rect class="box" x="660" y="106" width="220" height="42" rx="1"/>
-      <text class="lab" x="770" y="124" text-anchor="middle">Cliente finale</text>
-      <text class="sub" x="770" y="139" text-anchor="middle">email narrativa</text>
       <rect class="box" x="660" y="156" width="220" height="42" rx="1"/>
       <text class="lab" x="770" y="174" text-anchor="middle">Advisor</text>
       <text class="sub" x="770" y="189" text-anchor="middle">consolidato, 3 fonti</text>
@@ -394,14 +391,13 @@
       <text class="lab" x="770" y="268" text-anchor="middle">Direzione FP</text>
       <text class="sub" x="770" y="283" text-anchor="middle">KPI su più cantieri</text>
       <polyline class="ln" points="550,149 612,149 612,77 657,77" marker-end="url(#f3a)"/>
-      <polyline class="ln" points="550,149 612,149 612,127 657,127" marker-end="url(#f3a)"/>
       <polyline class="ln" points="550,149 612,149 612,177 657,177" marker-end="url(#f3a)"/>
       <line class="ln" x1="550" y1="279" x2="657" y2="271" marker-end="url(#f3a)"/>
       </svg></div>
       <figcaption><b>Figura 1 — Chi alimenta chi</b>Le skill di reporting non raccolgono dati: leggono i registri che hai alimentato durante la settimana. Il report settimanale ne legge tre; il cruscotto li rilegge tutti, più i report già emessi. Le due fonti tratteggiate non sono tue — arrivano dal PM e dall'app di cantiere — e il consolidato serve proprio a riconciliarle con i dati di campo: con meno di due fonti non è un consolidato.</figcaption></figure>
 
       <h3>Tutto ciò che esce ha una data certa</h3>
-      <p>Registro instabilità progettuale, registro decisioni DL, non conformità, verbale di handover: sono costruiti per essere opponibili. La data di prima segnalazione di un nodo, l'anzianità di una decisione non presa, il collegamento fra una revisione e il pacchetto approvato prima: è la documentazione che sostiene le scritture formali di rito e difende gli slittamenti che non dipendono da noi.</p>
+      <p>Registro instabilità progettuale, registro decisioni DLL, non conformità, verbale di handover: sono costruiti per essere opponibili. La data di prima segnalazione di un nodo, l'anzianità di una decisione non presa, il collegamento fra una revisione e il pacchetto approvato prima: è la documentazione che sostiene le scritture formali di rito e difende gli slittamenti che non dipendono da noi.</p>
     </section>
 
     <section id="s2">
@@ -490,7 +486,7 @@
         <div class="fase__body">
           <h4>Apertura commessa</h4>
           <div class="fase__skill">front-end-planning</div>
-          <p>Prima di qualunque altra cosa: leggi capitolato, disegni e computo in gerarchia e fai emergere le contraddizioni finché costano poco. Ogni discordanza diventa una riga di registro e, se serve, una RFI verso GC o DL. Nel frattempo mappi gli interlocutori, i brand standard della struttura e il sopralluogo logistico.</p>
+          <p>Prima di qualunque altra cosa: leggi capitolato, disegni e computo in gerarchia e fai emergere le contraddizioni finché costano poco. Ogni discordanza diventa una riga di registro e, se serve, una RFI verso GC o DLL. Nel frattempo mappi gli interlocutori, i brand standard della struttura e il sopralluogo logistico.</p>
           <dl class="kv">
             <dt>Serve avere</dt><dd>Contratto, capitolato, elaborati, computo, brand standard del marchio</dd>
             <dt>Chiedi</dt><dd>«Apri la commessa [codice]: analisi documentale, registro discordanze, RFI, RTM e readiness gate»</dd>
@@ -508,8 +504,8 @@
           <p>Qui si scrive dove finisce il nostro lavoro. Inclusioni, esclusioni e assunzioni esplicite, poi la WBS su tre livelli: area fisica → lavorazioni → voci di capitolato. I codici che nascono qui vengono riusati per tutta la commessa, quindi vale la pena spenderci tempo una volta sola.</p>
           <dl class="kv">
             <dt>Serve avere</dt><dd>Readiness gate chiuso, capitolato riconciliato, elenco aree</dd>
-            <dt>Chiedi</dt><dd>«Definiamo ambito e WBS della commessa [codice] sui quattro WP»</dd>
-            <dt>Ottieni</dt><dd>WBS in Word/PDF per GC e DL · Excel operativo con i codici · albero visivo</dd>
+            <dt>Chiedi</dt><dd>«Definiamo ambito e WBS della commessa [codice] sui cinque WP (WP5 20 room sulla 2666RW)»</dd>
+            <dt>Ottieni</dt><dd>WBS in Word/PDF per GC e DLL · Excel operativo con i codici · albero visivo</dd>
             <dt>Alimenta</dt><dd>Avanzamento fisico, SAL, snag list: useranno tutti questi codici</dd>
           </dl>
         </div>
@@ -564,13 +560,13 @@
         <div class="fase__body">
           <h4>Apertura del cantiere in sicurezza</h4>
           <div class="fase__skill">cantiere-sicurezza-onboarding · verifica-pos-cse</div>
-          <p>Squadra per squadra: POS firmato e coerente con le lavorazioni <em>di questo</em> cantiere, DUVRI dove ci sono interferenze, idoneità tecnico-professionale ex art. 90, tessere di riconoscimento nominative, DURC in validità. Il POS di ogni fornitore passa dalla verifica interna <strong>prima</strong> di arrivare al CSE: sei aree di controllo ed esito GO / NO-GO.</p>
+          <p>Squadra per squadra: POS firmato e coerente con le lavorazioni <em>di questo</em> cantiere, DUVRI dove ci sono interferenze, idoneità tecnico-professionale ex art. 90, tessere di riconoscimento nominative, DURC in validità. Il POS di ogni fornitore passa dalla verifica di completezza, a supporto di GILI e del preposto, <strong>prima</strong> che GILI lo inoltri all'ufficio sicurezza del GC (Progesim, SAC), che lo valida: sei aree di controllo ed esito COMPLETO / DA INTEGRARE.</p>
           <dl class="kv">
             <dt>Serve avere</dt><dd>I documenti ricevuti dai fornitori, elenco nominativo degli operatori</dd>
-            <dt>Chiedi</dt><dd>«Verifica lo stato documentale di sicurezza per l'apertura del cantiere [codice]» · «Verifica questo POS prima dell'invio al CSE»</dd>
-            <dt>Ottieni</dt><dd>Report di apertura per DL/GC · email di sollecito ai giallo/rosso · report POS con GO/NO-GO e bozza di richiesta integrazioni</dd>
+            <dt>Chiedi</dt><dd>«Verifica lo stato documentale di sicurezza per l'apertura del cantiere [codice]» · «Verifica la completezza di questo POS prima dell'inoltro a Progesim/SAC»</dd>
+            <dt>Ottieni</dt><dd>Report di apertura per DLL/GC · email di sollecito ai giallo/rosso · report di completezza POS (COMPLETO / DA INTEGRARE) e bozza di richiesta integrazioni per GILI</dd>
           </dl>
-          <div class="gate"><b>Gate 4 — Ingresso in cantiere</b>Nessuna squadra entra con documentazione in stato rosso. Il DURC vale <span class="rossa">120 giorni</span> dall'emissione: quello raccolto all'apertura scade durante il cantiere, e il rinnovo non arriva da solo.</div>
+          <div class="gate"><b>Gate 4 — Ingresso in cantiere</b>Nessuna squadra entra senza la validazione dell'ufficio sicurezza del GC (Progesim, SAC); la verifica di completezza serve a non inoltrare documentazione in stato rosso. Il DURC vale <span class="rossa">120 giorni</span> dall'emissione: quello raccolto all'apertura scade durante il cantiere, e il rinnovo non arriva da solo.</div>
         </div>
       </div>
 
@@ -593,7 +589,7 @@
         <div class="fase__body">
           <h4>Collaudo e consegna</h4>
           <div class="fase__skill">logistica-e-collaudo</div>
-          <p>Il sopralluogo finale con DL e GC produce la snag list nello standard Field Project SAS: codice punto, area riferita alla stessa struttura WP, descrizione oggettiva, foto, responsabile, priorità e scadenza calcolata dalla priorità.</p>
+          <p>Il sopralluogo finale con DLL e GC produce la snag list nello standard Field Project SAS: codice punto, area riferita alla stessa struttura WP, descrizione oggettiva, foto, responsabile, priorità e scadenza calcolata dalla priorità.</p>
           <dl class="kv">
             <dt>Serve avere</dt><dd>Struttura aree/WP, elenco fornitori competenti, sopralluogo fatto</dd>
             <dt>Chiedi</dt><dd>«Prepara la snag list del collaudo della commessa [codice]»</dd>
@@ -641,15 +637,15 @@
             </tr>
             <tr>
               <td>Settimanale</td>
-              <td>Report a DL/GC, email al cliente, consolidato per l'Advisor</td>
+              <td>Report a DLL/GC, consolidato per l'Advisor</td>
               <td class="mono">reportistica-brandizzata</td>
               <td>Il consolidato riconcilia tre fonti e segnala le discrepanze: è il quadro unico pre-riunione</td>
             </tr>
             <tr>
-              <td>Prima della riunione DL</td>
+              <td>Prima della riunione DLL</td>
               <td>Contro-agenda: temi nostri, decisioni richieste come domande chiuse, nodi con data di prima segnalazione</td>
               <td class="mono">preparazione-riunione-dl</td>
-              <td>Senza agenda della DL, chi porta i temi decide di cosa si parla</td>
+              <td>Senza agenda della DLL, chi porta i temi decide di cosa si parla</td>
             </tr>
             <tr>
               <td>Settimanale</td>
@@ -701,7 +697,7 @@
         <div class="dec__q">Ho trovato un difetto. Dove lo registro?</div>
         <div class="dec__rows">
           <div class="dec__row"><div class="dec__if">Rilevato durante l'esecuzione, il montaggio è in corso</div><div class="dec__ar">→</div><div class="dec__then">Non conformità, con gravità e SLA<span class="mono">gestione-non-conformita</span></div></div>
-          <div class="dec__row"><div class="dec__if">Rilevato al sopralluogo di collaudo finale con DL/GC</div><div class="dec__ar">→</div><div class="dec__then">Punto di snag list, con priorità<span class="mono">logistica-e-collaudo</span></div></div>
+          <div class="dec__row"><div class="dec__if">Rilevato al sopralluogo di collaudo finale con DLL/GC</div><div class="dec__ar">→</div><div class="dec__then">Punto di snag list, con priorità<span class="mono">logistica-e-collaudo</span></div></div>
           <div class="dec__row"><div class="dec__if">Punto di snag scaduto e non risolto</div><div class="dec__ar">→</div><div class="dec__then">Si converte in NC: torna alla prima riga<span class="mono">gestione-non-conformita</span></div></div>
           <div class="dec__row"><div class="dec__if">Non è un difetto: è il progetto che chiede altro</div><div class="dec__ar">→</div><div class="dec__then">Variante, non NC<span class="mono">project-controller</span></div></div>
         </div>
@@ -731,7 +727,7 @@
           <text class="accl" x="390" y="182">NO</text>
           <rect class="box" x="175" y="196" width="400" height="58" rx="1"/>
           <text class="lab" x="375" y="220" text-anchor="middle">Registro instabilità progettuale</text>
-          <text class="sub" x="375" y="238" text-anchor="middle">revisione su approvato · dettaglio mai definito · modifica DL o ID</text>
+          <text class="sub" x="375" y="238" text-anchor="middle">revisione su approvato · dettaglio mai definito · modifica DLL o ID</text>
 
           <line class="ln" x1="375" y1="254" x2="375" y2="284" marker-end="url(#f2a)"/>
           <text class="sub" x="390" y="273">solo se ha impatto economico</text>
@@ -751,7 +747,7 @@
         <div class="dec__q">Il progetto è cambiato. Quale registro?</div>
         <div class="dec__rows">
           <div class="dec__row"><div class="dec__if">Siamo prima del design freeze</div><div class="dec__ar">→</div><div class="dec__then">Change order log della progettazione<span class="mono">progettazione-shop-drawing</span></div></div>
-          <div class="dec__row"><div class="dec__if">Pacchetto già approvato, rimesso in discussione da committente, DL o ID</div><div class="dec__ar">→</div><div class="dec__then">Instabilità progettuale, con data certa e ore di riprogettazione<span class="mono">registro-instabilita-progettuale</span></div></div>
+          <div class="dec__row"><div class="dec__if">Pacchetto già approvato, rimesso in discussione da committente, DLL o ID</div><div class="dec__ar">→</div><div class="dec__then">Instabilità progettuale, con data certa e ore di riprogettazione<span class="mono">registro-instabilita-progettuale</span></div></div>
           <div class="dec__row"><div class="dec__if">La modifica ha un impatto economico da formalizzare</div><div class="dec__ar">→</div><div class="dec__then">Variante: proposta → emessa → approvata, con baseline aggiornata<span class="mono">project-controller</span></div></div>
           <div class="dec__row"><div class="dec__if">Cambia l'importo da contabilizzare a SAL</div><div class="dec__ar">→</div><div class="dec__then">Contabilità, separata dall'avanzamento<span class="mono">sal-controller</span></div></div>
         </div>
@@ -761,7 +757,7 @@
         <div class="dec__q">Documenti di sicurezza: quale delle quattro?</div>
         <div class="dec__rows">
           <div class="dec__row"><div class="dec__if">Documenti aziendali per far entrare una squadra</div><div class="dec__ar">→</div><div class="dec__then">Checklist di apertura: POS, DUVRI, art. 90, tessere, DURC<span class="mono">cantiere-sicurezza-onboarding</span></div></div>
-          <div class="dec__row"><div class="dec__if">Un singolo POS da mandare al CSE</div><div class="dec__ar">→</div><div class="dec__then">Verifica in sei aree con esito GO/NO-GO<span class="mono">verifica-pos-cse</span></div></div>
+          <div class="dec__row"><div class="dec__if">Un singolo POS che GILI deve inoltrare a Progesim/SAC</div><div class="dec__ar">→</div><div class="dec__then">Verifica di completezza in sei aree, esito COMPLETO / DA INTEGRARE<span class="mono">verifica-pos-cse</span></div></div>
           <div class="dec__row"><div class="dec__if">Attestati e idoneità della singola persona, su più cantieri</div><div class="dec__ar">→</div><div class="dec__then">Registro nominale con preavviso a 30 giorni<span class="mono">scadenzario-certificazioni-sicurezza</span></div></div>
           <div class="dec__row"><div class="dec__if">Nuova fase, nuovo subappalto, squadra cambiata in corsa</div><div class="dec__ar">→</div><div class="dec__then">Controllo a evento e storico comportamenti<span class="mono">sicurezza-continuativa-cantiere</span></div></div>
         </div>
@@ -771,10 +767,9 @@
         <div class="dec__q">Devo aggiornare qualcuno. Con cosa?</div>
         <div class="dec__rows">
           <div class="dec__row"><div class="dec__if">Registrazione interna della giornata</div><div class="dec__ar">→</div><div class="dec__then">Diario di cantiere<span class="mono">coordinamento-giornaliero-gc</span></div></div>
-          <div class="dec__row"><div class="dec__if">DL e GC, periodico formale</div><div class="dec__ar">→</div><div class="dec__then">Report settimanale PDF/Word<span class="mono">reportistica-brandizzata</span></div></div>
-          <div class="dec__row"><div class="dec__if">Cliente finale</div><div class="dec__ar">→</div><div class="dec__then">Email narrativa, stessa fonte dati<span class="mono">reportistica-brandizzata</span></div></div>
+          <div class="dec__row"><div class="dec__if">DLL e GC, periodico formale</div><div class="dec__ar">→</div><div class="dec__then">Report settimanale PDF/Word<span class="mono">reportistica-brandizzata</span></div></div>
           <div class="dec__row"><div class="dec__if">Advisor, prima della riunione di coordinamento</div><div class="dec__ar">→</div><div class="dec__then">Consolidato a tre fonti con discrepanze evidenziate<span class="mono">reportistica-brandizzata</span></div></div>
-          <div class="dec__row"><div class="dec__if">Tavolo formale con DL e committenza</div><div class="dec__ar">→</div><div class="dec__then">Contro-agenda e registro decisioni<span class="mono">preparazione-riunione-dl</span></div></div>
+          <div class="dec__row"><div class="dec__if">Tavolo formale con DLL e committenza</div><div class="dec__ar">→</div><div class="dec__then">Contro-agenda e registro decisioni<span class="mono">preparazione-riunione-dl</span></div></div>
         </div>
       </div>
     </section>
@@ -788,8 +783,8 @@
         <table>
           <thead><tr><th>Parametro</th><th>Valore</th><th>Effetto</th></tr></thead>
           <tbody>
-            <tr><td>NC critica</td><td class="num rossa">24 h</td><td>Blocca lavorazioni, impatta la sicurezza o è a vista in area chiave. Escalation immediata a fornitore + DL/GC</td></tr>
-            <tr><td>NC normale</td><td class="num">72 h</td><td>Scostamento da capitolato: impatta qualità o programma senza bloccare. DL/GC solo se scade</td></tr>
+            <tr><td>NC critica</td><td class="num rossa">24 h</td><td>Blocca lavorazioni, impatta la sicurezza o è a vista in area chiave. Escalation immediata a fornitore + DLL/GC</td></tr>
+            <tr><td>NC normale</td><td class="num">72 h</td><td>Scostamento da capitolato: impatta qualità o programma senza bloccare. DLL/GC solo se scade</td></tr>
             <tr><td>NC lieve</td><td class="num">7 giorni</td><td>Difetto estetico minore. Solo fornitore</td></tr>
             <tr><td>NC «in scadenza»</td><td class="num">&lt; 20% SLA</td><td>Meno di 5 ore su una critica, meno di 14 su una normale</td></tr>
             <tr><td>Snag priorità alta</td><td class="num rossa">5 giorni</td><td>Impedisce la consegna o riguarda sicurezza e funzionalità</td></tr>
@@ -797,7 +792,7 @@
             <tr><td>Handover</td><td class="num">90 / 70 %</td><td>Verde sopra 90, condizionale fra 70 e 89, non accettabile sotto 70</td></tr>
             <tr><td>Validità DURC</td><td class="num">120 giorni</td><td>Dall'emissione: va rinnovato in corso di cantiere</td></tr>
             <tr><td>Preavviso certificazioni</td><td class="num">30 giorni</td><td>Soglia singola prima della scadenza di attestati e idoneità</td></tr>
-            <tr><td>Escalation comportamenti</td><td class="num rossa">3 in 90 giorni</td><td>Tre segnalazioni sulla stessa squadra: si sale a DL/GC</td></tr>
+            <tr><td>Escalation comportamenti</td><td class="num rossa">3 in 90 giorni</td><td>Tre segnalazioni sulla stessa squadra: si sale a DLL/GC</td></tr>
             <tr><td>Consolidato Advisor</td><td class="num">3 fonti</td><td>Campo, PM, app di cantiere. Con meno di due è un report di parte, non un consolidato</td></tr>
           </tbody>
         </table>
@@ -812,19 +807,19 @@
       <p>«Siamo al 60%» e «possiamo fatturare il 60%» sono due frasi diverse e due skill diverse. L'avanzamento pesa le aree, il SAL valorizza le voci contrattuali e sottrae ritenuta di garanzia, recupero anticipo ed eventuali penali. Confonderli in un documento che esce verso il GC è difficile da recuperare.</p>
 
       <h4>Aprire una NC senza dichiarare la gravità</h4>
-      <p>La gravità determina lo SLA e chi riceve l'escalation. Una critica registrata come normale perde 48 ore e non arriva a DL/GC nel momento in cui serviva.</p>
+      <p>La gravità determina lo SLA e chi riceve l'escalation. Una critica registrata come normale perde 48 ore e non arriva a DLL/GC nel momento in cui serviva.</p>
 
       <h4>Alimentare i registri a fine settimana</h4>
       <p>I registri con data certa valgono per la data. Un episodio di instabilità progettuale registrato venerdì per lunedì è comunque utile, ma ha perso la parte di valore che serviva davvero: dimostrare quando si è saputo.</p>
 
-      <h4>Mandare un POS al CSE senza verificarlo</h4>
-      <p>Il POS incompleto torna indietro dal Coordinatore, con il ritardo che ne consegue sull'ingresso della squadra. La verifica interna costa pochi minuti e produce già la bozza di richiesta di integrazioni al fornitore.</p>
+      <h4>Inoltrare un POS senza verificarne la completezza</h4>
+      <p>Il POS incompleto torna indietro dall'ufficio sicurezza del GC (Progesim, SAC), con il ritardo che ne consegue sull'ingresso della squadra. La verifica interna costa pochi minuti e produce già la bozza di richiesta di integrazioni al fornitore.</p>
 
       <h4>Trattare una squadra cambiata come una squadra onboardata</h4>
       <p>L'onboarding certifica le persone che c'erano quel giorno. Chi subentra a metà cantiere non è coperto da nulla finché non passa dal controllo a evento.</p>
 
-      <h4>Arrivare alla riunione DL senza contro-agenda</h4>
-      <p>Se la DL non manda l'agenda, l'ordine del giorno lo fa chi porta i temi. Le decisioni richieste vanno formulate come domande chiuse: una domanda aperta a verbale non produce una decisione, produce un altro rinvio.</p>
+      <h4>Arrivare alla riunione DLL senza contro-agenda</h4>
+      <p>Se la DLL non manda l'agenda, l'ordine del giorno lo fa chi porta i temi. Le decisioni richieste vanno formulate come domande chiuse: una domanda aperta a verbale non produce una decisione, produce un altro rinvio.</p>
 
       <h4>Chiedere il cruscotto mensile senza aver alimentato nulla</h4>
       <p>Il cruscotto non raccoglie dati: li aggrega. Se il mese è stato registrato a spot, il cruscotto è onesto e lo mostra — ma non è un errore del cruscotto.</p>

@@ -39,7 +39,7 @@ Per ogni comando la scheda riporta:
 | Sicurezza (D.Lgs. 81/2008) | onboarding cantiere, verifica POS, scadenzario certificazioni, presidio continuo |
 | 02 Esecuzione in cantiere | diario giornaliero, logistica e collaudo, non conformità, instabilità progettuale |
 | 03 Controllo & Contabilità | avanzamento fisico, SAL, stima tempi |
-| 04 Reporting & Governance | reportistica, riunione DL, cruscotto mensile, storico fornitori |
+| 04 Reporting & Governance | reportistica, riunione DLL, cruscotto mensile, storico fornitori |
 | Contratti & fornitori | audit contratti di montaggio, review contratti |
 | Amministrazione FP SAS | pacchetto commercialista, nota trasferte |
 | Board di cantiere | i 7 moduli applicativi di questo repository |
